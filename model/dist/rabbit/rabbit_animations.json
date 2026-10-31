@@ -1,0 +1,424 @@
+{
+  "idle": {
+    "key": "rabbit_idle",
+    "texture": "rabbit_idle",
+    "atlas": "rabbit_idle.json",
+    "image": "rabbit_idle.png",
+    "frameRate": 6,
+    "repeat": -1,
+    "frames": [
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_000.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_001.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_002.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_003.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_004.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_005.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_006.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_007.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_008.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_009.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_010.png"
+      },
+      {
+        "key": "rabbit_idle",
+        "frame": "rabbit_idle_011.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_idle_000.png",
+      "rabbit_idle_001.png",
+      "rabbit_idle_002.png",
+      "rabbit_idle_003.png",
+      "rabbit_idle_004.png",
+      "rabbit_idle_005.png",
+      "rabbit_idle_006.png",
+      "rabbit_idle_007.png",
+      "rabbit_idle_008.png",
+      "rabbit_idle_009.png",
+      "rabbit_idle_010.png",
+      "rabbit_idle_011.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  },
+  "bend": {
+    "key": "rabbit_bend",
+    "texture": "rabbit_bend",
+    "atlas": "rabbit_bend.json",
+    "image": "rabbit_bend.png",
+    "frameRate": 10,
+    "repeat": 0,
+    "frames": [
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_000.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_001.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_002.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_003.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_004.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_005.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_006.png"
+      },
+      {
+        "key": "rabbit_bend",
+        "frame": "rabbit_bend_007.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_bend_000.png",
+      "rabbit_bend_001.png",
+      "rabbit_bend_002.png",
+      "rabbit_bend_003.png",
+      "rabbit_bend_004.png",
+      "rabbit_bend_005.png",
+      "rabbit_bend_006.png",
+      "rabbit_bend_007.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  },
+  "grab": {
+    "key": "rabbit_grab",
+    "texture": "rabbit_grab",
+    "atlas": "rabbit_grab.json",
+    "image": "rabbit_grab.png",
+    "frameRate": 10,
+    "repeat": 0,
+    "frames": [
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_000.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_001.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_002.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_003.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_004.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_005.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_006.png"
+      },
+      {
+        "key": "rabbit_grab",
+        "frame": "rabbit_grab_007.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_grab_000.png",
+      "rabbit_grab_001.png",
+      "rabbit_grab_002.png",
+      "rabbit_grab_003.png",
+      "rabbit_grab_004.png",
+      "rabbit_grab_005.png",
+      "rabbit_grab_006.png",
+      "rabbit_grab_007.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  },
+  "return": {
+    "key": "rabbit_return",
+    "texture": "rabbit_return",
+    "atlas": "rabbit_return.json",
+    "image": "rabbit_return.png",
+    "frameRate": 10,
+    "repeat": 0,
+    "frames": [
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_000.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_001.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_002.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_003.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_004.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_005.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_006.png"
+      },
+      {
+        "key": "rabbit_return",
+        "frame": "rabbit_return_007.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_return_000.png",
+      "rabbit_return_001.png",
+      "rabbit_return_002.png",
+      "rabbit_return_003.png",
+      "rabbit_return_004.png",
+      "rabbit_return_005.png",
+      "rabbit_return_006.png",
+      "rabbit_return_007.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  },
+  "pull": {
+    "key": "rabbit_pull",
+    "texture": "rabbit_pull",
+    "atlas": "rabbit_pull.json",
+    "image": "rabbit_pull.png",
+    "frameRate": 12,
+    "repeat": 0,
+    "frames": [
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_000.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_001.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_002.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_003.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_004.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_005.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_006.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_007.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_008.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_009.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_010.png"
+      },
+      {
+        "key": "rabbit_pull",
+        "frame": "rabbit_pull_011.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_pull_000.png",
+      "rabbit_pull_001.png",
+      "rabbit_pull_002.png",
+      "rabbit_pull_003.png",
+      "rabbit_pull_004.png",
+      "rabbit_pull_005.png",
+      "rabbit_pull_006.png",
+      "rabbit_pull_007.png",
+      "rabbit_pull_008.png",
+      "rabbit_pull_009.png",
+      "rabbit_pull_010.png",
+      "rabbit_pull_011.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  },
+  "celebrate": {
+    "key": "rabbit_celebrate",
+    "texture": "rabbit_celebrate",
+    "atlas": "rabbit_celebrate.json",
+    "image": "rabbit_celebrate.png",
+    "frameRate": 10,
+    "repeat": 0,
+    "frames": [
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_000.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_001.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_002.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_003.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_004.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_005.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_006.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_007.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_008.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_009.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_010.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_011.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_012.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_013.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_014.png"
+      },
+      {
+        "key": "rabbit_celebrate",
+        "frame": "rabbit_celebrate_015.png"
+      }
+    ],
+    "frameNames": [
+      "rabbit_celebrate_000.png",
+      "rabbit_celebrate_001.png",
+      "rabbit_celebrate_002.png",
+      "rabbit_celebrate_003.png",
+      "rabbit_celebrate_004.png",
+      "rabbit_celebrate_005.png",
+      "rabbit_celebrate_006.png",
+      "rabbit_celebrate_007.png",
+      "rabbit_celebrate_008.png",
+      "rabbit_celebrate_009.png",
+      "rabbit_celebrate_010.png",
+      "rabbit_celebrate_011.png",
+      "rabbit_celebrate_012.png",
+      "rabbit_celebrate_013.png",
+      "rabbit_celebrate_014.png",
+      "rabbit_celebrate_015.png"
+    ],
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "durationNote": "Use frameRate for uniform Phaser playback. Atlas frame.duration is custom metadata, not automatic playback timing."
+  }
+}

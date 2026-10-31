@@ -1,0 +1,3088 @@
+{
+  "status": "PASS",
+  "bone_count": 19,
+  "skin_count": 1,
+  "animation_count": 0,
+  "camera_count": 0,
+  "light_count": 0,
+  "mesh_count": 21,
+  "vertex_count": 23605,
+  "triangle_count": 46496,
+  "meshes": [
+    {
+      "name": "Rabbit_InnerEar_L",
+      "vertices": 385,
+      "triangles": 720,
+      "skin": null,
+      "parent": "Rabbit_Ear_L"
+    },
+    {
+      "name": "Rabbit_Ear_L",
+      "vertices": 2186,
+      "triangles": 4368,
+      "skin": null,
+      "parent": "ear.L"
+    },
+    {
+      "name": "Rabbit_InnerEar_R",
+      "vertices": 385,
+      "triangles": 720,
+      "skin": null,
+      "parent": "Rabbit_Ear_R"
+    },
+    {
+      "name": "Rabbit_Ear_R",
+      "vertices": 2186,
+      "triangles": 4368,
+      "skin": null,
+      "parent": "ear.R"
+    },
+    {
+      "name": "Rabbit_Cheek_L",
+      "vertices": 385,
+      "triangles": 720,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Cheek_R",
+      "vertices": 385,
+      "triangles": 720,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_EyeHighlight_L",
+      "vertices": 178,
+      "triangles": 352,
+      "skin": null,
+      "parent": "Rabbit_Eye_L"
+    },
+    {
+      "name": "Rabbit_Eye_L",
+      "vertices": 422,
+      "triangles": 840,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_EyeHighlight_R",
+      "vertices": 178,
+      "triangles": 352,
+      "skin": null,
+      "parent": "Rabbit_Eye_R"
+    },
+    {
+      "name": "Rabbit_Eye_R",
+      "vertices": 422,
+      "triangles": 840,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Mouth_L",
+      "vertices": 735,
+      "triangles": 1296,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Mouth_R",
+      "vertices": 735,
+      "triangles": 1296,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Mouth_Stem",
+      "vertices": 383,
+      "triangles": 656,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Nose",
+      "vertices": 362,
+      "triangles": 720,
+      "skin": null,
+      "parent": "Rabbit_Head"
+    },
+    {
+      "name": "Rabbit_Head",
+      "vertices": 3762,
+      "triangles": 7520,
+      "skin": null,
+      "parent": "head"
+    },
+    {
+      "name": "Rabbit_Tail",
+      "vertices": 1738,
+      "triangles": 3472,
+      "skin": null,
+      "parent": "tail"
+    },
+    {
+      "name": "Rabbit_Body",
+      "vertices": 2498,
+      "triangles": 4992,
+      "skin": null,
+      "parent": "body"
+    },
+    {
+      "name": "Rabbit_Arm_L",
+      "vertices": 1738,
+      "triangles": 3472,
+      "skin": 0,
+      "parent": "Rabbit_Rig"
+    },
+    {
+      "name": "Rabbit_Arm_R",
+      "vertices": 1738,
+      "triangles": 3472,
+      "skin": 0,
+      "parent": "Rabbit_Rig"
+    },
+    {
+      "name": "Rabbit_Leg_L",
+      "vertices": 1402,
+      "triangles": 2800,
+      "skin": 0,
+      "parent": "Rabbit_Rig"
+    },
+    {
+      "name": "Rabbit_Leg_R",
+      "vertices": 1402,
+      "triangles": 2800,
+      "skin": 0,
+      "parent": "Rabbit_Rig"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Rabbit_WarmIvory",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.9130986332893372,
+          0.8631572127342224,
+          0.7758222222328186,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.6800000071525574
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_InnerEarPink",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8069522380828857,
+          0.423267662525177,
+          0.37123769521713257,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.7200000286102295
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_SoftBlush",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "roughnessFactor": 0.6800000071525574
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_EyeCatchlight",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          0.9215818643569946,
+          0.7835378050804138,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.44999998807907104
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_EyeEspresso",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.039546236395835876,
+          0.01850022003054619,
+          0.013702083379030228,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.30000001192092896
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_SmileBrown",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.2462013214826584,
+          0.0802198201417923,
+          0.061246052384376526,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.699999988079071
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Rabbit_NoseRoseBrown",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.47353148460388184,
+          0.15896083414554596,
+          0.12743768095970154,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.6000000238418579
+      }
+    }
+  ],
+  "mesh_bounds_gltf": {
+    "Rabbit_InnerEar_L": {
+      "minimum": [
+        0.23440311,
+        2.79249986,
+        0.06533063
+      ],
+      "maximum": [
+        0.4790171,
+        3.62019992,
+        0.11710268
+      ]
+    },
+    "Rabbit_Ear_L": {
+      "minimum": [
+        0.15536471,
+        2.64000543,
+        -0.15642398
+      ],
+      "maximum": [
+        0.55143541,
+        3.73549372,
+        0.10992443
+      ]
+    },
+    "Rabbit_InnerEar_R": {
+      "minimum": [
+        -0.4790171,
+        2.79249986,
+        0.06533063
+      ],
+      "maximum": [
+        -0.23440311,
+        3.62019992,
+        0.11710268
+      ]
+    },
+    "Rabbit_Ear_R": {
+      "minimum": [
+        -0.55143541,
+        2.64000543,
+        -0.15642398
+      ],
+      "maximum": [
+        -0.15536471,
+        3.73549372,
+        0.10992443
+      ]
+    },
+    "Rabbit_Cheek_L": {
+      "minimum": [
+        0.37500345,
+        2.08462111,
+        0.34188227
+      ],
+      "maximum": [
+        0.63000261,
+        2.23543781,
+        0.49109937
+      ]
+    },
+    "Rabbit_Cheek_R": {
+      "minimum": [
+        -0.63000194,
+        2.08462111,
+        0.34185051
+      ],
+      "maximum": [
+        -0.37500401,
+        2.23543781,
+        0.49109086
+      ]
+    },
+    "Rabbit_EyeHighlight_L": {
+      "minimum": [
+        0.29573999,
+        2.29309136,
+        0.56015789
+      ],
+      "maximum": [
+        0.32177998,
+        2.32657115,
+        0.57131785
+      ]
+    },
+    "Rabbit_Eye_L": {
+      "minimum": [
+        0.26132991,
+        2.21032101,
+        0.50063795
+      ],
+      "maximum": [
+        0.3896699,
+        2.36098105,
+        0.56759796
+      ]
+    },
+    "Rabbit_EyeHighlight_R": {
+      "minimum": [
+        -0.35525993,
+        2.29309136,
+        0.56015789
+      ],
+      "maximum": [
+        -0.32921994,
+        2.32657115,
+        0.57131785
+      ]
+    },
+    "Rabbit_Eye_R": {
+      "minimum": [
+        -0.3896699,
+        2.21032101,
+        0.50063795
+      ],
+      "maximum": [
+        -0.26132991,
+        2.36098105,
+        0.56759796
+      ]
+    },
+    "Rabbit_Mouth_L": {
+      "minimum": [
+        -0.00651535,
+        2.07544481,
+        0.54579121
+      ],
+      "maximum": [
+        0.10464017,
+        2.12467957,
+        0.57251718
+      ]
+    },
+    "Rabbit_Mouth_R": {
+      "minimum": [
+        -0.10464017,
+        2.07544481,
+        0.54579121
+      ],
+      "maximum": [
+        0.00651535,
+        2.12467957,
+        0.57251718
+      ]
+    },
+    "Rabbit_Mouth_Stem": {
+      "minimum": [
+        -0.0093,
+        2.11684211,
+        0.55466077
+      ],
+      "maximum": [
+        0.0093,
+        2.16771423,
+        0.57891163
+      ]
+    },
+    "Rabbit_Nose": {
+      "minimum": [
+        -0.04974409,
+        2.15359091,
+        0.55494231
+      ],
+      "maximum": [
+        0.04974409,
+        2.2131108,
+        0.60330235
+      ]
+    },
+    "Rabbit_Head": {
+      "minimum": [
+        -0.79639948,
+        1.62591157,
+        -0.53093971
+      ],
+      "maximum": [
+        0.79639948,
+        2.88958938,
+        0.55883987
+      ]
+    },
+    "Rabbit_Tail": {
+      "minimum": [
+        -0.20198468,
+        0.60655736,
+        -0.64198465
+      ],
+      "maximum": [
+        0.20198468,
+        1.01544309,
+        -0.23801535
+      ]
+    },
+    "Rabbit_Body": {
+      "minimum": [
+        -0.52861734,
+        0.57064196,
+        -0.409195
+      ],
+      "maximum": [
+        0.52861734,
+        2.01094887,
+        0.36119394
+      ]
+    },
+    "Rabbit_Arm_L": {
+      "minimum": [
+        0.43961314,
+        0.81649834,
+        -0.12489087
+      ],
+      "maximum": [
+        0.88039806,
+        1.71820599,
+        0.14982999
+      ]
+    },
+    "Rabbit_Arm_R": {
+      "minimum": [
+        -0.88039812,
+        0.81649834,
+        -0.12489086
+      ],
+      "maximum": [
+        -0.43961314,
+        1.71820599,
+        0.14982999
+      ]
+    },
+    "Rabbit_Leg_L": {
+      "minimum": [
+        0.09359044,
+        0.00859078,
+        -0.18078835
+      ],
+      "maximum": [
+        0.43640965,
+        0.74934319,
+        0.27509551
+      ]
+    },
+    "Rabbit_Leg_R": {
+      "minimum": [
+        -0.43640967,
+        0.00859077,
+        -0.18078835
+      ],
+      "maximum": [
+        -0.09359046,
+        0.74934319,
+        0.27509551
+      ]
+    }
+  },
+  "bounds_gltf": {
+    "minimum": [
+      -0.88039812,
+      0.00859077,
+      -0.64198465
+    ],
+    "maximum": [
+      0.88039806,
+      3.73549372,
+      0.60330235
+    ]
+  },
+  "rest_position_sha256": "a1075419372e70c0369d2e8fc96cdf4501e435d045dc86d3b6a9cb2e579a4a26",
+  "node_hierarchy": {
+    "Rabbit_InnerEar_L": "Rabbit_Ear_L",
+    "Rabbit_Ear_L": "ear.L",
+    "ear.L": "head",
+    "Rabbit_InnerEar_R": "Rabbit_Ear_R",
+    "Rabbit_Ear_R": "ear.R",
+    "ear.R": "head",
+    "Rabbit_Cheek_L": "Rabbit_Head",
+    "Rabbit_Cheek_R": "Rabbit_Head",
+    "Rabbit_EyeHighlight_L": "Rabbit_Eye_L",
+    "Rabbit_Eye_L": "Rabbit_Head",
+    "Rabbit_EyeHighlight_R": "Rabbit_Eye_R",
+    "Rabbit_Eye_R": "Rabbit_Head",
+    "Rabbit_Mouth_L": "Rabbit_Head",
+    "Rabbit_Mouth_R": "Rabbit_Head",
+    "Rabbit_Mouth_Stem": "Rabbit_Head",
+    "Rabbit_Nose": "Rabbit_Head",
+    "Rabbit_Head": "head",
+    "head": "body",
+    "Rabbit_Tail": "tail",
+    "tail": "body",
+    "hand.L": "forearm.L",
+    "forearm.L": "upper_arm.L",
+    "upper_arm.L": "body",
+    "hand.R": "forearm.R",
+    "forearm.R": "upper_arm.R",
+    "upper_arm.R": "body",
+    "Rabbit_Body": "body",
+    "body": "root",
+    "Carrot_Attach_Point": "carrot_socket",
+    "carrot_socket": "root",
+    "foot.L": "shin.L",
+    "shin.L": "thigh.L",
+    "thigh.L": "root",
+    "foot.R": "shin.R",
+    "shin.R": "thigh.R",
+    "thigh.R": "root",
+    "root": "Rabbit_Rig",
+    "Rabbit_Arm_L": "Rabbit_Rig",
+    "Rabbit_Arm_R": "Rabbit_Rig",
+    "Rabbit_Leg_L": "Rabbit_Rig",
+    "Rabbit_Leg_R": "Rabbit_Rig",
+    "Rabbit_Rig": "Rabbit_Root",
+    "Rabbit_Root": null
+  },
+  "bones_gltf": {
+    "root": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "body": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0,
+          0.741
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.025
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.0,
+        0.741,
+        -0.025
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "head": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.01920021
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.025
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.0,
+        1.76020014,
+        -0.0
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "ear.L": {
+      "local_matrix": [
+        [
+          0.96406374,
+          0.18956846,
+          -0.18613113,
+          0.25574997
+        ],
+        [
+          -0.1861311,
+          0.98186751,
+          0.0359362,
+          0.92070019
+        ],
+        [
+          0.18956848,
+          -0.0,
+          0.98186744,
+          -0.02325
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.25574997,
+        2.68090028,
+        -0.02325
+      ],
+      "world_local_axes_columns": [
+        [
+          0.96406374,
+          0.18956846,
+          -0.18613113
+        ],
+        [
+          -0.18613109,
+          0.98186745,
+          0.0359362
+        ],
+        [
+          0.18956848,
+          -0.0,
+          0.98186744
+        ]
+      ]
+    },
+    "ear.R": {
+      "local_matrix": [
+        [
+          0.96406374,
+          -0.18956846,
+          0.18613113,
+          -0.25574997
+        ],
+        [
+          0.1861311,
+          0.98186751,
+          0.0359362,
+          0.92070019
+        ],
+        [
+          -0.18956848,
+          -0.0,
+          0.98186744,
+          -0.02325
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.25574997,
+        2.68090028,
+        -0.02325
+      ],
+      "world_local_axes_columns": [
+        [
+          0.96406374,
+          -0.18956846,
+          0.18613113
+        ],
+        [
+          0.18613109,
+          0.98186745,
+          0.0359362
+        ],
+        [
+          -0.18956848,
+          -0.0,
+          0.98186744
+        ]
+      ]
+    },
+    "upper_arm.L": {
+      "local_matrix": [
+        [
+          0.84656881,
+          0.38961859,
+          0.3626587,
+          0.51499993
+        ],
+        [
+          0.36265979,
+          -0.9209156,
+          0.1428067,
+          0.89600003
+        ],
+        [
+          0.38961868,
+          0.01062601,
+          -0.92091533,
+          0.03
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.51499993,
+        1.63699997,
+        0.005
+      ],
+      "world_local_axes_columns": [
+        [
+          0.84656881,
+          0.38961859,
+          0.3626587
+        ],
+        [
+          0.36265977,
+          -0.92091554,
+          0.1428067
+        ],
+        [
+          0.38961868,
+          0.01062601,
+          -0.92091533
+        ]
+      ]
+    },
+    "forearm.L": {
+      "local_matrix": [
+        [
+          0.99910399,
+          -0.0291048,
+          -0.03072486,
+          3e-08
+        ],
+        [
+          0.02936799,
+          0.99953544,
+          0.00814993,
+          0.38961247
+        ],
+        [
+          0.03047338,
+          -0.00904496,
+          0.99949465,
+          3e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.66680022,
+        1.27819981,
+        0.00914
+      ],
+      "world_local_axes_columns": [
+        [
+          0.86830402,
+          0.36151814,
+          0.33964009
+        ],
+        [
+          0.33964118,
+          -0.93233454,
+          0.12408646
+        ],
+        [
+          0.36151824,
+          0.00761094,
+          -0.93233433
+        ]
+      ]
+    },
+    "hand.L": {
+      "local_matrix": [
+        [
+          0.98737806,
+          0.1105701,
+          0.11339674,
+          -1.5e-07
+        ],
+        [
+          -0.10623518,
+          0.99338471,
+          -0.04360206,
+          0.36263788
+        ],
+        [
+          -0.11746766,
+          0.031005,
+          0.99259258,
+          -0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.79790026,
+        0.94009994,
+        0.01189997
+      ],
+      "world_local_axes_columns": [
+        [
+          0.77904167,
+          0.46566559,
+          0.41982415
+        ],
+        [
+          0.41982484,
+          -0.88476542,
+          0.20233321
+        ],
+        [
+          0.46566576,
+          0.01862667,
+          -0.884765
+        ]
+      ]
+    },
+    "upper_arm.R": {
+      "local_matrix": [
+        [
+          0.84656881,
+          -0.38961859,
+          -0.3626587,
+          -0.51499993
+        ],
+        [
+          -0.36265979,
+          -0.9209156,
+          0.1428067,
+          0.89600003
+        ],
+        [
+          -0.38961868,
+          0.01062601,
+          -0.92091533,
+          0.03
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.51499993,
+        1.63699997,
+        0.005
+      ],
+      "world_local_axes_columns": [
+        [
+          0.84656881,
+          -0.38961859,
+          -0.3626587
+        ],
+        [
+          -0.36265977,
+          -0.92091554,
+          0.1428067
+        ],
+        [
+          -0.38961868,
+          0.01062601,
+          -0.92091533
+        ]
+      ]
+    },
+    "forearm.R": {
+      "local_matrix": [
+        [
+          0.99910399,
+          0.0291048,
+          0.03072486,
+          -3e-08
+        ],
+        [
+          -0.02936799,
+          0.99953544,
+          0.00814993,
+          0.38961247
+        ],
+        [
+          -0.03047338,
+          -0.00904496,
+          0.99949465,
+          3e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.66680022,
+        1.27819981,
+        0.00914
+      ],
+      "world_local_axes_columns": [
+        [
+          0.86830402,
+          -0.36151814,
+          -0.33964009
+        ],
+        [
+          -0.33964118,
+          -0.93233454,
+          0.12408646
+        ],
+        [
+          -0.36151824,
+          0.00761094,
+          -0.93233433
+        ]
+      ]
+    },
+    "hand.R": {
+      "local_matrix": [
+        [
+          0.98737806,
+          -0.1105701,
+          -0.11339674,
+          1.5e-07
+        ],
+        [
+          0.10623518,
+          0.99338471,
+          -0.04360206,
+          0.36263788
+        ],
+        [
+          0.11746766,
+          0.031005,
+          0.99259258,
+          -0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.79790026,
+        0.94009994,
+        0.01189997
+      ],
+      "world_local_axes_columns": [
+        [
+          0.77904167,
+          -0.46566559,
+          -0.41982415
+        ],
+        [
+          -0.41982484,
+          -0.88476542,
+          0.20233321
+        ],
+        [
+          -0.46566576,
+          0.01862667,
+          -0.884765
+        ]
+      ]
+    },
+    "tail": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          3e-08,
+          0.99999997,
+          0.07840008
+        ],
+        [
+          0.0,
+          -0.99999997,
+          3e-08,
+          -0.32499996
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.0,
+        0.81940007,
+        -0.34999996
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          3e-08,
+          0.99999991
+        ],
+        [
+          0.0,
+          -0.99999997,
+          3e-08
+        ]
+      ]
+    },
+    "thigh.L": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.26499999
+        ],
+        [
+          0.0,
+          -0.96920421,
+          -0.24625934,
+          0.68099999
+        ],
+        [
+          0.0,
+          0.24625823,
+          -0.9692086,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.26499999,
+        0.68099999,
+        0.0
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920421,
+          -0.24625934
+        ],
+        [
+          0.0,
+          0.24625823,
+          -0.9692086
+        ]
+      ]
+    },
+    "shin.L": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.93685078,
+          -0.34972933,
+          0.28425384
+        ],
+        [
+          0.0,
+          0.34972935,
+          0.93685072,
+          1e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.26499999,
+        0.40549998,
+        0.06999984
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.99412384,
+          0.1082509
+        ],
+        [
+          0.0,
+          -0.10825349,
+          -0.9941275
+        ]
+      ]
+    },
+    "foot.L": {
+      "local_matrix": [
+        [
+          -1.00000002,
+          0.0,
+          -1.5e-07,
+          0.0
+        ],
+        [
+          1.5e-07,
+          -0.10825124,
+          -0.99412346,
+          0.27712855
+        ],
+        [
+          -2e-08,
+          -0.9941234,
+          0.10825122,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.26499999,
+        0.12999988,
+        0.03999971
+      ],
+      "world_local_axes_columns": [
+        [
+          -1.00000002,
+          0.0,
+          -1.5e-07
+        ],
+        [
+          -1.5e-07,
+          3.8e-07,
+          1.00000012
+        ],
+        [
+          -0.0,
+          1.00000399,
+          1.81e-06
+        ]
+      ]
+    },
+    "thigh.R": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.26499999
+        ],
+        [
+          0.0,
+          -0.96920421,
+          -0.24625934,
+          0.68099999
+        ],
+        [
+          0.0,
+          0.24625823,
+          -0.9692086,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.26499999,
+        0.68099999,
+        0.0
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920421,
+          -0.24625934
+        ],
+        [
+          0.0,
+          0.24625823,
+          -0.9692086
+        ]
+      ]
+    },
+    "shin.R": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.93685078,
+          -0.34972933,
+          0.28425384
+        ],
+        [
+          0.0,
+          0.34972935,
+          0.93685072,
+          1e-08
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.26499999,
+        0.40549998,
+        0.06999984
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.99412384,
+          0.1082509
+        ],
+        [
+          0.0,
+          -0.10825349,
+          -0.9941275
+        ]
+      ]
+    },
+    "foot.R": {
+      "local_matrix": [
+        [
+          -1.00000002,
+          0.0,
+          -1.5e-07,
+          0.0
+        ],
+        [
+          1.5e-07,
+          -0.10825124,
+          -0.99412346,
+          0.27712855
+        ],
+        [
+          -2e-08,
+          -0.9941234,
+          0.10825122,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        -0.26499999,
+        0.12999988,
+        0.03999971
+      ],
+      "world_local_axes_columns": [
+        [
+          -1.00000002,
+          0.0,
+          -1.5e-07
+        ],
+        [
+          -1.5e-07,
+          3.8e-07,
+          1.00000012
+        ],
+        [
+          -0.0,
+          1.00000399,
+          1.81e-06
+        ]
+      ]
+    },
+    "carrot_socket": {
+      "local_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.33459997
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "world_pivot": [
+        0.0,
+        1.33459997,
+        0.5
+      ],
+      "world_local_axes_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "deformation_probes": {
+    "upper_arm.L": {
+      "local_axis": "Z",
+      "radians": 0.3,
+      "mesh": "Rabbit_Arm_L",
+      "maximum_vertex_displacement": 0.26467815976384307,
+      "unaffected_mesh": "Rabbit_Arm_R",
+      "unaffected_maximum_displacement": 0.0
+    },
+    "upper_arm.R": {
+      "local_axis": "Z",
+      "radians": 0.3,
+      "mesh": "Rabbit_Arm_R",
+      "maximum_vertex_displacement": 0.26467814436248704,
+      "unaffected_mesh": "Rabbit_Arm_L",
+      "unaffected_maximum_displacement": 0.0
+    },
+    "forearm.L": {
+      "local_axis": "Z",
+      "radians": 0.3,
+      "mesh": "Rabbit_Arm_L",
+      "maximum_vertex_displacement": 0.14824747581829278,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "forearm.R": {
+      "local_axis": "Z",
+      "radians": 0.3,
+      "mesh": "Rabbit_Arm_R",
+      "maximum_vertex_displacement": 0.14824746079292522,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "thigh.L": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Leg_L",
+      "maximum_vertex_displacement": 0.2052195774858846,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "thigh.R": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Leg_R",
+      "maximum_vertex_displacement": 0.20521958010757418,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "shin.L": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Leg_L",
+      "maximum_vertex_displacement": 0.1252739379399287,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "shin.R": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Leg_R",
+      "maximum_vertex_displacement": 0.1252739403921605,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "head": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Head",
+      "maximum_vertex_displacement": 0.33757340455344614,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "ear.L": {
+      "local_axis": "Z",
+      "radians": 0.3,
+      "mesh": "Rabbit_Ear_L",
+      "maximum_vertex_displacement": 0.32054261219248736,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    },
+    "body": {
+      "local_axis": "X",
+      "radians": 0.3,
+      "mesh": "Rabbit_Body",
+      "maximum_vertex_displacement": 0.37955771567518587,
+      "unaffected_mesh": null,
+      "unaffected_maximum_displacement": null
+    }
+  },
+  "source_rest_geometry_bidirectional_nearest_vertex_error": {
+    "Rabbit_Body": 2.3844768293201923e-07,
+    "Rabbit_Head": 7.158763537518098e-07,
+    "Rabbit_Ear_L": 4.875578270002734e-07,
+    "Rabbit_InnerEar_L": 2.485637082827452e-07,
+    "Rabbit_Arm_L": 5.97453436057549e-07,
+    "Rabbit_Leg_L": 4.507601261138916e-07,
+    "Rabbit_Eye_L": 9.62942522164667e-07,
+    "Rabbit_EyeHighlight_L": 1.2057977301083156e-06,
+    "Rabbit_Cheek_L": 4.814712610823335e-07,
+    "Rabbit_Ear_R": 4.937134008287103e-07,
+    "Rabbit_InnerEar_R": 2.485637082827452e-07,
+    "Rabbit_Arm_R": 6.341424523270689e-07,
+    "Rabbit_Leg_R": 4.4989724301558454e-07,
+    "Rabbit_Eye_R": 9.62942522164667e-07,
+    "Rabbit_EyeHighlight_R": 1.2057977301083156e-06,
+    "Rabbit_Cheek_R": 4.814712610823335e-07,
+    "Rabbit_Tail": 2.4027400513659813e-07,
+    "Rabbit_Nose": 9.555351425660774e-07,
+    "Rabbit_Mouth_Stem": 7.177349630183016e-07,
+    "Rabbit_Mouth_L": 7.177349630183016e-07,
+    "Rabbit_Mouth_R": 7.177349630183016e-07
+  },
+  "source_rest_geometry_maximum_error": 1.2057977301083156e-06,
+  "material_values_preserved": true,
+  "source_materials": {
+    "Rabbit_WarmIvory": {
+      "base_color": [
+        0.9130986332893372,
+        0.8631572127342224,
+        0.7758222222328186,
+        1.0
+      ],
+      "roughness": 0.6800000071525574,
+      "metallic": 0.0,
+      "base_color_factor": [
+        0.9130986332893372,
+        0.8631572127342224,
+        0.7758222222328186,
+        1.0
+      ]
+    },
+    "Rabbit_InnerEarPink": {
+      "base_color": [
+        0.8069522380828857,
+        0.423267662525177,
+        0.37123769521713257,
+        1.0
+      ],
+      "roughness": 0.7200000286102295,
+      "metallic": 0.0,
+      "base_color_factor": [
+        0.8069522380828857,
+        0.423267662525177,
+        0.37123769521713257,
+        1.0
+      ]
+    },
+    "Rabbit_EyeEspresso": {
+      "base_color": [
+        0.039546236395835876,
+        0.01850022003054619,
+        0.013702083379030228,
+        1.0
+      ],
+      "roughness": 0.30000001192092896,
+      "metallic": 0.0,
+      "base_color_factor": [
+        0.039546236395835876,
+        0.01850022003054619,
+        0.013702083379030228,
+        1.0
+      ]
+    },
+    "Rabbit_EyeCatchlight": {
+      "base_color": [
+        1.0,
+        0.9215818643569946,
+        0.7835378050804138,
+        1.0
+      ],
+      "roughness": 0.44999998807907104,
+      "metallic": 0.0,
+      "base_color_factor": [
+        1.0,
+        0.9215818643569946,
+        0.7835378050804138,
+        1.0
+      ]
+    },
+    "Rabbit_SoftBlush": {
+      "base_color": [
+        0.8307698965072632,
+        0.3967552185058594,
+        0.34191441535949707,
+        1.0
+      ],
+      "roughness": 0.6800000071525574,
+      "metallic": 0.0,
+      "base_color_factor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "vertex_color_attribute": "BlushTint"
+    },
+    "Rabbit_NoseRoseBrown": {
+      "base_color": [
+        0.47353148460388184,
+        0.15896083414554596,
+        0.12743768095970154,
+        1.0
+      ],
+      "roughness": 0.6000000238418579,
+      "metallic": 0.0,
+      "base_color_factor": [
+        0.47353148460388184,
+        0.15896083414554596,
+        0.12743768095970154,
+        1.0
+      ]
+    },
+    "Rabbit_SmileBrown": {
+      "base_color": [
+        0.2462013214826584,
+        0.0802198201417923,
+        0.061246052384376526,
+        1.0
+      ],
+      "roughness": 0.699999988079071,
+      "metallic": 0.0,
+      "base_color_factor": [
+        0.2462013214826584,
+        0.0802198201417923,
+        0.061246052384376526,
+        1.0
+      ]
+    }
+  },
+  "vertex_color_range_errors": {
+    "Rabbit_Cheek_L": 0.0,
+    "Rabbit_Cheek_R": 0.0
+  },
+  "blender_version": "5.2.1 LTS",
+  "source_sha256": {
+    "rabbit_base.blend": "7bbaa295ebd941fcac526692540872039b1aec453616efa771114c32502a0b34",
+    "rabbit_rigged.blend": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+    "rabbit_realtime_v2.blend": "49f73177672cd61fb6e2f1d4b55fc46654a380ffb99ae6c038e52edbc87a1eff"
+  },
+  "source_files_unchanged": true,
+  "glb_sha256": "08c6ad9f8f3aaf127a7ee3dadd5138a9f0f05e4e9d292d3dbf0d918d41108c4b",
+  "glb_bytes": 918392,
+  "bones_blender": [
+    {
+      "name": "root",
+      "parent": null,
+      "use_deform": false,
+      "head_blender": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "tail_blender": [
+        0.0,
+        0.0,
+        0.25
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "body",
+      "parent": "root",
+      "use_deform": true,
+      "head_blender": [
+        0.0,
+        0.025,
+        0.741
+      ],
+      "tail_blender": [
+        0.0,
+        0.025,
+        1.72660005
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.025
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0,
+          0.741
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.0,
+        0.741,
+        -0.025
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "body",
+      "use_deform": true,
+      "head_blender": [
+        0.0,
+        0.0,
+        1.76020002
+      ],
+      "tail_blender": [
+        0.0,
+        0.0,
+        2.64370012
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0,
+          1.76020002
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.0,
+        1.76020002,
+        -0.0
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.99999994,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "ear.L",
+      "parent": "head",
+      "use_deform": true,
+      "head_blender": [
+        0.25575,
+        0.02325,
+        2.6809001
+      ],
+      "tail_blender": [
+        0.43709999,
+        0.02325,
+        3.62020016
+      ],
+      "rest_matrix_blender": [
+        [
+          0.96406376,
+          0.18956846,
+          -0.18613112,
+          0.25574997
+        ],
+        [
+          -0.18956846,
+          0.0,
+          -0.98186749,
+          0.02325
+        ],
+        [
+          -0.1861311,
+          0.98186743,
+          0.0359362,
+          2.6809001
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.25574997,
+        2.6809001,
+        -0.02325
+      ],
+      "axes_gltf_columns": [
+        [
+          0.96406376,
+          0.18956846,
+          -0.18613112
+        ],
+        [
+          -0.1861311,
+          0.98186743,
+          0.0359362
+        ],
+        [
+          0.18956846,
+          0.0,
+          0.98186749
+        ]
+      ]
+    },
+    {
+      "name": "ear.R",
+      "parent": "head",
+      "use_deform": true,
+      "head_blender": [
+        -0.25575,
+        0.02325,
+        2.6809001
+      ],
+      "tail_blender": [
+        -0.43709999,
+        0.02325,
+        3.62020016
+      ],
+      "rest_matrix_blender": [
+        [
+          0.96406376,
+          -0.18956846,
+          0.18613112,
+          -0.25574997
+        ],
+        [
+          0.18956846,
+          0.0,
+          -0.98186749,
+          0.02325
+        ],
+        [
+          0.1861311,
+          0.98186743,
+          0.0359362,
+          2.6809001
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.25574997,
+        2.6809001,
+        -0.02325
+      ],
+      "axes_gltf_columns": [
+        [
+          0.96406376,
+          -0.18956846,
+          0.18613112
+        ],
+        [
+          0.1861311,
+          0.98186743,
+          0.0359362
+        ],
+        [
+          -0.18956846,
+          0.0,
+          0.98186749
+        ]
+      ]
+    },
+    {
+      "name": "upper_arm.L",
+      "parent": "body",
+      "use_deform": true,
+      "head_blender": [
+        0.51499999,
+        -0.005,
+        1.63699996
+      ],
+      "tail_blender": [
+        0.66680002,
+        -0.00914,
+        1.27819991
+      ],
+      "rest_matrix_blender": [
+        [
+          0.84656876,
+          0.38961819,
+          0.36265874,
+          0.51499993
+        ],
+        [
+          -0.38961861,
+          -0.01062597,
+          0.92091531,
+          -0.005
+        ],
+        [
+          0.36266014,
+          -0.9209156,
+          0.14280663,
+          1.63699985
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.51499993,
+        1.63699985,
+        0.005
+      ],
+      "axes_gltf_columns": [
+        [
+          0.84656876,
+          0.38961819,
+          0.36265874
+        ],
+        [
+          0.36266014,
+          -0.9209156,
+          0.14280663
+        ],
+        [
+          0.38961861,
+          0.01062597,
+          -0.92091531
+        ]
+      ]
+    },
+    {
+      "name": "forearm.L",
+      "parent": "upper_arm.L",
+      "use_deform": true,
+      "head_blender": [
+        0.66680002,
+        -0.00914,
+        1.27819991
+      ],
+      "tail_blender": [
+        0.79790008,
+        -0.0119,
+        0.94009995
+      ],
+      "rest_matrix_blender": [
+        [
+          0.86830401,
+          0.36151776,
+          0.33964011,
+          0.66680002
+        ],
+        [
+          -0.36151817,
+          -0.0076109,
+          0.9323343,
+          -0.00914001
+        ],
+        [
+          0.33964154,
+          -0.9323346,
+          0.12408638,
+          1.27819967
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.66680002,
+        1.27819967,
+        0.00914001
+      ],
+      "axes_gltf_columns": [
+        [
+          0.86830401,
+          0.36151776,
+          0.33964011
+        ],
+        [
+          0.33964154,
+          -0.9323346,
+          0.12408638
+        ],
+        [
+          0.36151817,
+          0.0076109,
+          -0.9323343
+        ]
+      ]
+    },
+    {
+      "name": "hand.L",
+      "parent": "forearm.L",
+      "use_deform": true,
+      "head_blender": [
+        0.79790008,
+        -0.0119,
+        0.94009995
+      ],
+      "tail_blender": [
+        0.86689997,
+        -0.01466,
+        0.80899996
+      ],
+      "rest_matrix_blender": [
+        [
+          0.77904171,
+          0.46566519,
+          0.41982418,
+          0.79790008
+        ],
+        [
+          -0.46566573,
+          -0.01862664,
+          0.88476497,
+          -0.01190001
+        ],
+        [
+          0.41982523,
+          -0.88476539,
+          0.20233318,
+          0.94009972
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.79790008,
+        0.94009972,
+        0.01190001
+      ],
+      "axes_gltf_columns": [
+        [
+          0.77904171,
+          0.46566519,
+          0.41982418
+        ],
+        [
+          0.41982523,
+          -0.88476539,
+          0.20233318
+        ],
+        [
+          0.46566573,
+          0.01862664,
+          -0.88476497
+        ]
+      ]
+    },
+    {
+      "name": "upper_arm.R",
+      "parent": "body",
+      "use_deform": true,
+      "head_blender": [
+        -0.51499999,
+        -0.005,
+        1.63699996
+      ],
+      "tail_blender": [
+        -0.66680002,
+        -0.00914,
+        1.27819991
+      ],
+      "rest_matrix_blender": [
+        [
+          0.84656876,
+          -0.38961819,
+          -0.36265874,
+          -0.51499993
+        ],
+        [
+          0.38961861,
+          -0.01062597,
+          0.92091531,
+          -0.005
+        ],
+        [
+          -0.36266014,
+          -0.9209156,
+          0.14280663,
+          1.63699985
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.51499993,
+        1.63699985,
+        0.005
+      ],
+      "axes_gltf_columns": [
+        [
+          0.84656876,
+          -0.38961819,
+          -0.36265874
+        ],
+        [
+          -0.36266014,
+          -0.9209156,
+          0.14280663
+        ],
+        [
+          -0.38961861,
+          0.01062597,
+          -0.92091531
+        ]
+      ]
+    },
+    {
+      "name": "forearm.R",
+      "parent": "upper_arm.R",
+      "use_deform": true,
+      "head_blender": [
+        -0.66680002,
+        -0.00914,
+        1.27819991
+      ],
+      "tail_blender": [
+        -0.79790008,
+        -0.0119,
+        0.94009995
+      ],
+      "rest_matrix_blender": [
+        [
+          0.86830401,
+          -0.36151776,
+          -0.33964011,
+          -0.66680002
+        ],
+        [
+          0.36151817,
+          -0.0076109,
+          0.9323343,
+          -0.00914001
+        ],
+        [
+          -0.33964154,
+          -0.9323346,
+          0.12408638,
+          1.27819967
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.66680002,
+        1.27819967,
+        0.00914001
+      ],
+      "axes_gltf_columns": [
+        [
+          0.86830401,
+          -0.36151776,
+          -0.33964011
+        ],
+        [
+          -0.33964154,
+          -0.9323346,
+          0.12408638
+        ],
+        [
+          -0.36151817,
+          0.0076109,
+          -0.9323343
+        ]
+      ]
+    },
+    {
+      "name": "hand.R",
+      "parent": "forearm.R",
+      "use_deform": true,
+      "head_blender": [
+        -0.79790008,
+        -0.0119,
+        0.94009995
+      ],
+      "tail_blender": [
+        -0.86689997,
+        -0.01466,
+        0.80899996
+      ],
+      "rest_matrix_blender": [
+        [
+          0.77904171,
+          -0.46566519,
+          -0.41982418,
+          -0.79790008
+        ],
+        [
+          0.46566573,
+          -0.01862664,
+          0.88476497,
+          -0.01190001
+        ],
+        [
+          -0.41982523,
+          -0.88476539,
+          0.20233318,
+          0.94009972
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.79790008,
+        0.94009972,
+        0.01190001
+      ],
+      "axes_gltf_columns": [
+        [
+          0.77904171,
+          -0.46566519,
+          -0.41982418
+        ],
+        [
+          -0.41982523,
+          -0.88476539,
+          0.20233318
+        ],
+        [
+          -0.46566573,
+          0.01862664,
+          -0.88476497
+        ]
+      ]
+    },
+    {
+      "name": "tail",
+      "parent": "body",
+      "use_deform": true,
+      "head_blender": [
+        0.0,
+        0.34999999,
+        0.81940001
+      ],
+      "tail_blender": [
+        0.0,
+        0.62,
+        0.81940001
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.34999996
+        ],
+        [
+          0.0,
+          0.0,
+          0.99999994,
+          0.81940001
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.0,
+        0.81940001,
+        -0.34999996
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.99999994
+        ],
+        [
+          0.0,
+          -1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "thigh.L",
+      "parent": "root",
+      "use_deform": true,
+      "head_blender": [
+        0.26499999,
+        0.0,
+        0.68099999
+      ],
+      "tail_blender": [
+        0.26499999,
+        -0.07,
+        0.40549999
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.26499999
+        ],
+        [
+          0.0,
+          -0.24625878,
+          0.96920884,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920419,
+          -0.24625878,
+          0.68099999
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.26499999,
+        0.68099999,
+        0.0
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920419,
+          -0.24625878
+        ],
+        [
+          0.0,
+          0.24625878,
+          -0.96920884
+        ]
+      ]
+    },
+    {
+      "name": "shin.L",
+      "parent": "thigh.L",
+      "use_deform": true,
+      "head_blender": [
+        0.26499999,
+        -0.07,
+        0.40549999
+      ],
+      "tail_blender": [
+        0.26499999,
+        -0.04,
+        0.13
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.26499999
+        ],
+        [
+          0.0,
+          0.10825303,
+          0.99412799,
+          -0.07
+        ],
+        [
+          0.0,
+          -0.99412364,
+          0.10825139,
+          0.40549999
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.26499999,
+        0.40549999,
+        0.07
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.99412364,
+          0.10825139
+        ],
+        [
+          0.0,
+          -0.10825303,
+          -0.99412799
+        ]
+      ]
+    },
+    {
+      "name": "foot.L",
+      "parent": "shin.L",
+      "use_deform": true,
+      "head_blender": [
+        0.26499999,
+        -0.04,
+        0.13
+      ],
+      "tail_blender": [
+        0.26499999,
+        -0.25,
+        0.13
+      ],
+      "rest_matrix_blender": [
+        [
+          -1.0,
+          0.0,
+          -1.5e-07,
+          0.26499999
+        ],
+        [
+          0.0,
+          -1.00000441,
+          -1.13e-06,
+          -0.04
+        ],
+        [
+          -1.5e-07,
+          0.0,
+          1.0,
+          0.13
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.26499999,
+        0.13,
+        0.04
+      ],
+      "axes_gltf_columns": [
+        [
+          -1.0,
+          0.0,
+          -1.5e-07
+        ],
+        [
+          -1.5e-07,
+          0.0,
+          1.0
+        ],
+        [
+          -0.0,
+          1.00000441,
+          1.13e-06
+        ]
+      ]
+    },
+    {
+      "name": "thigh.R",
+      "parent": "root",
+      "use_deform": true,
+      "head_blender": [
+        -0.26499999,
+        0.0,
+        0.68099999
+      ],
+      "tail_blender": [
+        -0.26499999,
+        -0.07,
+        0.40549999
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.26499999
+        ],
+        [
+          0.0,
+          -0.24625878,
+          0.96920884,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920419,
+          -0.24625878,
+          0.68099999
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.26499999,
+        0.68099999,
+        0.0
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.96920419,
+          -0.24625878
+        ],
+        [
+          0.0,
+          0.24625878,
+          -0.96920884
+        ]
+      ]
+    },
+    {
+      "name": "shin.R",
+      "parent": "thigh.R",
+      "use_deform": true,
+      "head_blender": [
+        -0.26499999,
+        -0.07,
+        0.40549999
+      ],
+      "tail_blender": [
+        -0.26499999,
+        -0.04,
+        0.13
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.26499999
+        ],
+        [
+          0.0,
+          0.10825303,
+          0.99412799,
+          -0.07
+        ],
+        [
+          0.0,
+          -0.99412364,
+          0.10825139,
+          0.40549999
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.26499999,
+        0.40549999,
+        0.07
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -0.99412364,
+          0.10825139
+        ],
+        [
+          0.0,
+          -0.10825303,
+          -0.99412799
+        ]
+      ]
+    },
+    {
+      "name": "foot.R",
+      "parent": "shin.R",
+      "use_deform": true,
+      "head_blender": [
+        -0.26499999,
+        -0.04,
+        0.13
+      ],
+      "tail_blender": [
+        -0.26499999,
+        -0.25,
+        0.13
+      ],
+      "rest_matrix_blender": [
+        [
+          -1.0,
+          0.0,
+          -1.5e-07,
+          -0.26499999
+        ],
+        [
+          0.0,
+          -1.00000441,
+          -1.13e-06,
+          -0.04
+        ],
+        [
+          -1.5e-07,
+          0.0,
+          1.0,
+          0.13
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        -0.26499999,
+        0.13,
+        0.04
+      ],
+      "axes_gltf_columns": [
+        [
+          -1.0,
+          0.0,
+          -1.5e-07
+        ],
+        [
+          -1.5e-07,
+          0.0,
+          1.0
+        ],
+        [
+          -0.0,
+          1.00000441,
+          1.13e-06
+        ]
+      ]
+    },
+    {
+      "name": "carrot_socket",
+      "parent": "root",
+      "use_deform": false,
+      "head_blender": [
+        0.0,
+        -0.5,
+        1.33459997
+      ],
+      "tail_blender": [
+        0.0,
+        -0.5,
+        1.50259995
+      ],
+      "rest_matrix_blender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          -0.5
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.33459997
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "pivot_gltf": [
+        0.0,
+        1.33459997,
+        0.5
+      ],
+      "axes_gltf_columns": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "rigid_bone_bindings": {
+    "Rabbit_Body": "body",
+    "Rabbit_Head": "head",
+    "Rabbit_Ear_L": "ear.L",
+    "Rabbit_Ear_R": "ear.R",
+    "Rabbit_Tail": "tail",
+    "Carrot_Attach_Point": "carrot_socket"
+  },
+  "proportions": {
+    "version": "rabbit-realtime-v2",
+    "arm_chain_scale": 1.38,
+    "arm_radial_scale": 0.82,
+    "leg_chain_scale": 1.45,
+    "torso_bone_scale": 1.12,
+    "lower_belly_lift": 0.17,
+    "lower_pelvis_taper": 0.12,
+    "head_face_ear_scale": 0.93,
+    "original_source_sha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+    "bone_lengths": {
+      "root": {
+        "old": 0.25,
+        "new": 0.25,
+        "ratio": 1.0
+      },
+      "body": {
+        "old": 0.8800000548362732,
+        "new": 0.9856000542640686,
+        "ratio": 1.1199999918720944
+      },
+      "head": {
+        "old": 0.9500000476837158,
+        "new": 0.8835000991821289,
+        "ratio": 0.9300000577223899
+      },
+      "ear.L": {
+        "old": 1.0286520719528198,
+        "new": 0.9566464424133301,
+        "ratio": 0.9300000150655484
+      },
+      "ear.R": {
+        "old": 1.0286520719528198,
+        "new": 0.9566464424133301,
+        "ratio": 0.9300000150655484
+      },
+      "upper_arm.L": {
+        "old": 0.2823278307914734,
+        "new": 0.38961243629455566,
+        "ratio": 1.3800001055592794
+      },
+      "forearm.L": {
+        "old": 0.2627813518047333,
+        "new": 0.362637996673584,
+        "ratio": 1.3799989770318704
+      },
+      "hand.L": {
+        "old": 0.1073732078075409,
+        "new": 0.14817488193511963,
+        "ratio": 1.3799986510667814
+      },
+      "upper_arm.R": {
+        "old": 0.2823278307914734,
+        "new": 0.38961243629455566,
+        "ratio": 1.3800001055592794
+      },
+      "forearm.R": {
+        "old": 0.2627813518047333,
+        "new": 0.362637996673584,
+        "ratio": 1.3799989770318704
+      },
+      "hand.R": {
+        "old": 0.1073732078075409,
+        "new": 0.14817488193511963,
+        "ratio": 1.3799986510667814
+      },
+      "tail": {
+        "old": 0.27000001072883606,
+        "new": 0.27000001072883606,
+        "ratio": 1.0
+      },
+      "thigh.L": {
+        "old": 0.2024846225976944,
+        "new": 0.2842538356781006,
+        "ratio": 1.4038292490134867
+      },
+      "shin.L": {
+        "old": 0.19235382974147797,
+        "new": 0.27712851762771606,
+        "ratio": 1.4407226411877248
+      },
+      "foot.L": {
+        "old": 0.21000000834465027,
+        "new": 0.20999905467033386,
+        "ratio": 0.9999954586939118
+      },
+      "thigh.R": {
+        "old": 0.2024846225976944,
+        "new": 0.2842538356781006,
+        "ratio": 1.4038292490134867
+      },
+      "shin.R": {
+        "old": 0.19235382974147797,
+        "new": 0.27712851762771606,
+        "ratio": 1.4407226411877248
+      },
+      "foot.R": {
+        "old": 0.21000000834465027,
+        "new": 0.20999905467033386,
+        "ratio": 0.9999954586939118
+      },
+      "carrot_socket": {
+        "old": 0.1499999761581421,
+        "new": 0.1679999828338623,
+        "ratio": 1.1200000635782978
+      }
+    }
+  },
+  "leg_parenting": "Thighs attach to root so torso lean preserves standing legs.",
+  "coordinate_system": {
+    "blender_up": "+Z",
+    "blender_front": "-Y",
+    "gltf_up": "+Y",
+    "gltf_front": "+Z",
+    "conversion": "gltf(x,y,z) = blender(x,z,-y)"
+  },
+  "limitations": [
+    "glTF uses linear blend skinning; source preserve-volume dual quaternion deformation is approximated.",
+    "FK knee controls do not implement planted-foot IK."
+  ]
+}

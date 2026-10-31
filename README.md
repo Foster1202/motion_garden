@@ -4,12 +4,18 @@ Motion Garden Rabbit Exercise Game — BME3S02 Service-Learning 專案，沿用�
 
 Carrot Pull 支援單一鏡頭或鍵盤測試。鏡頭模式按預設或手動參數辨識站立、淺屈膝及 tracking 狀態；沒有動作質素評分。「AI 小教練」是專案名稱，這些角度只用作遊戲控制訊號。
 
+## 協作與授權
+
+所有 agent／task 先閱讀並持續更新 [AGENTS.md](AGENTS.md)；完成改動後以簡潔 commit 訊息提交並 push 到 GitHub。軟體採 PolyForm Noncommercial 1.0.0；原創美術及文檔採 CC BY-NC 4.0，見 [授權範圍](LICENSES/README.md)。
+
+目前亦有完整「莓果大豐收」：左右移動、伸腳碰樹、每邊三次；詳見 [遊戲文檔](docs/berry-kick-game.md)。拔蘿蔔的 3D 模式仍是開發預覽，完整流程使用 Sprite。
+
 ## 安裝與啟動
 
 需要 Node.js 22.12 或以上及 npm。
 
 ```sh
-cd game
+cd motion_garden # 克隆後的倉庫目錄；現有課程工作區則使用 game/
 npm ci
 npm run sync:assets
 npm run dev
@@ -24,7 +30,7 @@ npm run build
 npm run preview
 ```
 
-`sync:assets` 同步 Rabbit atlas、Carrot Pull 七張 PNG／metadata，以及 MediaPipe WASM。`sync:mediapipe` 可單獨同步 WASM，並驗證模型 SHA256。Runtime 只讀 public 資產，不讀 model 目錄。
+`sync:assets` 同步 Rabbit atlas、rabbit3d GLB、Berry 圖層、Carrot Pull 七張 PNG／metadata，以及 MediaPipe WASM。`sync:mediapipe` 可單獨同步 WASM，並驗證模型 SHA256。Runtime 只讀 public 資產，不讀 model 目錄。
 
 ## 輸入模式
 
@@ -49,7 +55,7 @@ Camera mode 使用首頁手動設定或預設閾值。不要為了觸發遊戲�
 
 ## 隱私
 
-鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。沒有錄影、影像截圖功能、landmarks history、長期個人檔案、帳戶、後端或資料庫。CalibrationProfile 只保留本頁 runtime 的基準、閾值、範圍及 variability 等數值。只保留當前／平滑處理所需的短期 runtime 資料及 FPS、延遲等數值，debug 不會把 landmark array 寫入 console。
+鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。沒有錄影、影像截圖功能、landmarks history、長期個人檔案、帳戶、後端或資料庫。CalibrationProfile 是保留的相容型別；現行流程套用預設／手動控制範圍，不採集個人校準資料。手動設置會儲存在本機瀏覽器。只保留當前／平滑處理所需的短期 runtime 資料及 FPS、延遲等數值，debug 不會把 landmark array 寫入 console。
 
 離開場景、切換到鍵盤或啟動失敗時停止所有 MediaStream tracks、取消推理 RAF、關閉模型及移除 preview。即使模型 teardown 發生異常也會釋放鏡頭。Pause 保留已授權 stream 供 preview 使用，但停止推理與遊戲輸入；resume 清除舊姿勢，重新確認後才繼續。完成畫面停止推理；重玩會重新選擇輸入。
 
@@ -74,8 +80,8 @@ Camera mode 使用首頁手動設定或預設閾值。不要為了觸發遊戲�
 - Visibility 至少 **0.5**；若 landmark 帶 presence，也要求至少 0.5。官方 JS 類型的 presence 為非必需資料，缺少它不會一律拒絕 pose。
 - 先過濾信心和畫面範圍，再對可靠 hip／knee／ankle 座標做 EMA，**alpha = 0.35**，最後算角度。丟失的一側或 stale frame 不沿用舊平滑值。
 - `calculateAngle(a,b,c)` 使用 hip–knee–ankle 向量內積及 acos，換算度數。先按影像 width／height 修正 normalized x／y 的比例；退化向量不產生角度。
-- **沒有校準 profile 的測試 fallback** 為 ≥165° STANDING、≤145° BENDING。有 profile 時優先使用個人閾值，中間為 TRANSITION，不輸出動作。正式 Camera UI 開鏡頭後套用手動控制範圍，不使用個人校準。
-- 連續滿足 **200ms** 才確認站立／屈膝。無 profile 時雙側平均／單側 fallback；校準後固定所校準的腿側組合。雙側校準要求兩側繼續可見，單側校準只使用該側；所需側消失時暫停輸入，避免不對稱角度混用基準。
+- 舊 classifier 測試保留無範圍 fallback 與固定腿側 profile 的相容邏輯；正式 Camera UI 使用手動控制範圍，沒有校準步驟。
+- 連續滿足 **200ms** 才確認站立／屈膝；追蹤可靠性不足時停止動作輸入。舊校準腿側測試不代表現行使用者流程。
 - 至少有可靠 shoulder／hip 配對，肩在臀上方，軀幹大致直立（臨時容許偏離垂直 35°）。只排除明顯錯誤輸入，不評估 sway、balance 或動作質素。
 - 250ms 以上沒有新有效結果，或必要點信心不足，輸入即為 TRACKING_LOST。立即輸出 false／false，Scene 凍結動作 hold，保留已有進度。恢復後需重新通過 debounce。
 - 持續丟失 **600ms** 顯示「我睇唔清楚你，企返鏡頭中間少少。」；**3000ms** 進入休息畫面，不扣分。

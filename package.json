@@ -34,5 +34,6 @@
   },
   "engines": {
     "node": ">=22.12.0"
-  }
+  },
+  "license": "PolyForm-Noncommercial-1.0.0"
 }
