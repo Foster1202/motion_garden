@@ -52,3 +52,5 @@ venv/
 
 # model/dist is intentionally versioned: sync:assets requires its exports.
 # Existing docs/qa evidence remains versioned; put ad-hoc captures in /tmp.
+
+AGENTS.md
