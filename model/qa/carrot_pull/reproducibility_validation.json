@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "repeatedFullBuildPngSha256Identical": true,
+  "repeatedObjectInventoryIdentical": true,
+  "protectedFileCount": 52,
+  "changedProtectedFiles": [],
+  "pngSha256": {
+    "carrot.png": "b5e3fc1ca180661a51134aff10418a115048bf5324d794b9e3b75674f4009026",
+    "platform.png": "6c527f818ae5a6218d88f72ce3e02171ee0474fa60aa4c06715d499ad6c94012",
+    "background_mid.png": "675df00219749a0a48a73f33e8a7aaf0cc884159476ab6e3916b241488ec1983",
+    "basket.png": "f453797b293d7a83b76455f88c6c7f02355d3f7c83b3c56694fc1c2ccd2f189a",
+    "background_far.png": "a2e210b486f63f54599c5c3fa75ffd8316aa2cf056d2532201bd7424b1bc2d72",
+    "foreground.png": "08dff3ec69fd5dceb3e4e77d890c39f5c0a28400018a86b3f17c55df2a554625",
+    "soil_patch.png": "99a9c3d9fa64482f65bf9f93e36e22d65da0377361f256cb4c31e3279c0988d8"
+  },
+  "singleLayerRenderModifiedOnly": [
+    "carrot.png"
+  ],
+  "singleLayerCarrotRenderPassed": true
+}

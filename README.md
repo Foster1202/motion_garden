@@ -1,0 +1,145 @@
+# 動態花園：阿兔 AI 小教練
+
+Motion Garden Rabbit Exercise Game — BME3S02 Service-Learning 專案，沿用既有3D兔子／mocap整合，目前使用 **直接開始與手動設置**。
+
+Carrot Pull 支援單一鏡頭或鍵盤測試。鏡頭模式按預設或手動參數辨識站立、淺屈膝及 tracking 狀態；沒有動作質素評分。「AI 小教練」是專案名稱，這些角度只用作遊戲控制訊號。
+
+## 安裝與啟動
+
+需要 Node.js 22.12 或以上及 npm。
+
+```sh
+cd game
+npm ci
+npm run sync:assets
+npm run dev
+```
+
+預設網址 `http://127.0.0.1:5173/`。dev launcher 透過暫存 symlink 處理上層路徑中的冒號，不改動原始檔位置或放寬 Vite 檔案存取限制。若 npm 共用快取無寫入權限，使用 `npm ci --cache /tmp/motion-garden-npm-cache`。
+
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run preview
+```
+
+`sync:assets` 同步 Rabbit atlas、Carrot Pull 七張 PNG／metadata，以及 MediaPipe WASM。`sync:mediapipe` 可單獨同步 WASM，並驗證模型 SHA256。Runtime 只讀 public 資產，不讀 model 目錄。
+
+## 輸入模式
+
+首頁「開始遊戲」→「拔蘿蔔」→ 選擇模式 → 兩種模式均直接開始 → 完成五棵蘿蔔 → 重玩或返回主頁。
+
+- **體感模式**：按「開啟鏡頭」才申請 camera permission。讓鏡頭看到肩、臀、膝和腳踝，辨識到姿勢後即可開始。UI 提供簡短 tracking 提示。
+- **鍵盤測試**：按「使用鍵盤測試」。不申請鏡頭，不初始化 MediaPipe。`↓`／`S` 屈膝，放開後按 `↑`／`W` 站立。
+- 「切換輸入模式」重新顯示選擇 panel；離開鏡頭模式立即停止其 stream 和推理，再按「開啟鏡頭」才會重新申請。
+- `Esc`／「暫停」開啟休息畫面；「繼續」、重新開始或返回主頁均保留。
+
+原有 bend hold **650ms**、stand hold **500ms** 不變，姿勢分類另有 200ms 穩定確認。按一下或一幀姿勢不會得分。Pull → Celebrate 完整播完才加一分，五棵後完成；沒有倒數、深蹲獎勵或慢動作扣分。
+
+Camera mode 使用首頁手動設定或預設閾值。不要為了觸發遊戲而蹲得更深；若未能舒服地完成設定，可重試或直接用鍵盤。
+
+## 瀏覽器與權限
+
+鏡頭需要 **HTTPS 或 localhost** secure context，以及 `navigator.mediaDevices.getUserMedia`。目前 QA 使用 macOS Chrome；Safari、Firefox、實體 Raspberry Pi 及真人 webcam 流程仍需各自驗證。非 localhost 的純 HTTP LAN 網址不能假定可用鏡頭。
+
+只有 video 權限，`audio:false`，不申請麥克風。前置鏡頭理想輸入 **640×360**，不要求 exact resolution；實際尺寸由裝置決定。權限拒絕、沒有相機、相機忙碌、不安全環境、瀏覽器不支援及模型失敗均顯示香港繁體中文提示並保留鍵盤選項。可在瀏覽器網站權限設定重新允許鏡頭後重試。
+
+開始時的安全提示為「請保持地面清爽，旁邊最好有穩固椅子。」
+
+## 隱私
+
+鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。沒有錄影、影像截圖功能、landmarks history、長期個人檔案、帳戶、後端或資料庫。CalibrationProfile 只保留本頁 runtime 的基準、閾值、範圍及 variability 等數值。只保留當前／平滑處理所需的短期 runtime 資料及 FPS、延遲等數值，debug 不會把 landmark array 寫入 console。
+
+離開場景、切換到鍵盤或啟動失敗時停止所有 MediaStream tracks、取消推理 RAF、關閉模型及移除 preview。即使模型 teardown 發生異常也會釋放鏡頭。Pause 保留已授權 stream 供 preview 使用，但停止推理與遊戲輸入；resume 清除舊姿勢，重新確認後才繼續。完成畫面停止推理；重玩會重新選擇輸入。
+
+## MediaPipe 與模型
+
+使用官方 **`@mediapipe/tasks-vision@1.0.1`**，固定版本與 package-lock。`FilesetResolver`／`PoseLandmarker` 在選擇鏡頭時才 lazy import。
+
+- `runningMode: VIDEO`，`numPoses: 1`，CPU delegate。
+- Detection／presence／tracking confidence 均為 **0.55**，不輸出 segmentation mask。
+- 官方 **Pose Landmarker Lite float16 v1**：`public/mediapipe/models/pose_landmarker_lite.task`。
+- Package WASM 位於 `public/mediapipe/wasm/`，依 BASE_URL 載入；runtime 不使用 CDN 或外部模型網址。
+- 模型來源：[Google 官方模型](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task)。SHA256：`59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`。
+- API 實作依據：[Google 官方 Web guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/web_js)。
+
+推理在獨立 requestAnimationFrame loop 中，最高 **25 FPS**，只處理新 video frame。主執行緒的同步模型呼叫會佔用時間；慢裝置自然會降低實際 inference FPS，不降低 Phaser 的 1600×900 logical resolution。Preview 與 debug 顯示實際 Pose FPS、單幀／平均 inference ms；實際真人性能須另測。
+
+## 姿勢訊號
+
+`PoseCamera → PoseEstimator → PoseClassifier（信心過濾／PoseSmoother／角度／debounce）→ MediapipeMotionInput → MotionInput → CarrotRound`。
+
+- 使用左右 shoulder、hip、knee、ankle。
+- Visibility 至少 **0.5**；若 landmark 帶 presence，也要求至少 0.5。官方 JS 類型的 presence 為非必需資料，缺少它不會一律拒絕 pose。
+- 先過濾信心和畫面範圍，再對可靠 hip／knee／ankle 座標做 EMA，**alpha = 0.35**，最後算角度。丟失的一側或 stale frame 不沿用舊平滑值。
+- `calculateAngle(a,b,c)` 使用 hip–knee–ankle 向量內積及 acos，換算度數。先按影像 width／height 修正 normalized x／y 的比例；退化向量不產生角度。
+- **沒有校準 profile 的測試 fallback** 為 ≥165° STANDING、≤145° BENDING。有 profile 時優先使用個人閾值，中間為 TRANSITION，不輸出動作。正式 Camera UI 開鏡頭後套用手動控制範圍，不使用個人校準。
+- 連續滿足 **200ms** 才確認站立／屈膝。無 profile 時雙側平均／單側 fallback；校準後固定所校準的腿側組合。雙側校準要求兩側繼續可見，單側校準只使用該側；所需側消失時暫停輸入，避免不對稱角度混用基準。
+- 至少有可靠 shoulder／hip 配對，肩在臀上方，軀幹大致直立（臨時容許偏離垂直 35°）。只排除明顯錯誤輸入，不評估 sway、balance 或動作質素。
+- 250ms 以上沒有新有效結果，或必要點信心不足，輸入即為 TRACKING_LOST。立即輸出 false／false，Scene 凍結動作 hold，保留已有進度。恢復後需重新通過 debounce。
+- 持續丟失 **600ms** 顯示「我睇唔清楚你，企返鏡頭中間少少。」；**3000ms** 進入休息畫面，不扣分。
+
+獨立 pose states：UNKNOWN、STANDING、TRANSITION、BENDING、TRACKING_LOST。遊戲狀態機保持：
+
+```text
+READY → BENDING → GRABBED → RETURNING → SUCCESS → NEXT_ROUND → READY
+                                                   └─ 第五棵 → COMPLETE
+```
+
+Preview 用 CSS 鏡像；骨架 canvas 亦作相同 visual mirror。模型讀取原始 video，**沒有對 landmark x 做鏡像轉換**，所有角度使用原座標。
+
+## 手動設置與直接開始
+
+已移除遊戲中的個人 Calibration 流程。首頁「設置」可修改站立／屈膝觸發角度、兩種保持時間、姿勢 EMA、確認時間、可信度門檻、3D 動作增益、平滑及兔子大小。預設站立 ≥160°、屈膝 ≤150°，中間不輸出動作；保持650／500ms，確認200ms。這是可調整的遊戲控制預設，真人辨識效果仍取決於鏡頭角度和可見度。
+
+開啟鏡頭並取得可靠姿勢後直接遊戲，不採集個人站立／屈膝基準。屈膝角度調大會更容易觸發，但必須比站立值低至少3°。不必為觸發而深蹲；可以先提高屈膝閾值或縮短保持時間。儲存後下次開始遊戲套用；取消不修改，恢復預設仍需儲存。數字設定保存在此瀏覽器 localStorage，沒有任何影像、landmark 或人體測量資料。
+
+現有即時3D／mocap骨骼、追蹤丟失處理和sprite fallback沿用。3D身體／手臂相對映射仍會自動建立短暫自然站立參考（無屈膝步驟、無設定面板，不阻擋遊戲），如位置大幅改變可用原有重設參考功能。手動控制範圍同時提供3D膝部映射，不依賴個人校準結果。舊 calibration 純函式及測試暫留供相容性回歸，已不接入遊戲UI。
+
+## 開發 Preview／Debug
+
+Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏。Skeleton 和數值 debug 預設關閉：`DEV_POSE_DEBUG = false`、`DEV_POSE_PREVIEW = true` 在 `PoseDebugOverlay.ts`。
+
+如要顯示 skeleton、左右／融合膝角、PoseState、信心、inference ms、FPS，以及 standing／bend baselines、兩個個人閾值和 range，在 `.env.local` 加入以下設定後重新啟動 dev server：
+
+```dotenv
+VITE_POSE_DEBUG=true
+# Optional: hide keyboard test hints
+VITE_SHOW_KEYBOARD_HINTS=false
+```
+
+Debug 只在 DEV 啟用，只畫軀幹及雙腿，不保存影像或 landmarks。沒有開發快捷鍵；模式切換由明確 UI 按鈕處理。
+
+## 主要檔案
+
+```text
+src/game/input/
+  MotionInput.ts                 # Shared sample, status and lifecycle interface
+  KeyboardMotionInput.ts         # Preserved Arrow/W/S adapter
+  MediapipeMotionInput.ts         # Pose-to-input adapter and runtime ownership
+  MotionInputController.ts       # Explicit setup, switching and failure fallback
+src/game/vision/
+  PoseCamera.ts                  # Permission, video and stream lifecycle
+  PoseEstimator.ts               # Local model, throttled inference, telemetry
+  poseTypes.ts / poseConfig.ts    # Runtime types and temporary constants
+  poseMath.ts                    # Aspect-correct knee angle and basic torso gate
+  PoseSmoother.ts                 # EMA of current reliable landmarks
+  PoseClassifier.ts              # Confidence, states, debounce, stale/loss handling
+  PoseDebugOverlay.ts            # Mirrored preview and pose/calibration metrics
+src/game/calibration/
+  calibrationTypes.ts            # Session-only profile and state types
+  calibrationConfig.ts           # Temporary sampling/validation constants
+  calibrationMath.ts             # Median, IQR, interpolation, validation
+  CalibrationController.ts       # Sampling, loss, retry and profile lifecycle
+  CalibrationPanel.ts            # Gentle instructions, progress and confirmation
+src/game/scenes/CarrotPullScene.ts # Generic MotionInput only; no pose math
+```
+
+Task 2E 的集中 asset keys、同 transform 四層背景、depth、正式 Carrot origin、basket drop target、HUD panels，以及 Rabbit rig／spritesheets／attachment tracker 均沿用。`CarrotRound` 沒有修改。
+
+## 驗證與界線
+
+`npm run typecheck`、`npm test`、`npm run build` 驗證程式和既有3D回歸。舊Calibration純函式測試仍保留，但遊戲不再使用其流程。手動參數另測數值範圍、欄位白名單、儲存、預設 fallback，以及無校準控制範圍接入classifier／mocap。
+
+瀏覽器以合成攝像頭及生成姿勢測試「首頁設置 → 儲存 → 刷新保留 → 開鏡頭直接開始 → 手動閾值拔一棵」，並檢查桌面／手機設定畫面；不代表真人辨識驗收。真人webcam和不同機位仍需實測；不用錄影或保存landmarks。

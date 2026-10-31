@@ -1,0 +1,382 @@
+{
+  "status": "PASS",
+  "blender_version": "5.2.1 LTS",
+  "saved_blend_reopened": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/blender/rabbit/rabbit_rigged.blend",
+  "base_sha256": "7bbaa295ebd941fcac526692540872039b1aec453616efa771114c32502a0b34",
+  "bone_count": 19,
+  "bone_hierarchy": {
+    "root": null,
+    "body": "root",
+    "head": "body",
+    "ear.L": "head",
+    "ear.R": "head",
+    "upper_arm.L": "body",
+    "forearm.L": "upper_arm.L",
+    "hand.L": "forearm.L",
+    "thigh.L": "body",
+    "shin.L": "thigh.L",
+    "foot.L": "shin.L",
+    "upper_arm.R": "body",
+    "forearm.R": "upper_arm.R",
+    "hand.R": "forearm.R",
+    "thigh.R": "body",
+    "shin.R": "thigh.R",
+    "foot.R": "shin.R",
+    "tail": "body",
+    "carrot_socket": "root"
+  },
+  "bindings": {
+    "bone_parent": {
+      "Rabbit_Body": "body",
+      "Rabbit_Head": "head",
+      "Rabbit_Ear_L": "ear.L",
+      "Rabbit_Ear_R": "ear.R",
+      "Rabbit_Tail": "tail"
+    },
+    "armature_modifier": {
+      "Rabbit_Arm_L": [
+        "upper_arm.L",
+        "forearm.L",
+        "hand.L"
+      ],
+      "Rabbit_Leg_L": [
+        "thigh.L",
+        "shin.L",
+        "foot.L"
+      ],
+      "Rabbit_Arm_R": [
+        "upper_arm.R",
+        "forearm.R",
+        "hand.R"
+      ],
+      "Rabbit_Leg_R": [
+        "thigh.R",
+        "shin.R",
+        "foot.R"
+      ]
+    },
+    "inherited_parent": {
+      "Rabbit_InnerEar_L": "Rabbit_Ear_L",
+      "Rabbit_Eye_L": "Rabbit_Head",
+      "Rabbit_EyeHighlight_L": "Rabbit_Eye_L",
+      "Rabbit_Cheek_L": "Rabbit_Head",
+      "Rabbit_InnerEar_R": "Rabbit_Ear_R",
+      "Rabbit_Eye_R": "Rabbit_Head",
+      "Rabbit_EyeHighlight_R": "Rabbit_Eye_R",
+      "Rabbit_Cheek_R": "Rabbit_Head",
+      "Rabbit_Nose": "Rabbit_Head",
+      "Rabbit_Mouth_Stem": "Rabbit_Head",
+      "Rabbit_Mouth_L": "Rabbit_Head",
+      "Rabbit_Mouth_R": "Rabbit_Head"
+    }
+  },
+  "rest_geometry_max_error": 5.16124388555103e-07,
+  "materials_unchanged": true,
+  "base_topology_unchanged": true,
+  "camera_unchanged": true,
+  "camera": {
+    "name": "Camera_Front_Orthographic",
+    "matrix_world": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -1.6292068494294654e-07,
+        -1.0,
+        -8.0
+      ],
+      [
+        0.0,
+        1.0,
+        -1.6292068494294654e-07,
+        1.8049999475479126
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "type": "ORTHO",
+    "ortho_scale": 4.199999809265137,
+    "lens": 70.0,
+    "engine": "BLENDER_EEVEE",
+    "resolution": [
+      1024,
+      1024,
+      100
+    ],
+    "color_mode": "RGBA",
+    "film_transparent": true,
+    "view_transform": "AgX",
+    "exposure": 0.6499999761581421
+  },
+  "fps": 24,
+  "actions": {
+    "Rabbit_Idle": {
+      "range": [
+        1,
+        48
+      ],
+      "frames_evaluated": 48,
+      "fcurve_count": 190,
+      "keyframe_count": 9120,
+      "sole_max_drift": 2.725251340574531e-07,
+      "maximum_vertex_movement_from_first_frame": 0.03800799840934732,
+      "feet_and_geometry_minimum_z": 0.004381443089057968,
+      "socket_max_midpoint_error": 1.372334704689137e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.2952963813363251,
+          0.0712809794888814
+        ],
+        "maximum": [
+          0.7047036186636954,
+          0.9306362892808769
+        ]
+      }
+    },
+    "Rabbit_Bend": {
+      "range": [
+        1,
+        16
+      ],
+      "frames_evaluated": 16,
+      "fcurve_count": 190,
+      "keyframe_count": 3040,
+      "sole_max_drift": 2.6798527563266264e-07,
+      "maximum_vertex_movement_from_first_frame": 0.2827005699383793,
+      "feet_and_geometry_minimum_z": 0.004381443089057302,
+      "socket_max_midpoint_error": 1.7947240874835705e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.29487799023052147,
+          0.0712809794888811
+        ],
+        "maximum": [
+          0.7051220026736875,
+          0.9283262261256875
+        ]
+      }
+    },
+    "Rabbit_Grab": {
+      "range": [
+        1,
+        16
+      ],
+      "frames_evaluated": 16,
+      "fcurve_count": 190,
+      "keyframe_count": 3040,
+      "sole_max_drift": 2.714360223546496e-07,
+      "maximum_vertex_movement_from_first_frame": 0.5989535614655225,
+      "feet_and_geometry_minimum_z": 0.0043814430890550815,
+      "socket_max_midpoint_error": 2.4586915969848633e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.29487799023052147,
+          0.0712809794888814
+        ],
+        "maximum": [
+          0.7051220026736875,
+          0.9049785950782262
+        ]
+      }
+    },
+    "Rabbit_Return": {
+      "range": [
+        1,
+        16
+      ],
+      "frames_evaluated": 16,
+      "fcurve_count": 190,
+      "keyframe_count": 3040,
+      "sole_max_drift": 2.714360223546496e-07,
+      "maximum_vertex_movement_from_first_frame": 0.22910314593224043,
+      "feet_and_geometry_minimum_z": 0.004381443089057302,
+      "socket_max_midpoint_error": 2.457562461863554e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.29610867325150986,
+          0.0712809794888814
+        ],
+        "maximum": [
+          0.7038913267484901,
+          0.924954259379985
+        ]
+      }
+    },
+    "Rabbit_Pull": {
+      "range": [
+        1,
+        20
+      ],
+      "frames_evaluated": 20,
+      "fcurve_count": 190,
+      "keyframe_count": 3800,
+      "sole_max_drift": 2.249181794404737e-07,
+      "maximum_vertex_movement_from_first_frame": 0.2742311214312119,
+      "feet_and_geometry_minimum_z": 0.004381443089057968,
+      "socket_max_midpoint_error": 2.457562461863554e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.29610867325150986,
+          0.0712809794888814
+        ],
+        "maximum": [
+          0.7038913267484901,
+          0.9269695116121348
+        ]
+      }
+    },
+    "Rabbit_Celebrate": {
+      "range": [
+        1,
+        32
+      ],
+      "frames_evaluated": 32,
+      "fcurve_count": 190,
+      "keyframe_count": 6080,
+      "sole_max_drift": 2.725251340574531e-07,
+      "maximum_vertex_movement_from_first_frame": 1.0035669993607668,
+      "feet_and_geometry_minimum_z": 0.004381443089057968,
+      "socket_max_midpoint_error": 2.4620758953479386e-07,
+      "camera_normalized_bounds": {
+        "minimum": [
+          0.2723903785519611,
+          0.0712809794888814
+        ],
+        "maximum": [
+          0.7276096143522479,
+          0.9317586552371867
+        ]
+      }
+    }
+  },
+  "evaluated_animation_frames": 148,
+  "maximum_sole_drift": 2.725251340574531e-07,
+  "sole_drift_tolerance": 0.005,
+  "maximum_socket_midpoint_error": 2.4620758953479386e-07,
+  "transition_max_vertex_errors": {
+    "Rabbit_Idle:48 -> Rabbit_Bend:1": 0.0,
+    "Rabbit_Bend:16 -> Rabbit_Grab:1": 0.0,
+    "Rabbit_Grab:16 -> Rabbit_Return:1": 0.0,
+    "Rabbit_Return:16 -> Rabbit_Pull:1": 0.0,
+    "Rabbit_Pull:20 -> Rabbit_Celebrate:1": 0.0,
+    "Rabbit_Celebrate:32 -> Rabbit_Idle:1": 0.0,
+    "Rabbit_Idle:1 -> Rabbit_Idle:48": 0.0
+  },
+  "transition_tolerance": 0.0001,
+  "previews": {
+    "Rabbit_Idle": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_idle_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.76971435546875,
+      "silhouette_bounds_pixels_bottom_origin": [
+        303,
+        72,
+        722,
+        952
+      ],
+      "sha256": "0a22a9bdc0cfdc43a59dadf5a09757c0dc16d3b4fc98efb60dd715323fc7fa14"
+    },
+    "Rabbit_Bend": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_bend_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.7730598449707031,
+      "silhouette_bounds_pixels_bottom_origin": [
+        301,
+        72,
+        722,
+        927
+      ],
+      "sha256": "a7043c0599684d8d163d26934b53847e36fc61b321afabc6f4aa5589fa7546c9"
+    },
+    "Rabbit_Grab": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_grab_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.7864065170288086,
+      "silhouette_bounds_pixels_bottom_origin": [
+        302,
+        72,
+        721,
+        925
+      ],
+      "sha256": "0aa988a5c4542904cf6d904a2b579b9df02bde792c22ef764162e54f8559c85b"
+    },
+    "Rabbit_Return": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_return_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.7826642990112305,
+      "silhouette_bounds_pixels_bottom_origin": [
+        302,
+        72,
+        721,
+        947
+      ],
+      "sha256": "a7dac0b09eda6c771a830380ccbabbe7bb782603f456fbfde2fd76a891d62648"
+    },
+    "Rabbit_Pull": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_pull_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.7838459014892578,
+      "silhouette_bounds_pixels_bottom_origin": [
+        302,
+        72,
+        721,
+        949
+      ],
+      "sha256": "d7b3919e9aa5a3ba7b85ca8cc481a351eb7763fbda9dd3e3ef9ef64f2cf6edba"
+    },
+    "Rabbit_Celebrate": {
+      "path": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/rendered/rabbit/animation_previews/rabbit_celebrate_preview.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "channels": 4,
+      "all_border_pixels_transparent": true,
+      "transparent_fraction": 0.7689027786254883,
+      "silhouette_bounds_pixels_bottom_origin": [
+        280,
+        72,
+        743,
+        954
+      ],
+      "sha256": "60e97d533063119b2d30f4b664a83cdc29d3c721d2f055616e4d8447c48b4d75"
+    }
+  },
+  "previews_checked": true,
+  "limitations": [
+    "Vertex and binding checks do not replace visual review of self-intersection or silhouette."
+  ]
+}

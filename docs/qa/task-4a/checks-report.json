@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "unitTests": {
+    "total": 102,
+    "pass": 102,
+    "fail": 0,
+    "realGLBRigTests": 8
+  },
+  "typecheck": "PASS",
+  "productionBuild": "PASS",
+  "browserChecks": 15,
+  "productionBrowserChecks": 4,
+  "sourceBlendsUnchanged": true,
+  "glbBytes": 967988,
+  "threeVersion": "0.186.1",
+  "fpsDuringResizeQA": [
+    60.00275422478412,
+    59.99700014999248,
+    53.11666978153312,
+    52.132514951211824,
+    59.01852197948124
+  ]
+}

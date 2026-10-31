@@ -1,0 +1,1635 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "requestedAction": "all",
+  "availableActions": [
+    "idle",
+    "bend",
+    "grab",
+    "return",
+    "pull",
+    "celebrate"
+  ],
+  "rebuiltActions": [
+    "idle",
+    "bend",
+    "grab",
+    "return",
+    "pull",
+    "celebrate"
+  ],
+  "completeSixActionSet": true,
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "frameSize": {
+    "w": 512,
+    "h": 512
+  },
+  "alphaMode": "straight",
+  "packing": "Untrimmed, unrotated, no resizing, direct RGBA paste without a mask",
+  "timing": "Uniform 1000/frameRate milliseconds per frame; no temporal resampling during packing",
+  "baseline": {
+    "alphaThreshold": 16,
+    "minimumBottomPixel": 475,
+    "maximumBottomPixel": 475,
+    "spreadPixels": 0,
+    "tolerancePixels": 1,
+    "passed": true
+  },
+  "actions": {
+    "idle": {
+      "manifest": "assets/rendered/rabbit/frames/idle/manifest.json",
+      "manifestSha256": "0aca24662a4dc1dacce2c4da934443686352bba109e1ceb2f1bb86d266c6e9c2",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_idle_000.png",
+          "sourceFrame": 1,
+          "sha256": "38449f073e185409f324a99ca495eb1e8eb271aafe8b95e0d60531c06905e3df",
+          "rgbaSha256": "b9a42650b90b380c5a9963902e7bda621e7b87176af0079d1a295f146e13a171",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_idle_001.png",
+          "sourceFrame": 5,
+          "sha256": "2b85905f4a2803923e08968f93b00c284201573b312dc2ce2bb400626b5a71d6",
+          "rgbaSha256": "817efa4e99537aa2f1a1760ecb264c8035f4b93b2f5efbe280104e5643d274ab",
+          "alphaBounds": [
+            151,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_idle_002.png",
+          "sourceFrame": 10,
+          "sha256": "a251c807c551fab305a42c7a556e56fd027586902106a50c909d6caa015cce48",
+          "rgbaSha256": "4225f7968afc26ef112e3dabf3bc46669ef01cc62438625bf513d55377be72fa",
+          "alphaBounds": [
+            151,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_idle_003.png",
+          "sourceFrame": 13,
+          "sha256": "37cf38cf616aeb11eda35de3ddf1f6aaa9da2a4cf002cea061d9e8db7b65d37d",
+          "rgbaSha256": "72c74b07b29604a5c75810ba5c31347bf08897a7290896bc1fea302573588bc5",
+          "alphaBounds": [
+            151,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_idle_004.png",
+          "sourceFrame": 18,
+          "sha256": "9cd0ffe819ad3c9e000073f006cf789d106dc2ab40095e1e27028b93ffccabb7",
+          "rgbaSha256": "089fba84f7c60ecd5e0f886e781e42205f914c292abc9902844af97089ae20e0",
+          "alphaBounds": [
+            151,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_idle_005.png",
+          "sourceFrame": 22,
+          "sha256": "31337e270f295b727a34ffa6a56bf63a61fdd7785dc4f6cc106011933a0aed23",
+          "rgbaSha256": "438cd0dabae6b1ac559eb1d3ccf3e80270f95256e38442f2633398b8b2962df5",
+          "alphaBounds": [
+            151,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_idle_006.png",
+          "sourceFrame": 25,
+          "sha256": "c637b29d4a103ce7ae1a21fbb0cb3424cae1aef37db6decc2dc7222f7ab63625",
+          "rgbaSha256": "a7e1d8abda3b4430f990f23d34ad3d37520ad1e88f61d86f02cf1fa764efcb31",
+          "alphaBounds": [
+            150,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_idle_007.png",
+          "sourceFrame": 31,
+          "sha256": "d30ea2c81ff0a42b84827621221aadb1128a438b56b24b4628a2b6a97757ac44",
+          "rgbaSha256": "67aaf8f69271647137dba304b994acd3cc20455fcbde4aa1749833b2e9e05c08",
+          "alphaBounds": [
+            150,
+            34,
+            361,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 8,
+          "name": "rabbit_idle_008.png",
+          "sourceFrame": 36,
+          "sha256": "01ce037a0121728fad16d3f4327f72024286fab22ab9446cc9dc8f7a698e8ee5",
+          "rgbaSha256": "5161d47b1233de9045df07f3dc923f1da11dd0e41aba75afd824b609200acf46",
+          "alphaBounds": [
+            150,
+            35,
+            361,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 9,
+          "name": "rabbit_idle_009.png",
+          "sourceFrame": 39,
+          "sha256": "31fb6cb2a56536aea79c60dcd75ac9ff7b09b31ec76de439cd385148e408628d",
+          "rgbaSha256": "c520205b918580db569b44df2ab269b4ecfd4912bd0aa2270432d7d1dcba34bb",
+          "alphaBounds": [
+            150,
+            35,
+            361,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 10,
+          "name": "rabbit_idle_010.png",
+          "sourceFrame": 44,
+          "sha256": "eca7be35d16f9ab9276e61cf9c4ab471930396369b2e8a38ecbbf738fc38af59",
+          "rgbaSha256": "13c525c22b880ef22d999b083d56f8c29c90a25e0de3e0806bb7e8a4c653b493",
+          "alphaBounds": [
+            150,
+            35,
+            361,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 11,
+          "name": "rabbit_idle_011.png",
+          "sourceFrame": 48,
+          "sha256": "dd2943a6e5ea805c74abab4fc2f0374d5bbf267cab7344a91c016275a5484070",
+          "rgbaSha256": "063280ca59935b9d19d155f52ee05e764d83f78fffb81cb1bb1d87605bc09c8c",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_idle.png",
+        "atlas": "dist/rabbit/rabbit_idle.json",
+        "imageSha256": "b362abd4910dc5527124ff80c4dd73de8e634606de999e8bfef2e6bf4ebf94b6",
+        "atlasSha256": "9eec48804aa7e6e81686cf283a84fcb5ecdd5ed14cdc35a15a1f1e6955352904",
+        "size": {
+          "w": 2048,
+          "h": 1536
+        },
+        "frameCount": 12,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_idle_preview.gif",
+        "gifSha256": "37eb1528234b1f8e57f6789ec3597c88bdc05035a5c8a7553db32651e81ea2b2",
+        "gifFrameDurationsMs": [
+          170,
+          160,
+          170,
+          170,
+          160,
+          170,
+          170,
+          160,
+          170,
+          170,
+          160,
+          170
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_idle_contact_sheet.png",
+        "contactSheetSha256": "5f52c5af787644b3f1c257604c11e041fd5308152754777a9ff7bfadc752e567",
+        "edgeComposites": "qa/rabbit/rabbit_idle_edges.png",
+        "edgeCompositesSha256": "50c75448bb85c39d122cc8728b1df42a4ae6e061e07f270731b256c1335b3737",
+        "edgeFrameIndexes": [
+          0,
+          6,
+          11
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    },
+    "bend": {
+      "manifest": "assets/rendered/rabbit/frames/bend/manifest.json",
+      "manifestSha256": "4fd00cb05cbbb8877529424aa26bc0ac3d576d2d536c6955d374d908dfff0f3d",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_bend_000.png",
+          "sourceFrame": 1,
+          "sha256": "dd2943a6e5ea805c74abab4fc2f0374d5bbf267cab7344a91c016275a5484070",
+          "rgbaSha256": "063280ca59935b9d19d155f52ee05e764d83f78fffb81cb1bb1d87605bc09c8c",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_bend_001.png",
+          "sourceFrame": 3,
+          "sha256": "a25b7716f0c417ad5ec1a54e49a145c466c60de19fbe5d78377259bd319fc3b7",
+          "rgbaSha256": "2da8282940f6130844012e312c3c9620a260d08387d81aeb813b078b2716099b",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_bend_002.png",
+          "sourceFrame": 5,
+          "sha256": "780204b5de83213b2f63362ea9355a90a5df2acee2dbd7e19498c2adf62fcebe",
+          "rgbaSha256": "e3c0f051151a1caef704bc0da47332dd49f65accecb9f8d670b101415a1c55eb",
+          "alphaBounds": [
+            150,
+            38,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_bend_003.png",
+          "sourceFrame": 7,
+          "sha256": "9fc4c7292b3c284d0a02245d843fdf51bebdb7c95ed8ebfe2298bd2931a3afae",
+          "rgbaSha256": "ba6fd9cc4cbfc98ecce8b5f409e729f37b9ab6dfdb55d63740ee805f6878e7db",
+          "alphaBounds": [
+            150,
+            40,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            40,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_bend_004.png",
+          "sourceFrame": 10,
+          "sha256": "b8ecfd95f676fb21bcffda1599ca27df18c921bf2e92e7a58aa5ddc67033d45b",
+          "rgbaSha256": "0a103e5414531e3f49764db34e22c86cdf3dc0206d5be4c25c58d0b729f9b13f",
+          "alphaBounds": [
+            150,
+            43,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            44,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_bend_005.png",
+          "sourceFrame": 12,
+          "sha256": "d953b81a334316ee51aff635d3a16bed7ade3d61f85c510feba9654750e3e585",
+          "rgbaSha256": "072b6f5a0a357ae3d4037774f972f890501907f6fb371375e21c18417b6f9fe9",
+          "alphaBounds": [
+            150,
+            45,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            46,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_bend_006.png",
+          "sourceFrame": 14,
+          "sha256": "052908faafce05700a6dc6165f0da6601214497616e1ffb9deec239bbc2f4140",
+          "rgbaSha256": "2843eb22d8b2fe76e2500c5b9ba4e3d4609bc1f5decd3be41a243a41a4ecc3b1",
+          "alphaBounds": [
+            150,
+            47,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            150,
+            48,
+            362,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_bend_007.png",
+          "sourceFrame": 16,
+          "sha256": "55ff91c2d4566f5e63b8ab47234e01c5bc1774eaa39f06292bd9c9cdf36a2646",
+          "rgbaSha256": "a5ef8ef6479d3015a1bbd4832aa554361d80a851c2beff6b7ce01497db514927",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            150,
+            48,
+            362,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_bend.png",
+        "atlas": "dist/rabbit/rabbit_bend.json",
+        "imageSha256": "f459d326f412e974576a4a743a54a7e9058b7480f3dbef1404aa59c6ad0e5330",
+        "atlasSha256": "d2d859cc40a7e96389522bab6f9936d33ece1210cf511a49034c60b19575745f",
+        "size": {
+          "w": 1536,
+          "h": 1536
+        },
+        "frameCount": 8,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_bend_preview.gif",
+        "gifSha256": "41cfbd28f9e5dd174d644f8a5f803c4b03b906bb8c5c46d44cf4113f8cd44cf4",
+        "gifFrameDurationsMs": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_bend_contact_sheet.png",
+        "contactSheetSha256": "332be80f29f6086e501d07b86cf06fa36aecccc100b37c06118c0a51c9883858",
+        "edgeComposites": "qa/rabbit/rabbit_bend_edges.png",
+        "edgeCompositesSha256": "5f9c88d47cd3cc5cbb6c8b3edbfd42b4cf18be900821d26bdc1f4a46588120e8",
+        "edgeFrameIndexes": [
+          0,
+          4,
+          7
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    },
+    "grab": {
+      "manifest": "assets/rendered/rabbit/frames/grab/manifest.json",
+      "manifestSha256": "388a269be5902c6953115b775fd1e45e29ddeab0f7c185e0ba16b8dce506ebff",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_grab_000.png",
+          "sourceFrame": 1,
+          "sha256": "55ff91c2d4566f5e63b8ab47234e01c5bc1774eaa39f06292bd9c9cdf36a2646",
+          "rgbaSha256": "a5ef8ef6479d3015a1bbd4832aa554361d80a851c2beff6b7ce01497db514927",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            150,
+            48,
+            362,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_grab_001.png",
+          "sourceFrame": 3,
+          "sha256": "5790b3d9955599c36a74d10dd3fe52fce276a0f48fec22056f887d5a0a57d1f2",
+          "rgbaSha256": "a1db267a4e7af285f210193682f10a16ee3bedd0cc94a319405661a91c50651a",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            48,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_grab_002.png",
+          "sourceFrame": 5,
+          "sha256": "8def14ef86d00dc77aa26eca8ec406073225fa38e0510b605d784305696d99c7",
+          "rgbaSha256": "a49ffdabd35ef8d2c37409e696d65cf140d6c398c63716f738603898d2c15d3a",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            48,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_grab_003.png",
+          "sourceFrame": 7,
+          "sha256": "c94cee730d51567baea6b4c9a40466fea4fb9bbc6b3cc818571a12c66cd6e9cf",
+          "rgbaSha256": "9ff3b2e04de2aa86eec7e659f12d651b42a0d74fcf95c81f2a5d3d62ca6544ed",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            48,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_grab_004.png",
+          "sourceFrame": 10,
+          "sha256": "318547760dd8c0b35edd1f7afe2105b2c45e86ef2db2bc46ace08477ee2ed28d",
+          "rgbaSha256": "3ba97be884d2df47245f57cce485cab9461a321fb116992bc02a65b5386ba426",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            49,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_grab_005.png",
+          "sourceFrame": 12,
+          "sha256": "fb6ef39af6231593bc75800b083f0786b2c0ba012167aecb9662a6eb23d65ac6",
+          "rgbaSha256": "df306c58333de6dba780b0bae1bb2191c100314c60124265e6944d3e403f0333",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            49,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_grab_006.png",
+          "sourceFrame": 14,
+          "sha256": "79cd27f867bc533494e7548101102d896bfa0941833905d28aa6a056cead8e29",
+          "rgbaSha256": "8a4bd40cb29e51fd207491d3f2bcb113b72ed8f365aec402c239636ee7da3269",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            49,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_grab_007.png",
+          "sourceFrame": 16,
+          "sha256": "c0a98f4a5e03a36ed16c23bf527b4d483810d4556d5e86e7e4abbd3fb2eb1efe",
+          "rgbaSha256": "e477ebac6214bc5636c5979ee228145f4e19be59414a3086ac346913849d00c7",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            49,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_grab.png",
+        "atlas": "dist/rabbit/rabbit_grab.json",
+        "imageSha256": "c1696211a5a31bc82a18a31959b626876adc19a6e6d81d606f70f872fb944a40",
+        "atlasSha256": "612f4b134e108f05ec0cbccb4ca19f8278889524504f656f03db39dc010d270c",
+        "size": {
+          "w": 1536,
+          "h": 1536
+        },
+        "frameCount": 8,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_grab_preview.gif",
+        "gifSha256": "7202edd92c174215311c2b4b1b6ba7c95639637d957b2ac426ad174e6e521d2d",
+        "gifFrameDurationsMs": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_grab_contact_sheet.png",
+        "contactSheetSha256": "0854edbce762a67d16052975e0dc90e3179903a859ea4319ad266999a3075d98",
+        "edgeComposites": "qa/rabbit/rabbit_grab_edges.png",
+        "edgeCompositesSha256": "d3708df9f80b83e7664cdfceb294cc59d5780e0ef1172eeb69ad8c76ca460ee6",
+        "edgeFrameIndexes": [
+          0,
+          4,
+          7
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    },
+    "return": {
+      "manifest": "assets/rendered/rabbit/frames/return/manifest.json",
+      "manifestSha256": "d2e3b74fb247ec47a0d9d7fc77c955ee5def20d37befcafcffa9bf5c62b18494",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_return_000.png",
+          "sourceFrame": 1,
+          "sha256": "c0a98f4a5e03a36ed16c23bf527b4d483810d4556d5e86e7e4abbd3fb2eb1efe",
+          "rgbaSha256": "e477ebac6214bc5636c5979ee228145f4e19be59414a3086ac346913849d00c7",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            49,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_return_001.png",
+          "sourceFrame": 3,
+          "sha256": "bacd19f282cce317b9638183f7f17612345908b661a476d03a749a02941044c3",
+          "rgbaSha256": "7d246ee4e85c965cc06cfd3ac1c63d0e72d0407e5c4735639eb3389d0a239bd5",
+          "alphaBounds": [
+            150,
+            48,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            48,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_return_002.png",
+          "sourceFrame": 5,
+          "sha256": "52af053c9a9554842d6a2df7588bf2a7ff65b4071d90bcf757edbaaa29310007",
+          "rgbaSha256": "a3518b6c5204dbeebf01179936af164a935bda4a03960cf61ff657f1b8306395",
+          "alphaBounds": [
+            150,
+            46,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            47,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_return_003.png",
+          "sourceFrame": 7,
+          "sha256": "aa7fd23c515893d6951d2ff37fe014754afc058df336215c86534291aafe350f",
+          "rgbaSha256": "4b40bcc8392aff9425959d82bc04ec1f5cfec45881f2b4ef0198afd7c425cc2d",
+          "alphaBounds": [
+            150,
+            44,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            45,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_return_004.png",
+          "sourceFrame": 10,
+          "sha256": "39994572b0a545c3e95aef4b3891dc548e893e8fa28ecce65a85bc385a105cca",
+          "rgbaSha256": "c74377d83746ca902dfe86e423b2bf16bf4774a05503030f208a008b82306b9e",
+          "alphaBounds": [
+            150,
+            41,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            42,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_return_005.png",
+          "sourceFrame": 12,
+          "sha256": "c46e1b7a108ac21eb9629fe91502955fb4149e16db9174e0a8e5eaa504af4218",
+          "rgbaSha256": "8409b4319fdd75701d0dedee82d556a47088ab0d9a69a6ad59a4f92f53319fab",
+          "alphaBounds": [
+            150,
+            39,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            40,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_return_006.png",
+          "sourceFrame": 14,
+          "sha256": "e7bf99ec975821a92b291fa7b7bb82c78929a8eedc6d34034a851b412eddd4cd",
+          "rgbaSha256": "23707ba3a792deea8c9871ab3c610e6b6f0fc609944500067c5340aa5a8957ce",
+          "alphaBounds": [
+            150,
+            38,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_return_007.png",
+          "sourceFrame": 16,
+          "sha256": "4e8077760db350998997e649779282c1b90659b91500d1da7b5341ac15722210",
+          "rgbaSha256": "9356e0bc1fe0ba56c5358830344413d2902e56787ce66f902924f9f286c8da39",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_return.png",
+        "atlas": "dist/rabbit/rabbit_return.json",
+        "imageSha256": "91630f292287ee13621c988091c842a73c11081ade71bcbae63aae14f337a0ef",
+        "atlasSha256": "d15a67a2736dbb5b410b1c23cb3408ca5deec6f6cd57b6fdca05a44f00bcf69c",
+        "size": {
+          "w": 1536,
+          "h": 1536
+        },
+        "frameCount": 8,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_return_preview.gif",
+        "gifSha256": "80dfa1be99ba65bc75b85e9c94bf85483cc193593d2e6ca2eb01c2bd9cbace0b",
+        "gifFrameDurationsMs": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_return_contact_sheet.png",
+        "contactSheetSha256": "14512bc28f5e5ccfb1438bf60ba81689eeca2d1e295d443582a193ef33b8b39d",
+        "edgeComposites": "qa/rabbit/rabbit_return_edges.png",
+        "edgeCompositesSha256": "ddd7d0b95582fa4654cc22e18cc1dd7fb5d517977e2440bd67fe78f15c651389",
+        "edgeFrameIndexes": [
+          0,
+          4,
+          7
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    },
+    "pull": {
+      "manifest": "assets/rendered/rabbit/frames/pull/manifest.json",
+      "manifestSha256": "4781af925ab07ddfecbdced7afd2ab07e282ecb9d188feb963fcd6bc2e26724e",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_pull_000.png",
+          "sourceFrame": 1,
+          "sha256": "4e8077760db350998997e649779282c1b90659b91500d1da7b5341ac15722210",
+          "rgbaSha256": "9356e0bc1fe0ba56c5358830344413d2902e56787ce66f902924f9f286c8da39",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_pull_001.png",
+          "sourceFrame": 5,
+          "sha256": "4e8077760db350998997e649779282c1b90659b91500d1da7b5341ac15722210",
+          "rgbaSha256": "9356e0bc1fe0ba56c5358830344413d2902e56787ce66f902924f9f286c8da39",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_pull_002.png",
+          "sourceFrame": 6,
+          "sha256": "95598fc7b15a6f30f2f3cd0b97b4d3ef4dcbbc64969375c57bbbd109e1ee69df",
+          "rgbaSha256": "c10d437e6df1f72f3fbacab227d84e475015c54e2078759b2fcaa7ef8cfbc68d",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_pull_003.png",
+          "sourceFrame": 7,
+          "sha256": "b656a48f28bdac4ba17af49985b58879718076f3bb585f587a7ca37c64a1a8fd",
+          "rgbaSha256": "07cda84c48d2eeb0cb2656cd9e1e7c435bf1ff59d15f8927fff6a3b965e306d8",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            38,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_pull_004.png",
+          "sourceFrame": 8,
+          "sha256": "8fffb8ef26f66c8ca4ec7b4f370482cfae1ca98a2ee48251709e7220456292ed",
+          "rgbaSha256": "26f93146df858908381300299a399ef1c47f93a07244e348cf4816fad5ecd567",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_pull_005.png",
+          "sourceFrame": 10,
+          "sha256": "0c7a6e37e43360673e6ef3e6bdb6e3b7127e4d4f1c48c50faff331d4ab481a20",
+          "rgbaSha256": "53c81eeee8ba42c2873087783297094d884ba2d971e0fb06aa6c554f1f0e6e20",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_pull_006.png",
+          "sourceFrame": 11,
+          "sha256": "c22b61d01422f0045e7437c985435899c04c7896f1fe99ff67d0cc40dd4cf68f",
+          "rgbaSha256": "9d3960b90bf09392ce55da25613342a512e26e28f09fd9dc01013ec99950a7ac",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_pull_007.png",
+          "sourceFrame": 13,
+          "sha256": "120f20d4193f64fbd96b6c9ae66996f3eb29c99b5c5c32f8f98971079fe1b5cb",
+          "rgbaSha256": "b679f8fb1d0d8e83b22fddc5c9154ad0ebfbc6b3ca5e082abb66df4ebfe634e7",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 8,
+          "name": "rabbit_pull_008.png",
+          "sourceFrame": 14,
+          "sha256": "9e63e6125e50db0c67a8a5c8c795d7331e09313f3f81aaca90189667c2aa1437",
+          "rgbaSha256": "d27af34900785ba0bff295fadfe13f33e69525184bdd7cffc868be51dd4f1415",
+          "alphaBounds": [
+            150,
+            37,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 9,
+          "name": "rabbit_pull_009.png",
+          "sourceFrame": 17,
+          "sha256": "343a2a7bf2e3a96be9a92a8993d95398ae80a4a8b10f7512f7daee91d011a521",
+          "rgbaSha256": "f87d58108e3a255a46f97640fef9aefee155b92db66c236dbf4543deaa20dd05",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 10,
+          "name": "rabbit_pull_010.png",
+          "sourceFrame": 18,
+          "sha256": "9644168c3c41eff752c6627cac4e5ee1fe38a127688fba5c50064a36a7a555b5",
+          "rgbaSha256": "436fd1f292b1c4a9d5f322f8f5ebd206397ace6e7c86f4ddeb224a6d5dc66da2",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 11,
+          "name": "rabbit_pull_011.png",
+          "sourceFrame": 20,
+          "sha256": "dd606a141afb2590c14988b89021233e5dce0625dfbeecab76f8b12aad791eb0",
+          "rgbaSha256": "fdf59ce3eb9de0683a3589071c52b8427cf6910394f834a3a0314a4fb68e94ed",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_pull.png",
+        "atlas": "dist/rabbit/rabbit_pull.json",
+        "imageSha256": "90c0e4f0dcf5df0c99dbc99871065eb151f3640f99486acf3190765e19e55623",
+        "atlasSha256": "b71df0c921dc0b5334422a91525e8a2624eb8b357bfb93bd48bdc5a2b06bdcf0",
+        "size": {
+          "w": 2048,
+          "h": 1536
+        },
+        "frameCount": 12,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_pull_preview.gif",
+        "gifSha256": "5722905f92fe1253b17a0fdcecc2dd2f3357cfb5cef852509680541db45c6592",
+        "gifFrameDurationsMs": [
+          80,
+          90,
+          80,
+          80,
+          90,
+          80,
+          80,
+          90,
+          80,
+          80,
+          90,
+          80
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_pull_contact_sheet.png",
+        "contactSheetSha256": "4b6d2471217735c8e783b3a078a0351aad18547c3771498038d6b3ba7bf9f956",
+        "edgeComposites": "qa/rabbit/rabbit_pull_edges.png",
+        "edgeCompositesSha256": "adef21b0bd6e72bad67c7c55a6fe5aa309963b6d8ed3ef7bd7937a3409aa0299",
+        "edgeFrameIndexes": [
+          0,
+          6,
+          8,
+          11
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    },
+    "celebrate": {
+      "manifest": "assets/rendered/rabbit/frames/celebrate/manifest.json",
+      "manifestSha256": "7026345a3be063068261ae9423901e6d648086a3a0a19cfe270c7cf42a09e565",
+      "frames": [
+        {
+          "index": 0,
+          "name": "rabbit_celebrate_000.png",
+          "sourceFrame": 1,
+          "sha256": "dd606a141afb2590c14988b89021233e5dce0625dfbeecab76f8b12aad791eb0",
+          "rgbaSha256": "fdf59ce3eb9de0683a3589071c52b8427cf6910394f834a3a0314a4fb68e94ed",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 1,
+          "name": "rabbit_celebrate_001.png",
+          "sourceFrame": 3,
+          "sha256": "d6e83b7450a39dd5dcce9783d98b852c98f499b8c145656e83253a78d24904ae",
+          "rgbaSha256": "8163293895678c3e34f48ec0fe79b20b3d49ac9bbc90ac58209f2b98ab426beb",
+          "alphaBounds": [
+            151,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            37,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 2,
+          "name": "rabbit_celebrate_002.png",
+          "sourceFrame": 5,
+          "sha256": "10462d0f577dec2cf428513af7f221e872c89a4d41a72a340034dd09d58e6156",
+          "rgbaSha256": "fee000edabc7815b5a33e7608d37292a87a0a3385bc0d10db301c89f4ac99c28",
+          "alphaBounds": [
+            151,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 3,
+          "name": "rabbit_celebrate_003.png",
+          "sourceFrame": 7,
+          "sha256": "ee5d74442d119c009bd63a132f663692641bd781017d62fd2966a6e1c6827b02",
+          "rgbaSha256": "f16e27975b2fda037d2634502f68ce55ff27d7ee45f13faf310d9d995274ae9a",
+          "alphaBounds": [
+            150,
+            35,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            35,
+            362,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 4,
+          "name": "rabbit_celebrate_004.png",
+          "sourceFrame": 9,
+          "sha256": "fb0316524bfa1201b8dda717f63646f2bd559d0329f98061fae2e93001572f27",
+          "rgbaSha256": "261fe86289dfd59e3324d0a6a967594a41fb721ae8933a2a44718e430b511f7c",
+          "alphaBounds": [
+            141,
+            34,
+            371,
+            477
+          ],
+          "alphaThresholdBounds": [
+            142,
+            35,
+            370,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 5,
+          "name": "rabbit_celebrate_005.png",
+          "sourceFrame": 12,
+          "sha256": "3d4dc2fd1b38b7aad85ba7fa34a7dfa731ef98ebde531df656a36032b34da670",
+          "rgbaSha256": "42c0e22871043c86eecb0ce162c1fac4ba948541d85498b01deef0dcaf57f2ea",
+          "alphaBounds": [
+            139,
+            34,
+            373,
+            477
+          ],
+          "alphaThresholdBounds": [
+            140,
+            34,
+            372,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 6,
+          "name": "rabbit_celebrate_006.png",
+          "sourceFrame": 14,
+          "sha256": "8b1c2d264a833a7793c59b6b4b6b8c3a22444a1ee55f18d2311242ae0db69ef7",
+          "rgbaSha256": "747b0e79d5a61538bbfe2d77bba54e18a7a9103d040cbf79dd8bff0803f9a109",
+          "alphaBounds": [
+            139,
+            35,
+            373,
+            477
+          ],
+          "alphaThresholdBounds": [
+            140,
+            36,
+            372,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 7,
+          "name": "rabbit_celebrate_007.png",
+          "sourceFrame": 16,
+          "sha256": "812840521ad47418c7f22550f56b3cf6d32491b4cec5f5b53a74cd19cae4bfb6",
+          "rgbaSha256": "cea963184f00c178b7444e075e82309d25f265b2f274a5e21b23ffb10612446d",
+          "alphaBounds": [
+            139,
+            34,
+            373,
+            477
+          ],
+          "alphaThresholdBounds": [
+            140,
+            34,
+            372,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 8,
+          "name": "rabbit_celebrate_008.png",
+          "sourceFrame": 18,
+          "sha256": "a07da23802ce3ddb553b59de0118be9f08df66f7e47b0bdc9427d7bd9aba1409",
+          "rgbaSha256": "713533a96f5728d9a77548f4b86870c5b1a4fc55111f3f30c7db7a714fe61b23",
+          "alphaBounds": [
+            139,
+            35,
+            373,
+            477
+          ],
+          "alphaThresholdBounds": [
+            140,
+            36,
+            372,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 9,
+          "name": "rabbit_celebrate_009.png",
+          "sourceFrame": 20,
+          "sha256": "3d4dc2fd1b38b7aad85ba7fa34a7dfa731ef98ebde531df656a36032b34da670",
+          "rgbaSha256": "42c0e22871043c86eecb0ce162c1fac4ba948541d85498b01deef0dcaf57f2ea",
+          "alphaBounds": [
+            139,
+            34,
+            373,
+            477
+          ],
+          "alphaThresholdBounds": [
+            140,
+            34,
+            372,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 10,
+          "name": "rabbit_celebrate_010.png",
+          "sourceFrame": 22,
+          "sha256": "ef57f47375aed07e071291532c560235fab8a3f619848d80704ec2d19f41777d",
+          "rgbaSha256": "368a76507b055535920e2af8fbb50fe54e3446b0b0c91d543ba1907edad989a1",
+          "alphaBounds": [
+            138,
+            34,
+            374,
+            477
+          ],
+          "alphaThresholdBounds": [
+            139,
+            35,
+            373,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 11,
+          "name": "rabbit_celebrate_011.png",
+          "sourceFrame": 24,
+          "sha256": "9c4b845c25a7e1ba1b4cb99312becf542166f1e8ca303c24c4a1c720995197a7",
+          "rgbaSha256": "2d5d0ea831b13c38966428a7345c30c8f34e746d394345c27658cfb205747fa6",
+          "alphaBounds": [
+            142,
+            34,
+            370,
+            477
+          ],
+          "alphaThresholdBounds": [
+            142,
+            35,
+            370,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 12,
+          "name": "rabbit_celebrate_012.png",
+          "sourceFrame": 26,
+          "sha256": "c8bb418128d4cd8940eaf3ab88aa2ea556c51d180c5ce6a3fd04a3bd51754ebe",
+          "rgbaSha256": "2b0328660bb0cdca7a4dace8b5d9c9e883c4d3ed875b68272f5692d38945657d",
+          "alphaBounds": [
+            146,
+            35,
+            366,
+            477
+          ],
+          "alphaThresholdBounds": [
+            147,
+            35,
+            365,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 13,
+          "name": "rabbit_celebrate_013.png",
+          "sourceFrame": 28,
+          "sha256": "247d578408954911e1a1d6b1af5a0a5e28b0f0d4bbdc660be696e40ce0d6be3d",
+          "rgbaSha256": "35e24dd44346b0b6e484d1a676594b62ed7d7a3128a14859b82a367922663471",
+          "alphaBounds": [
+            142,
+            35,
+            370,
+            477
+          ],
+          "alphaThresholdBounds": [
+            142,
+            36,
+            370,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 14,
+          "name": "rabbit_celebrate_014.png",
+          "sourceFrame": 30,
+          "sha256": "0784cce0f8f20286d434c98ec271a9595302a3056b052b6c6eab79d63e54f015",
+          "rgbaSha256": "fd6ad78e5fcdafe9651844b93c0bd00f570e27f0314cbbf768852663ba6d68cf",
+          "alphaBounds": [
+            148,
+            35,
+            364,
+            477
+          ],
+          "alphaThresholdBounds": [
+            149,
+            36,
+            363,
+            476
+          ],
+          "alphaBottomPixel": 475
+        },
+        {
+          "index": 15,
+          "name": "rabbit_celebrate_015.png",
+          "sourceFrame": 32,
+          "sha256": "dd2943a6e5ea805c74abab4fc2f0374d5bbf267cab7344a91c016275a5484070",
+          "rgbaSha256": "063280ca59935b9d19d155f52ee05e764d83f78fffb81cb1bb1d87605bc09c8c",
+          "alphaBounds": [
+            150,
+            36,
+            362,
+            477
+          ],
+          "alphaThresholdBounds": [
+            151,
+            36,
+            361,
+            476
+          ],
+          "alphaBottomPixel": 475
+        }
+      ],
+      "packed": {
+        "image": "dist/rabbit/rabbit_celebrate.png",
+        "atlas": "dist/rabbit/rabbit_celebrate.json",
+        "imageSha256": "c876681d653914c3bef30355e553830a75a55a3b4d68ad9b24dd0cca83ccc88a",
+        "atlasSha256": "4e0ba56b0768b43ddae47856f2a07b60adf57d62edbec51d1b44b696bd824e1e",
+        "size": {
+          "w": 2048,
+          "h": 2048
+        },
+        "frameCount": 16,
+        "exactPixelRoundTrip": true,
+        "jsonBoundsValid": true,
+        "untrimmed": true
+      },
+      "qa": {
+        "gif": "qa/rabbit/rabbit_celebrate_preview.gif",
+        "gifSha256": "b2c9aa724a61de637bd640f456e473550342898d9caec8cb120046da35036371",
+        "gifFrameDurationsMs": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ],
+        "gifTimingNote": "GIF delays are rounded to 10 ms; checkerboard is opaque. One-shots have no loop extension.",
+        "contactSheet": "qa/rabbit/rabbit_celebrate_contact_sheet.png",
+        "contactSheetSha256": "a00e2478ead9053973ce974a9146398e1ccedbf578537a22f94d0ac18f50eb90",
+        "edgeComposites": "qa/rabbit/rabbit_celebrate_edges.png",
+        "edgeCompositesSha256": "2c8dc049a89dc6dd5e0ce96aa17bda8012f6f53f8302af6c0927abaadc1f9811",
+        "edgeFrameIndexes": [
+          0,
+          8,
+          15
+        ],
+        "scale": 1,
+        "overlayLegend": {
+          "redCross": "Carrot_Attach_Point / carrot_socket projection",
+          "blueLineAndCircle": "fixed foot anchor"
+        }
+      }
+    }
+  },
+  "manualReviewRequired": [
+    "Inspect GIFs and contact sheets for pose continuity and foot stability.",
+    "Inspect original-scale white, dark, and checkerboard composites for edge halos; this is not automated halo detection."
+  ]
+}

@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "action": "celebrate",
+  "blenderAction": "Rabbit_Celebrate",
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "render": {
+    "width": 512,
+    "height": 512,
+    "engine": "BLENDER_EEVEE",
+    "colorMode": "RGBA",
+    "colorDepth": 8,
+    "transparent": true,
+    "sourceFps": 24,
+    "camera": {
+      "name": "Camera_Front_Orthographic",
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.6292068494294654e-07,
+          -1.0,
+          -8.0
+        ],
+        [
+          0.0,
+          1.0,
+          -1.6292068494294654e-07,
+          1.8049999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "type": "ORTHO",
+      "ortho_scale": 4.199999809265137,
+      "lens": 70.0,
+      "engine": "BLENDER_EEVEE",
+      "resolution": [
+        512,
+        512,
+        100
+      ],
+      "color_mode": "RGBA",
+      "film_transparent": true,
+      "view_transform": "AgX",
+      "exposure": 0.6499999761581421
+    },
+    "blenderVersion": "5.2.1 LTS"
+  },
+  "anchor": {
+    "x": 256.0,
+    "y": 475.50414276123047,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "world": [
+      -1.6019377491183207e-10,
+      -0.06988680785441972,
+      0.004381443089057968
+    ],
+    "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+    "canvasBottomOffset": 36.49585723876953
+  },
+  "frameRate": 10,
+  "repeat": 0,
+  "frames": [
+    {
+      "index": 0,
+      "name": "rabbit_celebrate_000.png",
+      "sourceFrame": 1,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 298.04833984375
+      }
+    },
+    {
+      "index": 1,
+      "name": "rabbit_celebrate_001.png",
+      "sourceFrame": 3,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 294.95494079589844
+      }
+    },
+    {
+      "index": 2,
+      "name": "rabbit_celebrate_002.png",
+      "sourceFrame": 5,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 286.7226867675781
+      }
+    },
+    {
+      "index": 3,
+      "name": "rabbit_celebrate_003.png",
+      "sourceFrame": 7,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 275.1138000488281
+      }
+    },
+    {
+      "index": 4,
+      "name": "rabbit_celebrate_004.png",
+      "sourceFrame": 9,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 266.27894592285156
+      }
+    },
+    {
+      "index": 5,
+      "name": "rabbit_celebrate_005.png",
+      "sourceFrame": 12,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 260.8431091308594
+      }
+    },
+    {
+      "index": 6,
+      "name": "rabbit_celebrate_006.png",
+      "sourceFrame": 14,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 260.8431091308594
+      }
+    },
+    {
+      "index": 7,
+      "name": "rabbit_celebrate_007.png",
+      "sourceFrame": 16,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 260.8431091308594
+      }
+    },
+    {
+      "index": 8,
+      "name": "rabbit_celebrate_008.png",
+      "sourceFrame": 18,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 260.8431091308594
+      }
+    },
+    {
+      "index": 9,
+      "name": "rabbit_celebrate_009.png",
+      "sourceFrame": 20,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 260.8431091308594
+      }
+    },
+    {
+      "index": 10,
+      "name": "rabbit_celebrate_010.png",
+      "sourceFrame": 22,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 268.8694305419922
+      }
+    },
+    {
+      "index": 11,
+      "name": "rabbit_celebrate_011.png",
+      "sourceFrame": 24,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 289.68919372558594
+      }
+    },
+    {
+      "index": 12,
+      "name": "rabbit_celebrate_012.png",
+      "sourceFrame": 26,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 319.4404296875
+      }
+    },
+    {
+      "index": 13,
+      "name": "rabbit_celebrate_013.png",
+      "sourceFrame": 28,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 348.1712646484375
+      }
+    },
+    {
+      "index": 14,
+      "name": "rabbit_celebrate_014.png",
+      "sourceFrame": 30,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 368.4564514160156
+      }
+    },
+    {
+      "index": 15,
+      "name": "rabbit_celebrate_015.png",
+      "sourceFrame": 32,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    }
+  ],
+  "sourceRange": [
+    1,
+    32
+  ],
+  "mandatoryFrames": [
+    1,
+    12,
+    14,
+    16,
+    18,
+    20,
+    32
+  ],
+  "timing": "Uniform recommended game timing; intentional retiming of sampled source poses"
+}

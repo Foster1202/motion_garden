@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "browser": "155.0.8059.80",
+  "url": "http://127.0.0.1:5174/?rabbit3dDebug=1",
+  "checks": [
+    "Production defaults to sprite",
+    "Debug query does not expose debug UI",
+    "No render mode selector",
+    "No page errors"
+  ]
+}

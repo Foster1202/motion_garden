@@ -1,0 +1,197 @@
+{
+  "metrics": [
+    {
+      "version": "Original",
+      "label": "Front",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Original",
+      "label": "Side",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Original",
+      "label": "Both arms",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 61.11535503884331,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Original",
+      "label": "Left leg",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 19.90327971045506
+    },
+    {
+      "version": "Original",
+      "label": "Right leg",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 7.142955734432417e-7
+    },
+    {
+      "version": "Original",
+      "label": "Shallow knee",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 3.691549650817181,
+      "footDisplacementPx": 0.0000018311670328436236
+    },
+    {
+      "version": "Revised",
+      "label": "Front",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Side",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Both arms",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 81.45815087670819,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Left leg",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 27.873903347819013
+    },
+    {
+      "version": "Revised",
+      "label": "Right leg",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 0,
+      "footDisplacementPx": 0.000002218177400792368
+    },
+    {
+      "version": "Revised",
+      "label": "Shallow knee",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 4.09984577517888,
+      "footDisplacementPx": 0.0000590039994889386
+    },
+    {
+      "version": "Original",
+      "label": "Lean left",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 18.018867150887957,
+      "footDisplacementPx": 11.894751428185213
+    },
+    {
+      "version": "Original",
+      "label": "Lean right",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 18.018867150887928,
+      "footDisplacementPx": 11.89475142818522
+    },
+    {
+      "version": "Original",
+      "label": "Lateral move",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 42.754857492212764,
+      "footDisplacementPx": 42.754857492212786
+    },
+    {
+      "version": "Original",
+      "label": "Elbow limits",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 68.12983974643036,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Original",
+      "label": "Bend + kick",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 3.691549650817181,
+      "footDisplacementPx": 17.784356944379525
+    },
+    {
+      "version": "Original",
+      "label": "Forward lean",
+      "height": 3.5995909944976607,
+      "p": 95.01079442713953,
+      "handDisplacementPx": 6.87946347244746,
+      "footDisplacementPx": 10.300018313614938
+    },
+    {
+      "version": "Revised",
+      "label": "Lean left",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 18.39363490973422,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Lean right",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 18.393634909734224,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Lateral move",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 41.29434070812473,
+      "footDisplacementPx": 41.29434070812471
+    },
+    {
+      "version": "Revised",
+      "label": "Elbow limits",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 90.80747055996426,
+      "footDisplacementPx": 0
+    },
+    {
+      "version": "Revised",
+      "label": "Bend + kick",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 4.09984577517888,
+      "footDisplacementPx": 25.247893873257198
+    },
+    {
+      "version": "Revised",
+      "label": "Forward lean",
+      "height": 3.7269029450740203,
+      "p": 91.76520157361047,
+      "handDisplacementPx": 4.529049810974936,
+      "footDisplacementPx": 0
+    }
+  ],
+  "errors": []
+}

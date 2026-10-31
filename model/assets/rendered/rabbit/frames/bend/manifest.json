@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "action": "bend",
+  "blenderAction": "Rabbit_Bend",
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "render": {
+    "width": 512,
+    "height": 512,
+    "engine": "BLENDER_EEVEE",
+    "colorMode": "RGBA",
+    "colorDepth": 8,
+    "transparent": true,
+    "sourceFps": 24,
+    "camera": {
+      "name": "Camera_Front_Orthographic",
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.6292068494294654e-07,
+          -1.0,
+          -8.0
+        ],
+        [
+          0.0,
+          1.0,
+          -1.6292068494294654e-07,
+          1.8049999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "type": "ORTHO",
+      "ortho_scale": 4.199999809265137,
+      "lens": 70.0,
+      "engine": "BLENDER_EEVEE",
+      "resolution": [
+        512,
+        512,
+        100
+      ],
+      "color_mode": "RGBA",
+      "film_transparent": true,
+      "view_transform": "AgX",
+      "exposure": 0.6499999761581421
+    },
+    "blenderVersion": "5.2.1 LTS"
+  },
+  "anchor": {
+    "x": 256.0,
+    "y": 475.50414276123047,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "world": [
+      -1.6019377491183207e-10,
+      -0.06988680785441972,
+      0.004381443089057968
+    ],
+    "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+    "canvasBottomOffset": 36.49585723876953
+  },
+  "frameRate": 10,
+  "repeat": 0,
+  "frames": [
+    {
+      "index": 0,
+      "name": "rabbit_bend_000.png",
+      "sourceFrame": 1,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    },
+    {
+      "index": 1,
+      "name": "rabbit_bend_001.png",
+      "sourceFrame": 3,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.38739013671875
+      }
+    },
+    {
+      "index": 2,
+      "name": "rabbit_bend_002.png",
+      "sourceFrame": 5,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.35142517089844
+      }
+    },
+    {
+      "index": 3,
+      "name": "rabbit_bend_003.png",
+      "sourceFrame": 7,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.1436462402344
+      }
+    },
+    {
+      "index": 4,
+      "name": "rabbit_bend_004.png",
+      "sourceFrame": 10,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.35206604003906
+      }
+    },
+    {
+      "index": 5,
+      "name": "rabbit_bend_005.png",
+      "sourceFrame": 12,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 374.69427490234375
+      }
+    },
+    {
+      "index": 6,
+      "name": "rabbit_bend_006.png",
+      "sourceFrame": 14,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 374.1918182373047
+      }
+    },
+    {
+      "index": 7,
+      "name": "rabbit_bend_007.png",
+      "sourceFrame": 16,
+      "durationMs": 100.0,
+      "attachment": {
+        "x": 256.0,
+        "y": 373.99913024902344
+      }
+    }
+  ],
+  "sourceRange": [
+    1,
+    16
+  ],
+  "mandatoryFrames": [
+    1,
+    16
+  ],
+  "timing": "Uniform recommended game timing; intentional retiming of sampled source poses"
+}

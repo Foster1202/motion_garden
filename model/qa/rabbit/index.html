@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Rabbit · Task 2C QA</title>
+<style>body{font:16px system-ui,sans-serif;background:#f5f2eb;color:#292725;margin:28px}
+h1{font-size:30px;margin-bottom:8px}p{line-height:1.5}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px}
+article{background:white;padding:16px;border:1px solid #ddd9cf;border-radius:12px}h2{margin:0}a{color:#2d6256}
+img{width:100%;height:auto;max-width:512px;display:block}button{padding:10px 16px;margin:0 0 22px;font:inherit;cursor:pointer}</style>
+<h1>Rabbit · Task 2C QA</h1><p>512 × 512 fixed frames. GIFs use an opaque checkerboard; PNG assets retain RGBA.
+Idle loops; other GIFs play once. Contact sheets mark the fixed foot anchor in blue and hand attachment in red.</p>
+<button id="replay">Replay all GIFs</button><main><article><h2>Idle</h2>
+<p>12 frames · 6 fps · repeat -1</p>
+<img width="512" height="512" src="rabbit_idle_preview.gif" alt="idle animation">
+<p><a href="rabbit_idle_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_idle_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_idle.json">Atlas JSON</a></p></article><article><h2>Bend</h2>
+<p>8 frames · 10 fps · repeat 0</p>
+<img width="512" height="512" src="rabbit_bend_preview.gif" alt="bend animation">
+<p><a href="rabbit_bend_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_bend_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_bend.json">Atlas JSON</a></p></article><article><h2>Grab</h2>
+<p>8 frames · 10 fps · repeat 0</p>
+<img width="512" height="512" src="rabbit_grab_preview.gif" alt="grab animation">
+<p><a href="rabbit_grab_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_grab_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_grab.json">Atlas JSON</a></p></article><article><h2>Return</h2>
+<p>8 frames · 10 fps · repeat 0</p>
+<img width="512" height="512" src="rabbit_return_preview.gif" alt="return animation">
+<p><a href="rabbit_return_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_return_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_return.json">Atlas JSON</a></p></article><article><h2>Pull</h2>
+<p>12 frames · 12 fps · repeat 0</p>
+<img width="512" height="512" src="rabbit_pull_preview.gif" alt="pull animation">
+<p><a href="rabbit_pull_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_pull_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_pull.json">Atlas JSON</a></p></article><article><h2>Celebrate</h2>
+<p>16 frames · 10 fps · repeat 0</p>
+<img width="512" height="512" src="rabbit_celebrate_preview.gif" alt="celebrate animation">
+<p><a href="rabbit_celebrate_contact_sheet.png">Contact sheet</a> ·
+<a href="rabbit_celebrate_edges.png">Alpha edges</a> ·
+<a href="../../dist/rabbit/rabbit_celebrate.json">Atlas JSON</a></p></article></main>
+<script>document.getElementById('replay').addEventListener('click',()=>{
+for(const img of document.querySelectorAll('img'))img.src=img.src.split('?')[0]+'?replay='+Date.now();
+});</script></html>

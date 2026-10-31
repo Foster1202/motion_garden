@@ -1,0 +1,217 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "layers": {
+    "background_far": {
+      "file": "assets/rendered/carrot_pull/background_far.png",
+      "mode": "RGBA",
+      "size": [
+        1920,
+        1080
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        255,
+        255
+      ],
+      "alphaBounds": [
+        0,
+        0,
+        1920,
+        1080
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "touchesCanvasEdge": true
+    },
+    "background_mid": {
+      "file": "assets/rendered/carrot_pull/background_mid.png",
+      "mode": "RGBA",
+      "size": [
+        1920,
+        1080
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        0,
+        398,
+        1920,
+        1080
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        0,
+        398,
+        0,
+        0
+      ],
+      "touchesCanvasEdge": true
+    },
+    "platform": {
+      "file": "assets/rendered/carrot_pull/platform.png",
+      "mode": "RGBA",
+      "size": [
+        1920,
+        1080
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        746,
+        772,
+        1401,
+        926
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        746,
+        772,
+        519,
+        154
+      ],
+      "touchesCanvasEdge": false
+    },
+    "foreground": {
+      "file": "assets/rendered/carrot_pull/foreground.png",
+      "mode": "RGBA",
+      "size": [
+        1920,
+        1080
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        41,
+        920,
+        1913,
+        1065
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        41,
+        920,
+        7,
+        15
+      ],
+      "touchesCanvasEdge": false
+    },
+    "soil_patch": {
+      "file": "assets/rendered/carrot_pull/soil_patch.png",
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        88,
+        211,
+        424,
+        308
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        88,
+        211,
+        88,
+        204
+      ],
+      "touchesCanvasEdge": false
+    },
+    "carrot": {
+      "file": "assets/rendered/carrot_pull/carrot.png",
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        182,
+        80,
+        329,
+        406
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        182,
+        80,
+        183,
+        106
+      ],
+      "touchesCanvasEdge": false
+    },
+    "basket": {
+      "file": "assets/rendered/carrot_pull/basket.png",
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "nonemptyAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBounds": [
+        84,
+        97,
+        428,
+        401
+      ],
+      "transparentMarginsLeftTopRightBottom": [
+        84,
+        97,
+        84,
+        111
+      ],
+      "touchesCanvasEdge": false
+    }
+  },
+  "compositeSize": [
+    1920,
+    1080
+  ],
+  "rabbit": {
+    "source": "rabbit_idle_000.png",
+    "origin": [
+      0.5,
+      0.928719
+    ],
+    "scale": 0.9348519362,
+    "feet": [
+      1072.8,
+      817.2
+    ]
+  },
+  "plantedCarrot": {
+    "grip": {
+      "x": 1073,
+      "y": 827
+    },
+    "cropBelowPivotSourcePixels": 22
+  },
+  "notes": [
+    "The full carrot export is preserved; only the composite preview buries its root.",
+    "Alpha bounds and edge backgrounds support visual QA; they cannot prove no color halo.",
+    "Sky geometry may make background_far fully opaque; it remains an RGBA layer.",
+    "A subtle blurred 100 x 14 pixel contact shadow beneath rabbit feet exists only in QA."
+  ]
+}

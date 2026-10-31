@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "action": "pull",
+  "blenderAction": "Rabbit_Pull",
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "render": {
+    "width": 512,
+    "height": 512,
+    "engine": "BLENDER_EEVEE",
+    "colorMode": "RGBA",
+    "colorDepth": 8,
+    "transparent": true,
+    "sourceFps": 24,
+    "camera": {
+      "name": "Camera_Front_Orthographic",
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.6292068494294654e-07,
+          -1.0,
+          -8.0
+        ],
+        [
+          0.0,
+          1.0,
+          -1.6292068494294654e-07,
+          1.8049999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "type": "ORTHO",
+      "ortho_scale": 4.199999809265137,
+      "lens": 70.0,
+      "engine": "BLENDER_EEVEE",
+      "resolution": [
+        512,
+        512,
+        100
+      ],
+      "color_mode": "RGBA",
+      "film_transparent": true,
+      "view_transform": "AgX",
+      "exposure": 0.6499999761581421
+    },
+    "blenderVersion": "5.2.1 LTS"
+  },
+  "anchor": {
+    "x": 256.0,
+    "y": 475.50414276123047,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "world": [
+      -1.6019377491183207e-10,
+      -0.06988680785441972,
+      0.004381443089057968
+    ],
+    "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+    "canvasBottomOffset": 36.49585723876953
+  },
+  "frameRate": 12,
+  "repeat": 0,
+  "frames": [
+    {
+      "index": 0,
+      "name": "rabbit_pull_000.png",
+      "sourceFrame": 1,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 321.8197784423828
+      }
+    },
+    {
+      "index": 1,
+      "name": "rabbit_pull_001.png",
+      "sourceFrame": 5,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 321.8197784423828
+      }
+    },
+    {
+      "index": 2,
+      "name": "rabbit_pull_002.png",
+      "sourceFrame": 6,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 320.8373565673828
+      }
+    },
+    {
+      "index": 3,
+      "name": "rabbit_pull_003.png",
+      "sourceFrame": 7,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 318.20445251464844
+      }
+    },
+    {
+      "index": 4,
+      "name": "rabbit_pull_004.png",
+      "sourceFrame": 8,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 314.3926239013672
+      }
+    },
+    {
+      "index": 5,
+      "name": "rabbit_pull_005.png",
+      "sourceFrame": 10,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 305.1184997558594
+      }
+    },
+    {
+      "index": 6,
+      "name": "rabbit_pull_006.png",
+      "sourceFrame": 11,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 300.5993194580078
+      }
+    },
+    {
+      "index": 7,
+      "name": "rabbit_pull_007.png",
+      "sourceFrame": 13,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 294.1545715332031
+      }
+    },
+    {
+      "index": 8,
+      "name": "rabbit_pull_008.png",
+      "sourceFrame": 14,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 293.1721496582031
+      }
+    },
+    {
+      "index": 9,
+      "name": "rabbit_pull_009.png",
+      "sourceFrame": 17,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 295.61024475097656
+      }
+    },
+    {
+      "index": 10,
+      "name": "rabbit_pull_010.png",
+      "sourceFrame": 18,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 296.78416442871094
+      }
+    },
+    {
+      "index": 11,
+      "name": "rabbit_pull_011.png",
+      "sourceFrame": 20,
+      "durationMs": 83.33333333333333,
+      "attachment": {
+        "x": 256.0,
+        "y": 298.04833984375
+      }
+    }
+  ],
+  "sourceRange": [
+    1,
+    20
+  ],
+  "mandatoryFrames": [
+    1,
+    5,
+    14,
+    20
+  ],
+  "timing": "Uniform recommended game timing; intentional retiming of sampled source poses"
+}

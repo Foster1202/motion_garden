@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "object": "Carrot_Attach_Point",
+  "socketBone": "carrot_socket",
+  "socket": "carrot_socket",
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "coordinateSystem": {
+    "units": "frame-local pixels",
+    "x": "right",
+    "y": "down",
+    "origin": "top-left of the untrimmed 512x512 frame",
+    "precision": "floating point",
+    "frameWidth": 512,
+    "frameHeight": 512
+  },
+  "anchor": {
+    "x": 256.0,
+    "y": 475.50414276123047,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "world": [
+      -1.6019377491183207e-10,
+      -0.06988680785441972,
+      0.004381443089057968
+    ],
+    "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+    "canvasBottomOffset": 36.49585723876953
+  },
+  "worldPositionNote": "For an unrotated sprite: world = sprite position + (socket pixels - anchor pixels) * sprite scale. Apply the sprite transform for rotation or flips.",
+  "actions": {
+    "idle": [
+      {
+        "index": 0,
+        "name": "rabbit_idle_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 376.38111877441406
+      },
+      {
+        "index": 1,
+        "name": "rabbit_idle_001.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 376.31304931640625
+      },
+      {
+        "index": 2,
+        "name": "rabbit_idle_002.png",
+        "sourceFrame": 10,
+        "x": 256.0,
+        "y": 376.0687561035156
+      },
+      {
+        "index": 3,
+        "name": "rabbit_idle_003.png",
+        "sourceFrame": 13,
+        "x": 256.0,
+        "y": 375.877197265625
+      },
+      {
+        "index": 4,
+        "name": "rabbit_idle_004.png",
+        "sourceFrame": 18,
+        "x": 256.0,
+        "y": 375.57867431640625
+      },
+      {
+        "index": 5,
+        "name": "rabbit_idle_005.png",
+        "sourceFrame": 22,
+        "x": 256.0,
+        "y": 375.43284606933594
+      },
+      {
+        "index": 6,
+        "name": "rabbit_idle_006.png",
+        "sourceFrame": 25,
+        "x": 256.0,
+        "y": 375.40696716308594
+      },
+      {
+        "index": 7,
+        "name": "rabbit_idle_007.png",
+        "sourceFrame": 31,
+        "x": 256.0,
+        "y": 375.57867431640625
+      },
+      {
+        "index": 8,
+        "name": "rabbit_idle_008.png",
+        "sourceFrame": 36,
+        "x": 256.0,
+        "y": 375.877197265625
+      },
+      {
+        "index": 9,
+        "name": "rabbit_idle_009.png",
+        "sourceFrame": 39,
+        "x": 256.0,
+        "y": 376.0687561035156
+      },
+      {
+        "index": 10,
+        "name": "rabbit_idle_010.png",
+        "sourceFrame": 44,
+        "x": 256.0,
+        "y": 376.31304931640625
+      },
+      {
+        "index": 11,
+        "name": "rabbit_idle_011.png",
+        "sourceFrame": 48,
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    ],
+    "bend": [
+      {
+        "index": 0,
+        "name": "rabbit_bend_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 376.38111877441406
+      },
+      {
+        "index": 1,
+        "name": "rabbit_bend_001.png",
+        "sourceFrame": 3,
+        "x": 256.0,
+        "y": 376.38739013671875
+      },
+      {
+        "index": 2,
+        "name": "rabbit_bend_002.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 376.35142517089844
+      },
+      {
+        "index": 3,
+        "name": "rabbit_bend_003.png",
+        "sourceFrame": 7,
+        "x": 256.0,
+        "y": 376.1436462402344
+      },
+      {
+        "index": 4,
+        "name": "rabbit_bend_004.png",
+        "sourceFrame": 10,
+        "x": 256.0,
+        "y": 375.35206604003906
+      },
+      {
+        "index": 5,
+        "name": "rabbit_bend_005.png",
+        "sourceFrame": 12,
+        "x": 256.0,
+        "y": 374.69427490234375
+      },
+      {
+        "index": 6,
+        "name": "rabbit_bend_006.png",
+        "sourceFrame": 14,
+        "x": 256.0,
+        "y": 374.1918182373047
+      },
+      {
+        "index": 7,
+        "name": "rabbit_bend_007.png",
+        "sourceFrame": 16,
+        "x": 256.0,
+        "y": 373.99913024902344
+      }
+    ],
+    "grab": [
+      {
+        "index": 0,
+        "name": "rabbit_grab_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 373.99913024902344
+      },
+      {
+        "index": 1,
+        "name": "rabbit_grab_001.png",
+        "sourceFrame": 3,
+        "x": 256.0,
+        "y": 372.50062561035156
+      },
+      {
+        "index": 2,
+        "name": "rabbit_grab_002.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 368.5559387207031
+      },
+      {
+        "index": 3,
+        "name": "rabbit_grab_003.png",
+        "sourceFrame": 7,
+        "x": 256.0,
+        "y": 362.9776916503906
+      },
+      {
+        "index": 4,
+        "name": "rabbit_grab_004.png",
+        "sourceFrame": 10,
+        "x": 256.0,
+        "y": 353.4300537109375
+      },
+      {
+        "index": 5,
+        "name": "rabbit_grab_005.png",
+        "sourceFrame": 12,
+        "x": 256.0,
+        "y": 347.6641082763672
+      },
+      {
+        "index": 6,
+        "name": "rabbit_grab_006.png",
+        "sourceFrame": 14,
+        "x": 256.0,
+        "y": 343.5195007324219
+      },
+      {
+        "index": 7,
+        "name": "rabbit_grab_007.png",
+        "sourceFrame": 16,
+        "x": 256.0,
+        "y": 341.93406677246094
+      }
+    ],
+    "return": [
+      {
+        "index": 0,
+        "name": "rabbit_return_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 341.93406677246094
+      },
+      {
+        "index": 1,
+        "name": "rabbit_return_001.png",
+        "sourceFrame": 3,
+        "x": 256.0,
+        "y": 340.9566650390625
+      },
+      {
+        "index": 2,
+        "name": "rabbit_return_002.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 338.40586853027344
+      },
+      {
+        "index": 3,
+        "name": "rabbit_return_003.png",
+        "sourceFrame": 7,
+        "x": 256.0,
+        "y": 334.8538360595703
+      },
+      {
+        "index": 4,
+        "name": "rabbit_return_004.png",
+        "sourceFrame": 10,
+        "x": 256.0,
+        "y": 328.90000915527344
+      },
+      {
+        "index": 5,
+        "name": "rabbit_return_005.png",
+        "sourceFrame": 12,
+        "x": 256.0,
+        "y": 325.3479766845703
+      },
+      {
+        "index": 6,
+        "name": "rabbit_return_006.png",
+        "sourceFrame": 14,
+        "x": 256.0,
+        "y": 322.7971954345703
+      },
+      {
+        "index": 7,
+        "name": "rabbit_return_007.png",
+        "sourceFrame": 16,
+        "x": 256.0,
+        "y": 321.8197784423828
+      }
+    ],
+    "pull": [
+      {
+        "index": 0,
+        "name": "rabbit_pull_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 321.8197784423828
+      },
+      {
+        "index": 1,
+        "name": "rabbit_pull_001.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 321.8197784423828
+      },
+      {
+        "index": 2,
+        "name": "rabbit_pull_002.png",
+        "sourceFrame": 6,
+        "x": 256.0,
+        "y": 320.8373565673828
+      },
+      {
+        "index": 3,
+        "name": "rabbit_pull_003.png",
+        "sourceFrame": 7,
+        "x": 256.0,
+        "y": 318.20445251464844
+      },
+      {
+        "index": 4,
+        "name": "rabbit_pull_004.png",
+        "sourceFrame": 8,
+        "x": 256.0,
+        "y": 314.3926239013672
+      },
+      {
+        "index": 5,
+        "name": "rabbit_pull_005.png",
+        "sourceFrame": 10,
+        "x": 256.0,
+        "y": 305.1184997558594
+      },
+      {
+        "index": 6,
+        "name": "rabbit_pull_006.png",
+        "sourceFrame": 11,
+        "x": 256.0,
+        "y": 300.5993194580078
+      },
+      {
+        "index": 7,
+        "name": "rabbit_pull_007.png",
+        "sourceFrame": 13,
+        "x": 256.0,
+        "y": 294.1545715332031
+      },
+      {
+        "index": 8,
+        "name": "rabbit_pull_008.png",
+        "sourceFrame": 14,
+        "x": 256.0,
+        "y": 293.1721496582031
+      },
+      {
+        "index": 9,
+        "name": "rabbit_pull_009.png",
+        "sourceFrame": 17,
+        "x": 256.0,
+        "y": 295.61024475097656
+      },
+      {
+        "index": 10,
+        "name": "rabbit_pull_010.png",
+        "sourceFrame": 18,
+        "x": 256.0,
+        "y": 296.78416442871094
+      },
+      {
+        "index": 11,
+        "name": "rabbit_pull_011.png",
+        "sourceFrame": 20,
+        "x": 256.0,
+        "y": 298.04833984375
+      }
+    ],
+    "celebrate": [
+      {
+        "index": 0,
+        "name": "rabbit_celebrate_000.png",
+        "sourceFrame": 1,
+        "x": 256.0,
+        "y": 298.04833984375
+      },
+      {
+        "index": 1,
+        "name": "rabbit_celebrate_001.png",
+        "sourceFrame": 3,
+        "x": 256.0,
+        "y": 294.95494079589844
+      },
+      {
+        "index": 2,
+        "name": "rabbit_celebrate_002.png",
+        "sourceFrame": 5,
+        "x": 256.0,
+        "y": 286.7226867675781
+      },
+      {
+        "index": 3,
+        "name": "rabbit_celebrate_003.png",
+        "sourceFrame": 7,
+        "x": 256.0,
+        "y": 275.1138000488281
+      },
+      {
+        "index": 4,
+        "name": "rabbit_celebrate_004.png",
+        "sourceFrame": 9,
+        "x": 256.0,
+        "y": 266.27894592285156
+      },
+      {
+        "index": 5,
+        "name": "rabbit_celebrate_005.png",
+        "sourceFrame": 12,
+        "x": 256.0,
+        "y": 260.8431091308594
+      },
+      {
+        "index": 6,
+        "name": "rabbit_celebrate_006.png",
+        "sourceFrame": 14,
+        "x": 256.0,
+        "y": 260.8431091308594
+      },
+      {
+        "index": 7,
+        "name": "rabbit_celebrate_007.png",
+        "sourceFrame": 16,
+        "x": 256.0,
+        "y": 260.8431091308594
+      },
+      {
+        "index": 8,
+        "name": "rabbit_celebrate_008.png",
+        "sourceFrame": 18,
+        "x": 256.0,
+        "y": 260.8431091308594
+      },
+      {
+        "index": 9,
+        "name": "rabbit_celebrate_009.png",
+        "sourceFrame": 20,
+        "x": 256.0,
+        "y": 260.8431091308594
+      },
+      {
+        "index": 10,
+        "name": "rabbit_celebrate_010.png",
+        "sourceFrame": 22,
+        "x": 256.0,
+        "y": 268.8694305419922
+      },
+      {
+        "index": 11,
+        "name": "rabbit_celebrate_011.png",
+        "sourceFrame": 24,
+        "x": 256.0,
+        "y": 289.68919372558594
+      },
+      {
+        "index": 12,
+        "name": "rabbit_celebrate_012.png",
+        "sourceFrame": 26,
+        "x": 256.0,
+        "y": 319.4404296875
+      },
+      {
+        "index": 13,
+        "name": "rabbit_celebrate_013.png",
+        "sourceFrame": 28,
+        "x": 256.0,
+        "y": 348.1712646484375
+      },
+      {
+        "index": 14,
+        "name": "rabbit_celebrate_014.png",
+        "sourceFrame": 30,
+        "x": 256.0,
+        "y": 368.4564514160156
+      },
+      {
+        "index": 15,
+        "name": "rabbit_celebrate_015.png",
+        "sourceFrame": 32,
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    ]
+  }
+}

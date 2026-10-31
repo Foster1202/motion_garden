@@ -1,0 +1,243 @@
+{
+  "frames": {
+    "rabbit_bend_000.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 1
+    },
+    "rabbit_bend_001.png": {
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 3
+    },
+    "rabbit_bend_002.png": {
+      "frame": {
+        "x": 1024,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 5
+    },
+    "rabbit_bend_003.png": {
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 7
+    },
+    "rabbit_bend_004.png": {
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 10
+    },
+    "rabbit_bend_005.png": {
+      "frame": {
+        "x": 1024,
+        "y": 512,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 12
+    },
+    "rabbit_bend_006.png": {
+      "frame": {
+        "x": 0,
+        "y": 1024,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 14
+    },
+    "rabbit_bend_007.png": {
+      "frame": {
+        "x": 512,
+        "y": 1024,
+        "w": 512,
+        "h": 512
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 512,
+        "h": 512
+      },
+      "sourceSize": {
+        "w": 512,
+        "h": 512
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "duration": 100.0,
+      "sourceFrame": 16
+    }
+  },
+  "meta": {
+    "app": "Motion Garden rabbit sprite pipeline",
+    "version": "1",
+    "image": "rabbit_bend.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1536
+    },
+    "scale": "1",
+    "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+    "frameRate": 10,
+    "repeat": 0,
+    "anchor": {
+      "x": 256.0,
+      "y": 475.50414276123047,
+      "origin": {
+        "x": 0.5,
+        "y": 0.9287190288305283
+      },
+      "world": [
+        -1.6019377491183207e-10,
+        -0.06988680785441972,
+        0.004381443089057968
+      ],
+      "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+      "canvasBottomOffset": 36.49585723876953
+    },
+    "alphaMode": "straight",
+    "durationNote": "frame.duration is custom metadata in milliseconds; Phaser playback must use rabbit_animations.json frameRate."
+  }
+}

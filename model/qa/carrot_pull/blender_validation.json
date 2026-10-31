@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "sourceSha256": "fca00b17c627c16eb74f324ceb0506f8d6417143bdafb3129ad0ead313144ba0",
+  "objects": 331,
+  "collections": {
+    "background_far": 11,
+    "background_mid": 143,
+    "platform": 34,
+    "foreground": 88,
+    "soil_patch": 11,
+    "carrot": 9,
+    "basket": 27
+  },
+  "checks": [
+    "Reopened saved blend",
+    "Seven named collections and manifest inventory match",
+    "No armature or rabbit meshes in scene",
+    "Camera and transparent Eevee RGBA settings",
+    "Isolated prop identity roots and mesh parenting",
+    "Finite transforms",
+    "No external textures",
+    "Read-only validation preserved blend SHA256"
+  ]
+}

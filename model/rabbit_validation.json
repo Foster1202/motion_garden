@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "blender_version": "5.2.1 LTS",
+  "saved_blend_reopened": true,
+  "engine": "BLENDER_EEVEE",
+  "character_objects_including_root": 22,
+  "renderable_character_parts": 21,
+  "closed_manifold_meshes": 14,
+  "open_surface_overlays": [
+    "Rabbit_InnerEar_L",
+    "Rabbit_Cheek_L",
+    "Rabbit_InnerEar_R",
+    "Rabbit_Cheek_R"
+  ],
+  "missing_materials": 0,
+  "external_textures": 0,
+  "unexpected_or_disabled_modifiers": 0,
+  "armatures": 0,
+  "animation_actions": 0,
+  "feet_min_z": 0.004381299018859863,
+  "camera_normalized_bounds": {
+    "x": [
+      0.2961086332798004,
+      0.7038913369178772
+    ],
+    "y": [
+      0.07128094136714935,
+      0.9283263683319092
+    ]
+  },
+  "png": {
+    "resolution": [
+      1024,
+      1024
+    ],
+    "channels": 4,
+    "all_border_pixels_transparent": true,
+    "fully_transparent_pixel_fraction": 0.7699241638183594,
+    "silhouette_bounds_pixels_bottom_origin": [
+      302,
+      72,
+      721,
+      950
+    ]
+  }
+}

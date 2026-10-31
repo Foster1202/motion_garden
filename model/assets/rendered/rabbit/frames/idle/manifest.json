@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "action": "idle",
+  "blenderAction": "Rabbit_Idle",
+  "sourceSha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+  "render": {
+    "width": 512,
+    "height": 512,
+    "engine": "BLENDER_EEVEE",
+    "colorMode": "RGBA",
+    "colorDepth": 8,
+    "transparent": true,
+    "sourceFps": 24,
+    "camera": {
+      "name": "Camera_Front_Orthographic",
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.6292068494294654e-07,
+          -1.0,
+          -8.0
+        ],
+        [
+          0.0,
+          1.0,
+          -1.6292068494294654e-07,
+          1.8049999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "type": "ORTHO",
+      "ortho_scale": 4.199999809265137,
+      "lens": 70.0,
+      "engine": "BLENDER_EEVEE",
+      "resolution": [
+        512,
+        512,
+        100
+      ],
+      "color_mode": "RGBA",
+      "film_transparent": true,
+      "view_transform": "AgX",
+      "exposure": 0.6499999761581421
+    },
+    "blenderVersion": "5.2.1 LTS"
+  },
+  "anchor": {
+    "x": 256.0,
+    "y": 475.50414276123047,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9287190288305283
+    },
+    "world": [
+      -1.6019377491183207e-10,
+      -0.06988680785441972,
+      0.004381443089057968
+    ],
+    "definition": "Midpoint of lowest evaluated sole vertices at Idle 1; fixed for all frames",
+    "canvasBottomOffset": 36.49585723876953
+  },
+  "frameRate": 6,
+  "repeat": -1,
+  "frames": [
+    {
+      "index": 0,
+      "name": "rabbit_idle_000.png",
+      "sourceFrame": 1,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    },
+    {
+      "index": 1,
+      "name": "rabbit_idle_001.png",
+      "sourceFrame": 5,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.31304931640625
+      }
+    },
+    {
+      "index": 2,
+      "name": "rabbit_idle_002.png",
+      "sourceFrame": 10,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.0687561035156
+      }
+    },
+    {
+      "index": 3,
+      "name": "rabbit_idle_003.png",
+      "sourceFrame": 13,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.877197265625
+      }
+    },
+    {
+      "index": 4,
+      "name": "rabbit_idle_004.png",
+      "sourceFrame": 18,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.57867431640625
+      }
+    },
+    {
+      "index": 5,
+      "name": "rabbit_idle_005.png",
+      "sourceFrame": 22,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.43284606933594
+      }
+    },
+    {
+      "index": 6,
+      "name": "rabbit_idle_006.png",
+      "sourceFrame": 25,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.40696716308594
+      }
+    },
+    {
+      "index": 7,
+      "name": "rabbit_idle_007.png",
+      "sourceFrame": 31,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.57867431640625
+      }
+    },
+    {
+      "index": 8,
+      "name": "rabbit_idle_008.png",
+      "sourceFrame": 36,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 375.877197265625
+      }
+    },
+    {
+      "index": 9,
+      "name": "rabbit_idle_009.png",
+      "sourceFrame": 39,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.0687561035156
+      }
+    },
+    {
+      "index": 10,
+      "name": "rabbit_idle_010.png",
+      "sourceFrame": 44,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.31304931640625
+      }
+    },
+    {
+      "index": 11,
+      "name": "rabbit_idle_011.png",
+      "sourceFrame": 48,
+      "durationMs": 166.66666666666666,
+      "attachment": {
+        "x": 256.0,
+        "y": 376.38111877441406
+      }
+    }
+  ],
+  "sourceRange": [
+    1,
+    48
+  ],
+  "mandatoryFrames": [
+    1,
+    13,
+    25,
+    36,
+    48
+  ],
+  "timing": "Uniform recommended game timing; intentional retiming of sampled source poses"
+}

@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "phaserVersion": "3.90.0",
+  "parser": "JSONHash",
+  "actions": {
+    "idle": {
+      "framesParsed": 12,
+      "pivotRetained": true
+    },
+    "bend": {
+      "framesParsed": 8,
+      "pivotRetained": true
+    },
+    "grab": {
+      "framesParsed": 8,
+      "pivotRetained": true
+    },
+    "return": {
+      "framesParsed": 8,
+      "pivotRetained": true
+    },
+    "pull": {
+      "framesParsed": 12,
+      "pivotRetained": true
+    },
+    "celebrate": {
+      "framesParsed": 16,
+      "pivotRetained": true
+    }
+  },
+  "scope": "Texture parser and Frame only; no Scene, animations or game integration created"
+}

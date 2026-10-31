@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "canonicalFilesCompared": 106,
+  "differentFiles": [],
+  "originalFilesChecked": 53,
+  "modifiedOriginalFiles": [],
+  "stalePullFrameRemoved": true,
+  "method": "Two complete final pipeline runs; exact SHA-256 comparison of normalized PNG frames, manifests, dist assets and QA artifacts",
+  "sameHostRequired": "Verified with Blender5.2.1/Eevee on this Mac and Pillow11.3.0; cross-GPU byte identity is not promised"
+}

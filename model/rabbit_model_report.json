@@ -1,0 +1,462 @@
+{
+  "blender_version": "5.2.1 LTS",
+  "blender_executable": "/Applications/Blender.app/Contents/MacOS/Blender",
+  "engine": "BLENDER_EEVEE",
+  "front": "-Y",
+  "base_mesh_polygons": 8384,
+  "evaluated_polygons_including_curves": 25048,
+  "evaluated_triangles_including_curves": 49632,
+  "bounds_min": [
+    -0.856343686580658,
+    -0.648712158203125,
+    0.004381299018859863
+  ],
+  "bounds_max": [
+    0.856343686580658,
+    0.6419847011566162,
+    3.6039719581604004
+  ],
+  "objects": [
+    {
+      "name": "Rabbit_Body",
+      "type": "MESH",
+      "parent": "Rabbit_Root",
+      "pivot_world": [
+        0.0,
+        0.02500000037252903,
+        0.5699999928474426
+      ],
+      "base_vertices": 610,
+      "base_polygons": 640,
+      "evaluated_polygons": 2496,
+      "evaluated_triangles": 4992,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Head",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        0.0,
+        0.0,
+        1.4800000190734863
+      ],
+      "base_vertices": 922,
+      "base_polygons": 960,
+      "evaluated_polygons": 3760,
+      "evaluated_triangles": 7520,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Ear_L",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.2750000059604645,
+        0.02500000037252903,
+        2.4700000286102295
+      ],
+      "base_vertices": 534,
+      "base_polygons": 560,
+      "evaluated_polygons": 2184,
+      "evaluated_triangles": 4368,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_InnerEar_L",
+      "type": "MESH",
+      "parent": "Rabbit_Ear_L",
+      "pivot_world": [
+        0.38355931639671326,
+        -0.12591665983200073,
+        3.0350000858306885
+      ],
+      "base_vertices": 385,
+      "base_polygons": 384,
+      "evaluated_polygons": 384,
+      "evaluated_triangles": 720,
+      "materials": [
+        "Rabbit_InnerEarPink"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Arm_L",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        0.5149999856948853,
+        -0.005000000819563866,
+        1.3700000047683716
+      ],
+      "base_vertices": 422,
+      "base_polygons": 448,
+      "evaluated_polygons": 1736,
+      "evaluated_triangles": 3472,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Leg_L",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        0.26499998569488525,
+        0.0,
+        0.5099999904632568
+      ],
+      "base_vertices": 534,
+      "base_polygons": 560,
+      "evaluated_polygons": 2184,
+      "evaluated_triangles": 4368,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Eye_L",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.3499999940395355,
+        -0.5743204951286316,
+        2.0450000762939453
+      ],
+      "base_vertices": 422,
+      "base_polygons": 448,
+      "evaluated_polygons": 448,
+      "evaluated_triangles": 840,
+      "materials": [
+        "Rabbit_EyeEspresso"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_EyeHighlight_L",
+      "type": "MESH",
+      "parent": "Rabbit_Eye_L",
+      "pivot_world": [
+        0.3319999873638153,
+        -0.6083204746246338,
+        2.071000099182129
+      ],
+      "base_vertices": 178,
+      "base_polygons": 192,
+      "evaluated_polygons": 192,
+      "evaluated_triangles": 352,
+      "materials": [
+        "Rabbit_EyeCatchlight"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Cheek_L",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.5403056740760803,
+        -0.46477222442626953,
+        1.9099241495132446
+      ],
+      "base_vertices": 385,
+      "base_polygons": 384,
+      "evaluated_polygons": 384,
+      "evaluated_triangles": 720,
+      "materials": [
+        "Rabbit_SoftBlush"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Ear_R",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        -0.2750000059604645,
+        0.02500000037252903,
+        2.4700000286102295
+      ],
+      "base_vertices": 534,
+      "base_polygons": 560,
+      "evaluated_polygons": 2184,
+      "evaluated_triangles": 4368,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_InnerEar_R",
+      "type": "MESH",
+      "parent": "Rabbit_Ear_R",
+      "pivot_world": [
+        -0.38355931639671326,
+        -0.12591665983200073,
+        3.0350000858306885
+      ],
+      "base_vertices": 385,
+      "base_polygons": 384,
+      "evaluated_polygons": 384,
+      "evaluated_triangles": 720,
+      "materials": [
+        "Rabbit_InnerEarPink"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Arm_R",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        -0.5149999856948853,
+        -0.005000000819563866,
+        1.3700000047683716
+      ],
+      "base_vertices": 422,
+      "base_polygons": 448,
+      "evaluated_polygons": 1736,
+      "evaluated_triangles": 3472,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Leg_R",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        -0.26499998569488525,
+        0.0,
+        0.5099999904632568
+      ],
+      "base_vertices": 534,
+      "base_polygons": 560,
+      "evaluated_polygons": 2184,
+      "evaluated_triangles": 4368,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Eye_R",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        -0.3499999940395355,
+        -0.5743204951286316,
+        2.0450000762939453
+      ],
+      "base_vertices": 422,
+      "base_polygons": 448,
+      "evaluated_polygons": 448,
+      "evaluated_triangles": 840,
+      "materials": [
+        "Rabbit_EyeEspresso"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_EyeHighlight_R",
+      "type": "MESH",
+      "parent": "Rabbit_Eye_R",
+      "pivot_world": [
+        -0.36800000071525574,
+        -0.6083204746246338,
+        2.071000099182129
+      ],
+      "base_vertices": 178,
+      "base_polygons": 192,
+      "evaluated_polygons": 192,
+      "evaluated_triangles": 352,
+      "materials": [
+        "Rabbit_EyeCatchlight"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Cheek_R",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        -0.5403048992156982,
+        -0.4647499620914459,
+        1.9099241495132446
+      ],
+      "base_vertices": 385,
+      "base_polygons": 384,
+      "evaluated_polygons": 384,
+      "evaluated_triangles": 720,
+      "materials": [
+        "Rabbit_SoftBlush"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Tail",
+      "type": "MESH",
+      "parent": "Rabbit_Body",
+      "pivot_world": [
+        0.0,
+        0.3499999940395355,
+        0.6399999856948853
+      ],
+      "base_vertices": 422,
+      "base_polygons": 448,
+      "evaluated_polygons": 1736,
+      "evaluated_triangles": 3472,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "viewport": 1,
+          "render": 1
+        }
+      ]
+    },
+    {
+      "name": "Rabbit_Nose",
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.0,
+        -0.6227121353149414,
+        1.934999942779541
+      ],
+      "base_vertices": 362,
+      "base_polygons": 384,
+      "evaluated_polygons": 384,
+      "evaluated_triangles": 720,
+      "materials": [
+        "Rabbit_NoseRoseBrown"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Mouth_Stem",
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "base_vertices": null,
+      "base_polygons": null,
+      "evaluated_polygons": 336,
+      "evaluated_triangles": 656,
+      "materials": [
+        "Rabbit_SmileBrown"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Mouth_L",
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "base_vertices": null,
+      "base_polygons": null,
+      "evaluated_polygons": 656,
+      "evaluated_triangles": 1296,
+      "materials": [
+        "Rabbit_SmileBrown"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Rabbit_Mouth_R",
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "pivot_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "base_vertices": null,
+      "base_polygons": null,
+      "evaluated_polygons": 656,
+      "evaluated_triangles": 1296,
+      "materials": [
+        "Rabbit_SmileBrown"
+      ],
+      "modifiers": []
+    }
+  ]
+}

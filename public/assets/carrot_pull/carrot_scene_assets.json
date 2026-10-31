@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "canvas": [
+    1920,
+    1080
+  ],
+  "layers": {
+    "background_far": {
+      "file": "background_far.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "placement": {
+        "x": 0,
+        "y": 0
+      },
+      "displayScale": 1,
+      "contents": "Authored pale sky, soft clouds, distant rounded mountains and hills; sky covers canvas.",
+      "sha256": "a2e210b486f63f54599c5c3fa75ffd8316aa2cf056d2532201bd7424b1bc2d72",
+      "quality": "final"
+    },
+    "background_mid": {
+      "file": "background_mid.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "placement": {
+        "x": 0,
+        "y": 0
+      },
+      "displayScale": 1,
+      "contents": "Rounded meadow, trees, low wooden fence, stepping path, left carrot bed and sparse flowers.",
+      "sha256": "675df00219749a0a48a73f33e8a7aaf0cc884159476ab6e3916b241488ec1983",
+      "quality": "final"
+    },
+    "platform": {
+      "file": "platform.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "placement": {
+        "x": 0,
+        "y": 0
+      },
+      "displayScale": 1,
+      "contents": "Thick rounded wooden platform, fitted planks and subtle geometric grain.",
+      "sha256": "6c527f818ae5a6218d88f72ce3e02171ee0474fa60aa4c06715d499ad6c94012",
+      "quality": "final"
+    },
+    "foreground": {
+      "file": "foreground.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "placement": {
+        "x": 0,
+        "y": 0
+      },
+      "displayScale": 1,
+      "contents": "Sparse corner flowers and grass; transparent central play area.",
+      "sha256": "08dff3ec69fd5dceb3e4e77d890c39f5c0a28400018a86b3f17c55df2a554625",
+      "quality": "final"
+    },
+    "soil_patch": {
+      "file": "soil_patch.png",
+      "size": [
+        512,
+        512
+      ],
+      "placement": {
+        "x": 970.6,
+        "y": 734.807177734375
+      },
+      "displayScale": 0.4,
+      "contents": "Rounded soil mound with dark central depression and soft clumps.",
+      "pivotPixels": {
+        "x": 256.0,
+        "y": 245.4820556640625
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.47945713996887207
+      },
+      "cameraLocation": [
+        0.0,
+        -5.7704267501831055,
+        1.8275198936462402
+      ],
+      "cameraRotationEulerRadians": [
+        1.2527085542678833,
+        -0.0,
+        0.0
+      ],
+      "lensMm": 65.0,
+      "originWorld": [
+        0,
+        0,
+        0
+      ],
+      "anchorCanvasPixels": {
+        "x": 1073,
+        "y": 833
+      },
+      "sha256": "99a9c3d9fa64482f65bf9f93e36e22d65da0377361f256cb4c31e3279c0988d8",
+      "quality": "final"
+    },
+    "carrot": {
+      "file": "carrot.png",
+      "size": [
+        512,
+        512
+      ],
+      "placement": {
+        "x": 960.9714520263672,
+        "y": 733.3687707519531
+      },
+      "displayScale": 0.44,
+      "contents": "Complete carrot with orange taproot and green leaves; pivot at grip.",
+      "pivotPixels": {
+        "x": 254.61033630371094,
+        "y": 212.79824829101562
+      },
+      "origin": {
+        "x": 0.4972858130931854,
+        "y": 0.4156215786933899
+      },
+      "cameraLocation": [
+        0.0071626752614974976,
+        -4.595437526702881,
+        1.2786997556686401
+      ],
+      "cameraRotationEulerRadians": [
+        1.2527085542678833,
+        -0.0,
+        0.0
+      ],
+      "lensMm": 65.0,
+      "originWorld": [
+        0,
+        0,
+        0
+      ],
+      "anchorCanvasPixels": {
+        "x": 1073,
+        "y": 827
+      },
+      "pivotDefinition": "Local origin (0,0,0) at leaf/root junction; grip anchor. +Z leaves, -Z taproot, front -Y. Use pivotPixels / 512 as Phaser origin.",
+      "sha256": "b5e3fc1ca180661a51134aff10418a115048bf5324d794b9e3b75674f4009026",
+      "quality": "final"
+    },
+    "basket": {
+      "file": "basket.png",
+      "size": [
+        512,
+        512
+      ],
+      "placement": {
+        "x": 1340.4,
+        "y": 633.6021514892578
+      },
+      "displayScale": 0.6,
+      "contents": "Open woven wooden basket, rounded rim and arched handle.",
+      "pivotPixels": {
+        "x": 256.0,
+        "y": 373.9964141845703
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.7304617464542389
+      },
+      "cameraLocation": [
+        0.0,
+        -4.329858303070068,
+        2.0651445388793945
+      ],
+      "cameraRotationEulerRadians": [
+        1.2527085542678833,
+        -0.0,
+        0.0
+      ],
+      "lensMm": 65.0,
+      "originWorld": [
+        0,
+        0,
+        0
+      ],
+      "anchorCanvasPixels": {
+        "x": 1494,
+        "y": 858
+      },
+      "sha256": "f453797b293d7a83b76455f88c6c7f02355d3f7c83b3c56694fc1c2ccd2f189a",
+      "quality": "final"
+    }
+  },
+  "sourceSha256": "fca00b17c627c16eb74f324ceb0506f8d6417143bdafb3129ad0ead313144ba0",
+  "alphaMode": "straight",
+  "colorSpace": "sRGB",
+  "sourceCamera": "Camera_Scene_65mm",
+  "layerOrder": [
+    "background_far",
+    "background_mid",
+    "platform",
+    "soil_patch",
+    "rabbit (external)",
+    "carrot",
+    "basket",
+    "foreground"
+  ]
+}

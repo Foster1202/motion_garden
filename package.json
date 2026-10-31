@@ -1,0 +1,38 @@
+{
+  "name": "motion-garden-rabbit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:assets": "node scripts/sync-game-assets.mjs && node scripts/sync-mediapipe-assets.mjs",
+    "sync:mediapipe": "node scripts/sync-mediapipe-assets.mjs",
+    "dev": "node --preserve-symlinks scripts/dev.mjs",
+    "build": "node node_modules/typescript/bin/tsc --noEmit && node node_modules/vite/bin/vite.js build",
+    "preview": "node node_modules/vite/bin/vite.js preview --host 127.0.0.1",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "test": "node node_modules/tsx/dist/cli.mjs --test tests/*.test.ts",
+    "qa:rabbit3d": "node scripts/qa-rabbit-3d.mjs",
+    "build:rabbit3d": "bash model/scripts/build_rabbit_glb.sh",
+    "qa:mocap": "node scripts/qa-rabbit-mocap.mjs",
+    "qa:mocap-engine": "node scripts/qa-mocap-engine.mjs",
+    "qa:berry": "node scripts/qa-berry-kick.mjs",
+    "qa:berry-camera": "node scripts/qa-berry-camera.mjs",
+    "build:berry-art": "bash model/scripts/build_berry_art.sh"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.0.1",
+    "phaser": "^3.90.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/three": "0.186.0",
+    "playwright": "1.64.1",
+    "tsx": "^4.20.5",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
