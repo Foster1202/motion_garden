@@ -1,6 +1,6 @@
 # Motion Garden — agent handoff and working agreement
 
-Updated: 2026-10-31. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
+Updated: 2026-11-06. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
 
 ## Mandatory workflow
 
@@ -12,6 +12,48 @@ Updated: 2026-10-31. This is the shared entry point for every agent/task working
 6. Review diff and staged files for unrelated work, secrets, large artifacts and missing exports. Stage only authorized work. Never discard existing user changes.
 7. **Commit and push all completed changes to GitHub**, using concise, meaningful messages (for example `Improve berry orchard art`). Use the current authorized branch/upstream; do not force-push or rewrite shared history. Verify push and clean status. If credentials/network/rejection block push, record the exact blocker and report it; never claim synchronization without success. Do not embed a commit's own hash in this file; use `git log` to identify it.
 8. Stop at the requested milestone. Code comments must be concise English.
+
+## Team agent rules
+
+These rules apply to every team member's AI agent. Keep `AGENTS.md` tracked and share updates through Git. A handoff is documentation, not authorization to start the next task.
+
+### Read and synchronize before editing
+
+1. Read this entire file, `README.md`, applicable nested `AGENTS.md` files, the latest handoff and any Active work entries. Read the task-relevant source, tests and docs before proposing changes. For Berry Kick read `docs/berry-kick-game.md`; for rabbit 3D/retargeting read `docs/task-4a-rabbit-realtime-3d.md` and `docs/task-4b-motion-retargeting.md`. Verify historical statements against current code.
+2. Before each new change task or resumed editing session, inspect `git status --short --branch`, `git remote -v`, and the current branch/upstream. With a clean worktree, run `git pull --ff-only` against the intended upstream **before editing**, then re-read any updated instructions and relevant files. Do not pull before every individual file edit.
+3. If there are existing changes, identify their owner and preserve them. Never automatically stash, discard, commit or stage someone else's work. Coordinate with the owner or use a separate worktree based on the updated remote branch. If pull fails, branches diverge, or the upstream is unclear, report the blocker and resolve it before proceeding with dependent edits; do not pretend the checkout is current.
+4. Add an Active work entry before editing: task ID, date, team member/agent, branch, goal, owned paths, explicit exclusions and planned validation. Use a unique task ID such as `YYYY-MM-DD-owner-short-topic`. Concurrent agents must own disjoint paths or agree who integrates shared files. Preserve other Active work entries.
+
+### Scope and integration
+
+- Implement only the assigned task and acceptance criteria. Do not perform unrelated cleanup, dependency upgrades, asset regeneration, API changes or future tasks. Explain necessary scope expansions to the task owner.
+- Preserve source assets, licenses, existing behavior and teammates' changes. Keep code comments concise and in English. Do not commit credentials, personal data, local caches or disposable builds. Do not use `git add -f` to bypass ignore rules without an explicit task reason.
+- Use the branch authorized for the task; never assume permission to merge other branches or bypass branch protection. For parallel work, prefer separate task branches/worktrees and name the integration owner.
+- Resolve conflicts by understanding both changes. Never blanket-select ours/theirs, force-push, rewrite shared history, or use destructive reset/clean commands to make a check pass. Ask the task owner when intended behavior is ambiguous.
+
+### Validate, hand off, commit and push
+
+1. Run the applicable checks in Mandatory workflow. Record actual commands and outcomes; use PASS, FAIL or NOT RUN with a reason. Documentation-only tasks require diff/link/content checks, not gameplay tests. Historical test results are not evidence for the current task.
+2. Add a handoff using the template below to Verification and handoff history in this file. Update Current implemented state when behavior changes. Remove only your completed Active work entry; retain blocked or ongoing tasks with their blocker. Longer evidence may live in `docs/handoffs/<task-id>.md`, linked from the summary here.
+3. Inspect `git diff`, stage only explicit task paths, and inspect `git diff --cached` and `git diff --cached --check`. Commit the completed changes and handoff together with a meaningful message. Never commit unrelated work merely to obtain a clean status.
+4. Push every completed change to the intended GitHub branch. If the remote advanced, fetch and integrate its changes without rewriting shared history, resolve conflicts, rerun affected checks and retry a normal push. Respect protected branches: push an authorized task branch and provide a PR when required; do not bypass protection.
+5. Verify the push succeeded and fetch/check that the remote branch contains the delivered commit; report remaining local changes or ahead/behind state. In the final response include the commit hash, remote branch or PR, validation and remaining issues. Never describe a local commit as uploaded. If authentication, network or permissions prevent upload, keep the local commit and report the exact blocker and next action without exposing secrets.
+
+### Required handoff template
+
+Use every field; write `None` or `Not applicable` where appropriate. Keep entries factual and concise, with repository-relative paths. Do not put the handoff commit's own hash inside itself; report it after committing.
+
+```markdown
+### YYYY-MM-DD — <task-id> — <short title>
+- Owner / agent: <team member and agent; do not invent an identity>
+- Branch / base: <working branch and starting commit>
+- Request / scope: <goal, acceptance criteria and exclusions>
+- Changes: <paths and resulting behavior; important decisions and reasons>
+- Validation: <exact commands or manual scenarios; PASS / FAIL / NOT RUN and reasons; evidence paths>
+- Risks / blockers: <known limitations, conflicts or remaining issues; None if absent>
+- Next action: <specific follow-up and owner, or None; follow-up requires authorization>
+- Delivery: <intended remote branch or PR; verify push in the final response>
+```
 
 ## Repository and surrounding workspace
 
@@ -55,7 +97,7 @@ Browser suites: `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:be
 
 ## Active work
 
-None. 2026-10-31 local-only AGENTS.md fix completed; tracking removal committed and pushed to origin/main. Local file preserved and ignore rule verified.
+None. See the latest handoff below for completed work.
 
 ## Verification and handoff history
 
@@ -64,4 +106,14 @@ None. 2026-10-31 local-only AGENTS.md fix completed; tracking removal committed 
 
 Current maintenance validation (2026-10-31): typecheck PASS; 155/155 tests PASS; production build PASS. No runtime code changed, so browser suites were not rerun in this documentation/licensing task. Required export directories are included in this commit; runtime/source asset sync is checked separately.
 
-- 2026-10-31: User requested local-only AGENTS.md. Existing .gitignore rule matches; remove from index and retain local instructions. This user request overrides the requirement to include this file in every commit. No gameplay changes; validation uses Git tracking/ignore checks, not runtime tests.
+- 2026-10-31: User requested local-only AGENTS.md. Existing .gitignore rule matches; remove from index and retain local instructions. Historical policy, superseded on 2026-11-06: AGENTS.md is now tracked and shared with the team. No gameplay changes; validation uses Git tracking/ignore checks, not runtime tests.
+
+### 2026-11-06 — 2026-11-06-lead-team-rules — Shared agent workflow
+- Owner / agent: Requesting team member / Codex Lead
+- Branch / base: main / fd849b2
+- Request / scope: Standardize team agents' reading, synchronization, handoff and Git delivery; documentation only.
+- Changes: AGENTS.md adds required reading, pre-edit pull, ownership and conflict safeguards, validation/delivery rules and a uniform handoff template. Restores the shared tracked-file policy over the historical local-only policy.
+- Validation: `git pull --ff-only` PASS (already current); `git diff --check` PASS; referenced existing documentation paths checked PASS. Runtime tests NOT RUN (documentation-only change).
+- Risks / blockers: Rules require agent compliance; no automated enforcement added.
+- Next action: None.
+- Delivery: origin/main; push verification reported in the final response.
