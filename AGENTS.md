@@ -57,7 +57,7 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 
 ## Repository and surrounding workspace
 
-- Git root: `game/` within the BME3S02 workspace; origin `git@github.com:Foster1202/motion_garden.git`, current branch `main` (verify before use).
+- Git root: `game/` within the BME3S02 workspace (or `motion_garden/` if clone from GitHub); origin `git@github.com:Foster1202/motion_garden.git`, current branch `main` (verify before use).
 - `src/game/`: Phaser scenes, input, vision, mocap, Three.js bridge, game rules and UI/settings.
 - `model/scripts/`, `model/assets/blender/`: reproducible Blender sources and scripts.
 - `model/dist/`: required exported rabbit/berry assets used by `sync:assets`; intentionally tracked. `/dist/` is the disposable Vite build.
