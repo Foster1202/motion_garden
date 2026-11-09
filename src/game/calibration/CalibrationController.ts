@@ -255,7 +255,7 @@ export class CalibrationController {
       standingIqr: standing.iqr, bendingIqr: baseline.iqr, reliableSide: this.side,
     };
     if (thresholds.range < CONFIG.minimumRange - CONFIG.numericAngleEpsilon) {
-      this.fail('range-too-small', '差少少，可以再屈多少少嗎？去到舒服嘅位置就得。');
+      this.fail('range-too-small', '暫時未能穩定辨識呢個幅度，可以按舒服幅度重試或使用鍵盤，唔使勉強。');
     } else if (!validateCalibration(profile)) {
       this.fail('invalid-profile', '未設定到，我哋再試一次。');
     } else {

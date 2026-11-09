@@ -1,4 +1,5 @@
 import type { RabbitRigController } from './RabbitRigController';
+import { RABBIT_3D_CONFIG } from './rabbit3dConfig';
 
 export const DEV_RABBIT_3D_DEBUG = import.meta.env.DEV &&
   (import.meta.env.VITE_DEV_RABBIT_3D_DEBUG === 'true' || new URLSearchParams(location.search).get('rabbit3dDebug') === '1');
@@ -9,7 +10,7 @@ export class Rabbit3DDebug {
   constructor(host: HTMLElement, rig: RabbitRigController) {
     this.root.className = 'rabbit-3d-debug';
     this.root.open = true;
-    this.root.innerHTML = '<summary>Task 4A · 骨骼測試</summary><p>即時 3D · 未接入體感動作</p>';
+    this.root.innerHTML = '<summary>骨骼測試</summary><p>控制來源 · 手動滑桿。完成鏡頭動作設定後會自動交由體感控制。</p>';
     const slider = (name: string, bone: string, min: number, max: number, step: number, apply: (value: number) => void) => {
       const label = document.createElement('label');
       label.innerHTML = `<span>${name} <output>0</output></span><small>${bone}</small>`;
@@ -19,11 +20,19 @@ export class Rabbit3DDebug {
       input.addEventListener('input', () => { label.querySelector('output')!.value = input.value; apply(Number(input.value)); });
       label.append(input); this.root.append(label);
     };
-    slider('左臂', 'upper_arm.L / forearm.L', 0, 65, 1, value => rig.setArmRotation('L', value));
-    slider('右臂', 'upper_arm.R / forearm.R', 0, 65, 1, value => rig.setArmRotation('R', value));
-    slider('身體側傾', 'body', -12, 12, 1, value => rig.setBodyLean(value, Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體前後傾"]')!.value)));
-    slider('身體前後傾', 'body', -8, 8, 1, value => rig.setBodyLean(Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體側傾"]')!.value), value));
-    slider('頭部轉向', 'head + ears + face', -18, 18, 1, value => rig.setHeadRotation(value));
+    const limits = RABBIT_3D_CONFIG.limits;
+    for (const [side, label] of [['L', '左'], ['R', '右']] as const) {
+      const apply = () => rig.setArmRotation(side,
+        Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂"]`)!.value),
+        Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}手肘"]`)!.value),
+        Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂前抬方向"]`)!.value));
+      slider(`${label}臂`, `upper_arm.${side}`, 0, limits.arm.max, 1, apply);
+      slider(`${label}手肘`, `forearm.${side}`, 0, limits.forearm.max, 1, apply);
+      slider(`${label}臂前抬方向`, '0° 側抬 / 90° 前抬', 0, 90, 1, apply);
+    }
+    slider('身體側傾', 'body', -limits.bodySide, limits.bodySide, 1, value => rig.setBodyLean(value, Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體前後傾"]')!.value)));
+    slider('身體前後傾', 'body', -limits.bodyForward, limits.bodyForward, 1, value => rig.setBodyLean(Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體側傾"]')!.value), value));
+    slider('頭部轉向', 'head + ears + face', -limits.headYaw, limits.headYaw, 1, value => rig.setHeadRotation(value));
     slider('淺屈膝', 'thigh / shin / foot · FK 近似', 0, 1, .01, value => rig.setKneeBend(value));
     slider('左右平移', 'root · model units', -.45, .45, .01, value => rig.setRootOffset(value, Number(this.root.querySelector<HTMLInputElement>('[aria-label="輕微高度"]')!.value), 0));
     slider('輕微高度', 'root · model units', 0, .04, .005, value => rig.setRootOffset(Number(this.root.querySelector<HTMLInputElement>('[aria-label="左右平移"]')!.value), value, 0));

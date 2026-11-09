@@ -151,7 +151,7 @@ export class PoseClassifier {
       timestampMs: frame?.timestampMs ?? this.current.timestampMs,
       inferenceMs: frame?.inferenceMs ?? this.current.inferenceMs,
       poseFps: frame?.poseFps ?? this.current.poseFps,
-      trackingLostMs, autoRestRecommended: trackingLostMs >= POSE_CONFIG.autoRestMs, reason,
+      trackingLostMs, autoRestRecommended: false, reason,
     };
     return { ...this.current };
   }

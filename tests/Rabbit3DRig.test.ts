@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { Object3D, Quaternion, SkinnedMesh, Vector3 } from 'three';
+import { Box3, DoubleSide, Mesh, Object3D, Quaternion, Raycaster, SkinnedMesh, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RabbitRigController } from '../src/game/3d/RabbitRigController';
 import { RABBIT_3D_CONFIG, RABBIT_REQUIRED_BONES } from '../src/game/3d/rabbit3dConfig';
@@ -238,4 +238,176 @@ test('v2 body lean preserves planted feet during shallow knee bend', async () =>
   settle(rig);
   vertices().forEach((points, side) => points.forEach((point, index) =>
     closeVector(point, planted[side][index].clone().add(new Vector3(0.35, 0, 0)))));
+});
+
+test('bounded shoulder swing reaches head level sideways and forward without translating the joints', async () => {
+  const { rig } = await fixture();
+  const pivots = new Map([...rig.bones].map(([name, bone]) => [name, bone.position.clone()]));
+  const left = rig.bones.get('hand.L')!;
+  const shoulder = rig.bones.get('upper_arm.L')!;
+  const shoulderRest = position(shoulder);
+  const handRest = position(left);
+  rig.setArmRotation('left', 145);
+  settle(rig);
+  assert.ok(position(left).y > position(rig.bones.get('head')!).y + 0.1);
+  assert.ok(position(left).y - handRest.y > 0.95);
+  closeVector(position(shoulder), shoulderRest);
+  rig.setArmRotation('left', 90, 0, 90);
+  settle(rig);
+  assert.ok(position(left).z - handRest.z > 0.65);
+  assert.ok(position(left).y - handRest.y > 0.65);
+  for (const [name, bone] of rig.bones) closeVector(bone.position, pivots.get(name)!);
+  const maximumPlane = left.quaternion.clone();
+  rig.setArmRotation('left', 90, 0, 1000);
+  settle(rig);
+  assert.ok(left.quaternion.angleTo(maximumPlane) < 1e-7);
+});
+
+test('elbows flex outward and forward with pose-dependent head clearance', async () => {
+  const { rig } = await fixture();
+  const hand = rig.bones.get('hand.L')!;
+  const elbow = rig.bones.get('forearm.L')!;
+  const handRest = position(hand);
+  const elbowRest = position(elbow);
+  rig.setArmRotation('left', 0, 100);
+  settle(rig);
+  assert.ok(position(hand).z > handRest.z + 0.2);
+  closeVector(position(elbow), elbowRest);
+  rig.setArmRotation('left', 145, 100);
+  settle(rig);
+  const limited = elbow.quaternion.clone();
+  rig.setArmRotation('left', 100, 100);
+  settle(rig);
+  assert.ok(limited.angleTo(elbow.quaternion) < 1e-7);
+});
+
+test('combined FK motion preserves segment lengths, planted legs and bounded head roll', async () => {
+  const { rig } = await fixture();
+  const length = (first: 'upper_arm.L' | 'upper_arm.R', second: 'forearm.L' | 'forearm.R') =>
+    position(rig.bones.get(first)!).distanceTo(position(rig.bones.get(second)!));
+  const restLengths = [length('upper_arm.L', 'forearm.L'), length('upper_arm.R', 'forearm.R')];
+  const feetRest = ['foot.L', 'foot.R'].map(name => position(rig.bones.get(name as 'foot.L' | 'foot.R')!));
+  for (let step = 0; step <= 20; step++) {
+    const amount = step / 20;
+    rig.setArmRotation('left', 145 * amount, 100 * amount, 90 * amount);
+    rig.setArmRotation('right', 120 * amount, 80 * amount, 45 * amount);
+    rig.setBodyLean(18 * amount, 16 * amount);
+    rig.setHeadRotation(20 * amount, 0, -7.2 * amount);
+    rig.setKneeBend(amount);
+    settle(rig);
+    assert.ok(Math.abs(length('upper_arm.L', 'forearm.L') - restLengths[0]) < 1e-6);
+    assert.ok(Math.abs(length('upper_arm.R', 'forearm.R') - restLengths[1]) < 1e-6);
+    for (const [index, name] of ['foot.L', 'foot.R'].entries()) {
+      assert.ok(Math.abs(position(rig.bones.get(name as 'foot.L' | 'foot.R')!).y - feetRest[index].y) < 0.001);
+    }
+    for (const bone of rig.bones.values()) {
+      assert.ok([...bone.position.toArray(), ...bone.quaternion.toArray()].every(Number.isFinite));
+      assert.ok(Math.abs(bone.quaternion.lengthSq() - 1) < 1e-5);
+    }
+  }
+  rig.resetPose(true);
+  const neutral = rig.bones.get('head')!.getWorldQuaternion(new Quaternion());
+  rig.setBodyLean(18);
+  rig.setHeadRotation(0, 0, -7.2);
+  settle(rig);
+  const roll = neutral.angleTo(rig.bones.get('head')!.getWorldQuaternion(new Quaternion())) * 180 / Math.PI;
+  assert.ok(Math.abs(roll - 10.8) < 1e-4);
+});
+
+
+test('coordinated FK avoids head penetration beyond sub-pixel shoulder seam contacts', async () => {
+  const { gltf, rig } = await fixture();
+  const head = gltf.scene.getObjectByName('Rabbit_Head') as Mesh;
+  for (const material of Array.isArray(head.material) ? head.material : [head.material]) material.side = DoubleSide;
+  const ray = new Raycaster();
+  const rayDirection = new Vector3(1, 0.123, 0.321).normalize();
+  const contactDirections = [new Vector3(1, 0, 0), new Vector3(-1, 0, 0),
+    new Vector3(0, 1, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)];
+  const assertClear = (side: 'L' | 'R', description: string) => {
+    const arm = gltf.scene.getObjectByName(`Rabbit_Arm_${side}`) as SkinnedMesh;
+    arm.skeleton.update();
+    const bounds = new Box3().setFromObject(head);
+    const shoulder = position(rig.bones.get(`upper_arm.${side}`)!);
+    for (let index = 0; index < arm.geometry.getAttribute('position').count; index++) {
+      const vertex = arm.getVertexPosition(index, new Vector3()).applyMatrix4(arm.matrixWorld);
+      if (!bounds.containsPoint(vertex)) continue;
+      ray.set(vertex, rayDirection);
+      const crossings = ray.intersectObject(head, false).map(hit => hit.distance)
+        .filter((distance, hitIndex, distances) => hitIndex === 0 || Math.abs(distance - distances[hitIndex - 1]) > 1e-5);
+      if (crossings.length % 2 === 0) continue;
+      let penetration = Infinity;
+      for (const direction of contactDirections) {
+        ray.set(vertex, direction);
+        penetration = Math.min(penetration, ray.intersectObject(head, false)[0]?.distance ?? Infinity);
+      }
+      // Imported shoulder seams may touch by less than half a logical pixel.
+      assert.ok(vertex.distanceTo(shoulder) <= 0.12 && penetration <= 0.005,
+        `${description}, ${side} arm vertex ${index} penetrates ${penetration} model units`);
+    }
+    ray.set(position(rig.bones.get(`hand.${side}`)!), rayDirection);
+    const wristCrossings = ray.intersectObject(head, false).map(hit => hit.distance)
+      .filter((distance, index, distances) => index === 0 || Math.abs(distance - distances[index - 1]) > 1e-5);
+    assert.equal(wristCrossings.length % 2, 0, `${description}, ${side} wrist is inside the head`);
+  };
+  for (const plane of [0, 30, 45, 60, 90]) {
+    for (const requested of [0, 60, 90, 100, 120, 145]) {
+      for (const elbow of [0, 30, 60, 100]) {
+        rig.resetPose(true);
+        rig.setArmRotation('left', requested, elbow, plane);
+        settle(rig);
+        assertClear('L', `shoulder ${requested}, elbow ${elbow}, plane ${plane}`);
+      }
+    }
+  }
+  for (const sign of [-1, 1]) {
+    for (const plane of [0, 30, 45, 60, 90]) {
+      for (const requested of [0, 60, 75, 85, 90]) {
+        for (const elbow of [0, 60, 100]) {
+          rig.resetPose(true);
+          rig.setArmRotation('left', requested, elbow, plane);
+          rig.setArmRotation('right', requested, elbow, plane);
+          rig.setBodyLean(sign * 18, 16);
+          rig.setHeadRotation(sign * 25, sign * 18, -sign * 7.2);
+          rig.setKneeBend(1);
+          settle(rig);
+          assertClear('L', `combined pose, shoulder ${requested}, plane ${plane}, elbow ${elbow}, sign ${sign}`);
+          assertClear('R', `combined pose, shoulder ${requested}, plane ${plane}, elbow ${elbow}, sign ${sign}`);
+        }
+      }
+    }
+  }
+});
+
+
+test('head clearance coordinates both setter orders and changes continuously as arms rise', async () => {
+  const first = await fixture();
+  const second = await fixture();
+  const firstHead = first.rig.bones.get('head')!;
+  const secondHead = second.rig.bones.get('head')!;
+  const rest = firstHead.quaternion.clone();
+  first.rig.setHeadRotation(25, 18, 7.2);
+  let previous = Infinity;
+  for (let elevation = 0; elevation <= 90; elevation += 3) {
+    first.rig.setArmRotation('left', elevation, 60, 45);
+    second.rig.setArmRotation('left', elevation, 60, 45);
+    second.rig.setHeadRotation(25, 18, 7.2);
+    settle(first.rig); settle(second.rig);
+    assert.ok(firstHead.quaternion.angleTo(secondHead.quaternion) < 1e-7);
+    const angle = rest.angleTo(firstHead.quaternion) * 180 / Math.PI;
+    assert.ok(angle <= previous + 1e-7);
+    assert.ok(angle <= 12.5);
+    previous = angle;
+  }
+  assert.ok(rest.angleTo(firstHead.quaternion) < 1e-7);
+  first.rig.setArmRotation('left', 0);
+  settle(first.rig);
+  assert.ok(rest.angleTo(firstHead.quaternion) > 0.1);
+  first.rig.resetPose(true);
+  first.rig.setArmRotation('left', 0);
+  settle(first.rig);
+  assert.ok(rest.angleTo(firstHead.quaternion) < 1e-7);
+  first.rig.dispose();
+  first.rig.setHeadRotation(25, 18, 7.2);
+  settle(first.rig);
+  assert.ok(rest.angleTo(firstHead.quaternion) < 1e-7);
 });

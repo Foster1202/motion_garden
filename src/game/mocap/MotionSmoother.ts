@@ -26,9 +26,14 @@ export class MotionSmoother {
     };
     move('leftArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);
     move('rightArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);
+    move('leftArmPlane', 0, 90, rates.armDegreesPerSecond);
+    move('rightArmPlane', 0, 90, rates.armDegreesPerSecond);
     move('leftElbowBend', limits.forearm.min, limits.forearm.max, rates.armDegreesPerSecond);
     move('rightElbowBend', limits.forearm.min, limits.forearm.max, rates.armDegreesPerSecond);
     move('torsoLean', -limits.bodySide, limits.bodySide, rates.bodyDegreesPerSecond);
+    move('torsoForward', -limits.bodyForward, limits.bodyForward, rates.bodyDegreesPerSecond);
+    move('headYaw', -limits.headYaw, limits.headYaw, rates.bodyDegreesPerSecond);
+    move('headPitch', -limits.headPitch, limits.headPitch, rates.bodyDegreesPerSecond);
     move('bendAmount', 0, 1, rates.bendPerSecond);
     move('lateralOffset', -limits.root.x, limits.root.x, rates.rootUnitsPerSecond);
     if (Number.isFinite(target.trackingConfidence)) this.current.trackingConfidence = Math.max(0, Math.min(1, target.trackingConfidence));

@@ -4,11 +4,13 @@ import { readFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RabbitRigController } from '../src/game/3d/RabbitRigController';
+import { RABBIT_3D_CONFIG } from '../src/game/3d/rabbit3dConfig';
 import { MocapController } from '../src/game/mocap/MocapController';
 import { MotionSmoother } from '../src/game/mocap/MotionSmoother';
 import { neutralRabbitPose } from '../src/game/mocap/RabbitPose';
 import type { PoseFrame, PoseLandmark, PoseSnapshot } from '../src/game/vision/poseTypes';
 import type { CalibrationProfile } from '../src/game/calibration/calibrationTypes';
+import { DEFAULT_GAME_SETTINGS } from '../src/game/settings/gameSettings';
 
 const profile: CalibrationProfile = {
   standingAngle: 170, bendingAngle: 140, standingThreshold: 164, bendingThreshold: 150.5,
@@ -91,8 +93,8 @@ test('smoother rejects nonfinite values and clamps every target to rig constrain
   const target = { ...neutralRabbitPose(), leftArmElevation: 1e6, rightArmElevation: -1e6,
     leftElbowBend: 1e6, rightElbowBend: -1e6, torsoLean: -1e6, bendAmount: 100, lateralOffset: 100 };
   smoother.update(target, 100);
-  assert.deepEqual(smoother.pose, { ...target, leftArmElevation: 115, rightArmElevation: -12,
-    leftElbowBend: 55, rightElbowBend: 0, torsoLean: -14, bendAmount: 1, lateralOffset: 0.45 });
+  assert.deepEqual(smoother.pose, { ...target, leftArmElevation: RABBIT_3D_CONFIG.limits.arm.max, rightArmElevation: -12,
+    leftElbowBend: 100, rightElbowBend: 0, torsoLean: -18, bendAmount: 1, lateralOffset: 0.45 });
   const before = smoother.pose;
   const invalid = Object.fromEntries(Object.keys(before).map(key => [key, Number.NaN])) as unknown as typeof before;
   smoother.update(invalid, 1 / 60);
@@ -162,6 +164,41 @@ test('short tracking loss freezes the target, sustained loss returns gradually, 
   assert.ok(f.angles.left < 90);
 });
 
+test('short tracking loss holds exactly once when a stored motion gain is above one', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => JSON.stringify({ ...DEFAULT_GAME_SETTINGS, mocapGain: 2 }),
+  } });
+  try {
+    const f = fixture();
+    f.calibrate();
+    for (let time = 680; time <= 1000; time += 40) f.feed(time, 30);
+    const held = f.angles.left;
+    f.setNow(1300);
+    for (let frame = 0; frame < 10; frame++) f.controller.update(1 / 60);
+    assert.equal(f.controller.snapshot().trackingState, 'holding');
+    assert.equal(f.angles.left, held);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('forward arm, torso and head channels share bounded continuous target smoothing', () => {
+  const smoother = new MotionSmoother();
+  const target = { ...neutralRabbitPose(), leftArmPlane: 90, rightArmPlane: 90,
+    torsoForward: 100, headYaw: -100, headPitch: 100 };
+  const first = smoother.update(target, 1 / 60);
+  assert.ok(first.leftArmPlane > 0 && first.leftArmPlane < 90);
+  assert.ok(first.torsoForward > 0 && first.headYaw < 0);
+  const final = smoother.update(target, 100);
+  assert.equal(final.leftArmPlane, 90);
+  assert.equal(final.rightArmPlane, 90);
+  assert.equal(final.torsoForward, 16);
+  assert.equal(final.headYaw, -25);
+  assert.equal(final.headPitch, 18);
+});
+
 test('invalid calibration, stale, future, replay, mismatched, low-confidence and jump frames are rejected', () => {
   const f = fixture();
   f.calibrate();
@@ -189,6 +226,22 @@ test('invalid calibration, stale, future, replay, mismatched, low-confidence and
   const invalid = signal(840); invalid.points[23].x = NaN;
   check(invalid, 'unreliable-pose');
   assert.equal(f.controller.snapshot().rejectedFrames, 9);
+});
+
+test('a rejected retargeted pose cannot report active tracking or refresh the reliable pose clock', () => {
+  const f = fixture();
+  f.calibrate();
+  for (let time = 680; time <= 1640; time += 40) {
+    f.setNow(time);
+    const input = signal(time);
+    input.points[0].x = 0.99;
+    input.points[7].x = input.points[8].x = 0.01;
+    f.controller.acceptFrame(input.frame, input.pose, profile);
+    f.controller.update(0.04);
+    assert.equal(f.controller.snapshot().lastRejection, 'invalid-retargeted-pose');
+    assert.notEqual(f.controller.snapshot().controllerStatus, 'ACTIVE');
+  }
+  assert.equal(f.controller.snapshot().trackingState, 'returning-neutral');
 });
 
 test('pause blocks inference callbacks and writes; resume preserves reference and rejects old targets', () => {

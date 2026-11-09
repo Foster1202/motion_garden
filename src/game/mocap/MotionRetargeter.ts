@@ -9,6 +9,9 @@ export interface MotionReference {
   centerX: number;
   bodyScale: number;
   torsoLean: number;
+  torsoForward: number;
+  headYaw: number;
+  headPitch: number;
   leftArmElevation: number;
   rightArmElevation: number;
   leftElbowBend: number;
@@ -24,6 +27,7 @@ export interface MotionReferenceSnapshot {
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const finite = (value: number | undefined): value is number => value !== undefined && Number.isFinite(value);
 const armKeys = ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend'] as const;
+const depthKeys = ['torsoForward', 'headYaw', 'headPitch'] as const;
 
 export class MotionRetargeter {
   /** Berry motion already uses anatomical sides and normalized, mirrored root translation. */
@@ -84,6 +88,10 @@ export class MotionRetargeter {
       ...this.lastTarget,
       // Raw positive lean moves toward mirrored screen left, matching model +Z roll.
       torsoLean: clamp(human.torsoLean - reference.torsoLean, -CONFIG.limits.torsoLean, CONFIG.limits.torsoLean),
+      torsoForward: clamp((human.torsoForward ?? reference.torsoForward) - reference.torsoForward,
+        -CONFIG.limits.torsoForward, CONFIG.limits.torsoForward),
+      headYaw: clamp((human.headYaw ?? reference.headYaw) - reference.headYaw, -CONFIG.limits.headYaw, CONFIG.limits.headYaw),
+      headPitch: clamp((human.headPitch ?? reference.headPitch) - reference.headPitch, -CONFIG.limits.headPitch, CONFIG.limits.headPitch),
       bendAmount: clamp((profile.standingAngle - human.activeKneeAngle) / profile.range, 0, 1),
       lateralOffset: this.lateral(human.centerX, reference),
       trackingConfidence: clamp(human.trackingConfidence, 0, 1), timestampMs: human.timestampMs,
@@ -91,14 +99,17 @@ export class MotionRetargeter {
     for (const side of ['left', 'right'] as const) {
       const elevation = `${side}ArmElevation` as const;
       const elbow = `${side}ElbowBend` as const;
+      const plane = `${side}ArmPlane` as const;
       const reliable = human[`${side}ArmConfidence`] >= CONFIG.confidenceThreshold
         && finite(human[elevation]) && finite(human[elbow]);
       if (reliable) {
         this.lastReliableArm[side] = human.timestampMs;
         target[elevation] = clamp(human[elevation]! - reference[elevation], 0, CONFIG.limits.arm.max);
+        target[plane] = clamp(human[plane] ?? 0, 0, 90);
         target[elbow] = clamp(human[elbow]! - reference[elbow], 0, CONFIG.limits.elbow.max);
       } else if (human.timestampMs - (this.lastReliableArm[side] ?? reference.timestampMs) > CONFIG.temporal.neutralAfterMs) {
         target[elevation] = 0;
+        target[plane] = 0;
         target[elbow] = 0;
       }
     }
@@ -113,7 +124,12 @@ export class MotionRetargeter {
       && human.leftArmConfidence >= 0 && human.leftArmConfidence <= 1 && human.rightArmConfidence >= 0 && human.rightArmConfidence <= 1
       && human.activeKneeAngle >= 0 && human.activeKneeAngle <= 180 && Math.abs(human.torsoLean) < 80
       && human.centerX >= 0 && human.centerX <= 1 && human.bodyScale >= 0.025 && human.bodyScale <= 1
-      && armKeys.every(key => human[key] === undefined || (finite(human[key]) && human[key]! >= 0 && human[key]! <= 180));
+      && armKeys.every(key => human[key] === undefined || (finite(human[key]) && human[key]! >= 0 && human[key]! <= 180))
+      && (['leftArmPlane', 'rightArmPlane'] as const).every(key => {
+        const value = human[key];
+        return value === undefined || (Number.isFinite(value) && value >= 0 && value <= 90);
+      })
+      && depthKeys.every(key => human[key] === undefined || (finite(human[key]) && Math.abs(human[key]!) < 80));
   }
 
   private capture(human: HumanPose, profile: CalibrationProfile): boolean {
@@ -131,6 +147,7 @@ export class MotionRetargeter {
     const stable = !first || (Math.abs(human.centerX - first.centerX) / first.bodyScale <= CONFIG.reference.centerSpreadShoulderWidths
       && Math.abs(human.bodyScale / first.bodyScale - 1) <= CONFIG.reference.scaleSpreadFraction
       && Math.abs(human.torsoLean - first.torsoLean) <= CONFIG.reference.angularSpreadDegrees
+      && Math.abs((human.torsoForward ?? 0) - (first.torsoForward ?? 0)) <= CONFIG.reference.angularSpreadDegrees
       && armKeys.every(key => Math.abs(human[key]! - first[key]!) <= CONFIG.reference.angularSpreadDegrees));
     if (!stable) this.samples = [];
     this.samples.push(human);
@@ -138,9 +155,10 @@ export class MotionRetargeter {
     this.status = { referenceReady: false, referenceProgress: progress, requiresReset: false,
       message: '正在記錄自然站立參考，請稍候。' };
     if (progress < 1) return false;
-    const mean = (key: keyof HumanPose) => this.samples.reduce((sum, sample) => sum + (sample[key] as number), 0) / this.samples.length;
+    const mean = (key: keyof HumanPose) => this.samples.reduce((sum, sample) => sum + (sample[key] ?? 0), 0) / this.samples.length;
     this.captured = {
       centerX: mean('centerX'), bodyScale: mean('bodyScale'), torsoLean: mean('torsoLean'),
+      torsoForward: mean('torsoForward'), headYaw: mean('headYaw'), headPitch: mean('headPitch'),
       leftArmElevation: mean('leftArmElevation'), rightArmElevation: mean('rightArmElevation'),
       leftElbowBend: mean('leftElbowBend'), rightElbowBend: mean('rightElbowBend'), timestampMs: human.timestampMs,
     };

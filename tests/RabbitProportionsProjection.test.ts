@@ -110,3 +110,41 @@ test('new proportions improve hand elevation and lateral foot reach at the same 
   assert.ok(newModel.legReachPixels > oldModel.legReachPixels * 1.2, JSON.stringify({ oldModel, newModel }));
   console.log('Equal-height rabbit movement comparison', { oldModel, newModel });
 });
+
+test('bounded multi-axis arms and enhanced knee range remain inside the existing preview crop', async () => {
+  const rabbit = await fixture();
+  try {
+    const cam = camera(rabbit, 894, 681);
+    const handPoint = () => projectToLogical(rabbit.rig.bones.get('hand.L')!.getWorldPosition(new Vector3()), cam, viewport);
+    const rootY = () => rabbit.rig.bones.get('root')!.getWorldPosition(new Vector3()).y;
+    const restingHand = handPoint();
+    rabbit.rig.setArmRotation('left', 100); rabbit.rig.update(10);
+    assert.ok(restingHand.y - handPoint().y > 85);
+    rabbit.rig.resetPose(true);
+    const rootRest = rootY();
+    rabbit.rig.setKneeBend(15 / 24); rabbit.rig.update(10);
+    const previousDrop = rootRest - rootY();
+    rabbit.rig.setKneeBend(1); rabbit.rig.update(10);
+    assert.ok(rootRest - rootY() > previousDrop * 1.9);
+    for (const plane of [0, 45, 90]) {
+      rabbit.rig.setArmRotation('left', 145, 100, plane);
+      rabbit.rig.setArmRotation('right', 145, 100, plane);
+      rabbit.rig.setBodyLean(18, 16);
+      rabbit.rig.setHeadRotation(20, 12, -7.2);
+      rabbit.rig.setKneeBend(1);
+      rabbit.rig.setRootOffset(0.45);
+      rabbit.rig.update(10);
+      rabbit.pivot.updateMatrixWorld(true);
+      rabbit.model.traverse(object => {
+        if (!(object instanceof Mesh)) return;
+        if (object instanceof SkinnedMesh) object.skeleton.update();
+        for (let index = 0; index < object.geometry.getAttribute('position').count; index++) {
+          const vertex = object.getVertexPosition(index, new Vector3()).applyMatrix4(object.matrixWorld);
+          const projected = projectToLogical(vertex, cam, viewport);
+          assert.ok(projected.visible && projected.x > 634 && projected.x < 1154
+            && projected.y > 229 && projected.y < 749, `${object.name} leaves preview: ${JSON.stringify(projected)}`);
+        }
+      });
+    }
+  } finally { rabbit.dispose(); }
+});

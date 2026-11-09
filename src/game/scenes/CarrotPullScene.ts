@@ -40,6 +40,7 @@ export class CarrotPullScene extends Phaser.Scene {
   private basket!: Basket;
   private soil!: Phaser.GameObjects.Image;
   private paused = false;
+  private trackingSuspended = false;
   private attached = false;
   private attachmentBlend = { x: 0, y: 0, remaining: 0 };
   private successPhase: 'waiting' | 'pull' | 'celebrate' | null = null;
@@ -50,6 +51,8 @@ export class CarrotPullScene extends Phaser.Scene {
     this.model = new CarrotRound();
     this.audio = new AudioManager();
     this.paused = false;
+    this.trackingSuspended = false;
+    this.time.paused = false;
     this.attached = false;
     this.attachmentBlend = { x: 0, y: 0, remaining: 0 };
     this.successPhase = null;
@@ -98,8 +101,13 @@ export class CarrotPullScene extends Phaser.Scene {
     }
     this.motion = new MotionInputController(this.ui.root, {
       onFrame: (frame, pose, profile) => this.rabbit3d?.acceptMotionFrame(frame, pose, profile),
-      onReset: () => this.rabbit3d?.resetMotionReference(),
+      onReset: () => this.rabbit3d?.resetMotionInput(),
+      onStatus: status => {
+        this.rabbit3d?.setInputStatus(status);
+        this.setTrackingSuspended(status.mode === 'camera' && (!status.ready || status.suspended));
+      },
       isContinuousPreview: () => this.rabbit3d?.isMocapActive ?? false,
+      getMotionHint: () => this.rabbit3d?.motionHint,
     });
     this.rabbit3d = new Rabbit3DPreview(this, this.rabbit, this.ui.root, preview => {
       this.ui.root.classList.toggle('rabbit-preview', preview);
@@ -137,7 +145,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.paused = false;
     resumeTweenClock(this.tweens);
     this.scene.resume();
-    if (this.rabbit3d?.mode !== '3d') this.rabbit.resume();
+    if (this.rabbit3d?.mode !== '3d' && !this.trackingSuspended) this.rabbit.resume();
     this.rabbit3d?.resume();
     this.motion.resume?.();
   }
@@ -200,6 +208,7 @@ export class CarrotPullScene extends Phaser.Scene {
   }
 
   private finishCelebration() {
+    if (this.trackingSuspended || this.paused) return;
     const previous = this.model.state;
     if (!this.model.completeCelebration()) return;
     this.ui.text('#score', `分數：${this.model.score}`);
@@ -224,6 +233,20 @@ export class CarrotPullScene extends Phaser.Scene {
     this.model.update(dt, inputSample);
     if (previous !== this.model.state) this.stateChanged(previous);
     this.animateWorld();
+  }
+
+  private setTrackingSuspended(suspended: boolean) {
+    if (this.trackingSuspended === suspended) return;
+    this.trackingSuspended = suspended;
+    this.time.paused = suspended;
+    if (suspended) {
+      this.rabbit.pause();
+      this.tweens.pauseAll();
+    } else {
+      resumeTweenClock(this.tweens);
+      this.tweens.resumeAll();
+      if (!this.paused && this.rabbit3d?.mode !== '3d') this.rabbit.resume();
+    }
   }
 
   private attachCarrot() {
@@ -267,7 +290,7 @@ export class CarrotPullScene extends Phaser.Scene {
     const sprite = this.rabbit.sprite;
     return {
       state: this.model.state, score: this.model.score, progress: this.model.progress,
-      paused: this.paused, scenePaused: this.scene.isPaused(), action: this.rabbit.action,
+      paused: this.paused, trackingSuspended: this.trackingSuspended, scenePaused: this.scene.isPaused(), action: this.rabbit.action,
       frame: this.rabbit.frameName, frameIndex: this.rabbit.frameIndex, fallback: this.rabbit.fallback,
       animationPlaying: sprite?.anims.isPlaying, animationPaused: sprite?.anims.isPaused,
       rabbit: { x: this.rabbit.root.x, y: this.rabbit.root.y, scale: this.rabbit.root.scaleX,

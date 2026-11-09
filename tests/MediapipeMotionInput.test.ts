@@ -73,7 +73,7 @@ test('camera mapping preserves hold durations and freezes progress during loss a
   assert.equal(f.input.getStatus().suspended, true);
   assert.deepEqual(f.input.sample(), { bending: false, standing: false });
   f.setClock(1120);
-  assert.match(f.input.getStatus().message, /睇唔清楚/);
+  assert.match(f.input.getStatus().message, /未偵測到人物/);
   assert.equal(round.progress, progress);
   for (let time = 1160; time < 1360; time += 40) {
     f.emit(time, 140);
@@ -91,14 +91,97 @@ test('camera mapping preserves hold durations and freezes progress during loss a
   f.input.destroy();
 });
 
-test('loss recommends rest after three seconds; valid neutral frames do not count as tracking loss', async () => {
+test('camera waits indefinitely without a person, actions or an automatic rest request', async () => {
   const f = fixture();
   await f.input.start();
   f.emit(0);
-  f.setClock(2999);assert.equal(f.input.getStatus().requestPause, false);
-  f.setClock(3000);assert.equal(f.input.getStatus().requestPause, true);
-  f.emit(3040, 155);
-  f.setClock(3100);assert.equal(f.input.getStatus().requestPause, false);
+  for (const time of [2999, 3000, 60000, 3600000]) {
+    f.setClock(time);
+    const status = f.input.getStatus();
+    assert.equal(status.requestPause, false);
+    assert.equal(status.suspended, true);
+    assert.equal(status.personDetected, false);
+    assert.equal(status.trackingState, 'WAITING_FOR_PERSON');
+    assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  }
+  assert.equal(f.calls.pause, 0);
+  assert.equal(f.calls.cameraDestroyed, 0);
+  f.input.destroy();
+});
+
+test('a person entering the frame is identified and reliable neutral poses recover without an action', async () => {
+  const f = fixture();
+  await f.input.start();
+  f.emit(0);
+  f.setClock(60000);
+  assert.equal(f.input.getStatus().trackingState, 'WAITING_FOR_PERSON');
+  for (let time = 60040; time <= 60200; time += 40) {
+    f.emit(time, 155);
+    assert.equal(f.input.getStatus().personDetected, true);
+    assert.equal(f.input.getStatus().suspended, true);
+  }
+  f.emit(60240, 155);
+  assert.equal(f.input.getStatus().suspended, false);
+  assert.equal(f.input.getPoseSnapshot().state, 'TRANSITION');
+  assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  for (let time = 60280; time <= 60440; time += 40) f.emit(time, 155);
+  const status = f.input.getStatus();
+  assert.equal(status.trackingState, 'TRACKING_READY');
+  assert.equal(status.cameraStatus, 'running');
+  assert.equal(status.framesReceived, 12);
+  assert.equal(status.lastFrameTimestampMs, 60440);
+  assert.equal(status.poseFps, 25);
+  f.input.destroy();
+});
+
+test('transient missing detections suppress input immediately while status changes are debounced', async () => {
+  const f = fixture();
+  await f.input.start();
+  for (let time = 0; time <= 400; time += 40) f.emit(time, 180);
+  assert.equal(f.input.getStatus().trackingState, 'TRACKING_READY');
+  f.emit(440);
+  assert.equal(f.input.getStatus().personDetected, false);
+  assert.equal(f.input.getStatus().trackingState, 'TRACKING_READY');
+  assert.equal(f.input.getStatus().suspended, true);
+  assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  f.emit(480, 155);
+  assert.equal(f.input.getStatus().trackingState, 'TRACKING_READY');
+  assert.equal(f.input.getStatus().suspended, true);
+  for (let time = 520; time <= 680; time += 40) f.emit(time, 155);
+  assert.equal(f.input.getStatus().suspended, false);
+  assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  f.emit(720);
+  f.setClock(920);
+  assert.equal(f.input.getStatus().trackingState, 'TRACKING_LOST');
+  assert.equal(f.input.getStatus().requestPause, false);
+  f.input.destroy();
+});
+
+test('lost tracking cannot finish a return hold or award a carrot while the action clock is frozen', async () => {
+  const f = fixture();
+  const round = new CarrotRound();
+  await f.input.start();
+  for (let time = 0; time <= 960; time += 40) {
+    f.emit(time, 140);
+    if (!f.input.getStatus().suspended) round.update(40, f.input.sample());
+  }
+  assert.equal(round.state, 'GRABBED');
+  for (let time = 1000; time <= 1440; time += 40) {
+    f.emit(time, 180);
+    if (!f.input.getStatus().suspended) round.update(40, f.input.sample());
+  }
+  assert.equal(round.state, 'RETURNING');
+  const progress = round.progress;
+  f.emit(1480);
+  for (const time of [1520, 4480, 61480]) {
+    f.setClock(time);
+    assert.equal(f.input.getStatus().suspended, true);
+    if (!f.input.getStatus().suspended) round.update(60000, f.input.sample());
+    assert.equal(round.state, 'RETURNING');
+    assert.equal(round.progress, progress);
+    assert.equal(round.score, 0);
+    assert.equal(round.completeCelebration(), false);
+  }
   f.input.destroy();
 });
 
@@ -189,6 +272,28 @@ test('session profile survives pause, resume and round resets but is cleared by 
   assert.throws(() => f.input.setCalibration(profileC), /destroyed/);
   const replacement = fixture();assert.equal(replacement.input.getCalibration(), undefined);
   replacement.input.destroy();
+});
+
+test('long tracking loss retains personal calibration and recovers through the neutral band', async () => {
+  const f = fixture();
+  await f.input.start();
+  f.input.setCalibration(profileC);
+  for (let time = 0; time <= 200; time += 40) f.emit(time, 155);
+  assert.equal(f.input.sample().standing, true);
+  f.emit(240);
+  f.setClock(60240);
+  assert.equal(f.input.getStatus().requestPause, false);
+  assert.equal(f.input.getStatus().suspended, true);
+  assert.deepEqual(f.input.getCalibration(), profileC);
+  for (let time = 60280; time <= 60440; time += 40) {
+    f.emit(time, 146);
+    assert.equal(f.input.getStatus().suspended, true);
+  }
+  f.emit(60480, 146);
+  assert.equal(f.input.getStatus().suspended, false);
+  assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  assert.deepEqual(f.input.getCalibration(), profileC);
+  f.input.destroy();
 });
 
 test('adapter rejects invalid profiles without removing the current valid calibration', async () => {

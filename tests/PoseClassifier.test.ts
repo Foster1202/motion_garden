@@ -188,7 +188,7 @@ test('confidence summarizes actual accepted legs and torso', () => {
   assert.equal(snapshot.reliableSides, 2);
 });
 
-test('lost frame immediately clears output and starts grace and automatic-rest clocks', () => {
+test('lost frame clears output and tracks duration without recommending automatic rest', () => {
   const classifier = new PoseClassifier();
   confirm(classifier);
   const lost = classifier.update({ timestampMs: 240, inferenceMs: 8, poseFps: 25 });
@@ -199,7 +199,8 @@ test('lost frame immediately clears output and starts grace and automatic-rest c
   assert.equal(lost.trackingLostMs, 0);
   assert.equal(classifier.snapshot(840).trackingLostMs, POSE_CONFIG.lossGraceMs);
   assert.equal(classifier.snapshot(3239).autoRestRecommended, false);
-  assert.equal(classifier.snapshot(3240).autoRestRecommended, true);
+  assert.equal(classifier.snapshot(3240).autoRestRecommended, false);
+  assert.equal(classifier.snapshot(3600240).autoRestRecommended, false);
   assert.equal(classifier.update(frame(3280)).state, 'TRANSITION');
 });
 
@@ -211,7 +212,7 @@ test('snapshot expires results without needing another inference frame', () => {
   assert.equal(stale.state, 'TRACKING_LOST');
   assert.equal(stale.trackingLostMs, 1);
   assert.equal(stale.activeKneeAngle, undefined);
-  assert.equal(classifier.snapshot(3450).autoRestRecommended, true);
+  assert.equal(classifier.snapshot(3450).autoRestRecommended, false);
 });
 
 test('old or repeated timestamps cannot extend a confirmed state', () => {

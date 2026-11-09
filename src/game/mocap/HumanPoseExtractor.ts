@@ -1,3 +1,4 @@
+import { MathUtils, Vector3 } from 'three';
 import { LegExtensionDetector, type BerryMotionSample } from './LegExtensionDetector';
 import { validateMotionRange } from '../settings/motionRange';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
@@ -5,15 +6,20 @@ import { calculateAngle, imagePoint, landmarkConfidence } from '../vision/poseMa
 import type { PoseFrame, PoseLandmark, PoseSnapshot } from '../vision/poseTypes';
 import { MOCAP_CONFIG as CONFIG } from './mocapConfig';
 
-/** Raw camera coordinates, before CSS mirroring; all angles use aspect-correct 2D geometry. */
+/** Raw camera coordinates before CSS mirroring, with optional qualitative monocular depth. */
 export interface HumanPose {
   leftArmElevation?: number;
   rightArmElevation?: number;
+  leftArmPlane?: number;
+  rightArmPlane?: number;
   leftElbowBend?: number;
   rightElbowBend?: number;
   leftArmConfidence: number;
   rightArmConfidence: number;
   torsoLean: number;
+  torsoForward?: number;
+  headYaw?: number;
+  headPitch?: number;
   activeKneeAngle: number;
   centerX: number;
   bodyScale: number;
@@ -62,32 +68,48 @@ export class HumanPoseExtractor {
     const mean = (a: PoseLandmark, b: PoseLandmark) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
     const shoulders = mean(points[11], points[12]);
     const hips = mean(points[23], points[24]);
-    const torsoDown = { x: (hips.x - shoulders.x) * width, y: (hips.y - shoulders.y) * height };
-    const torsoLength = Math.hypot(torsoDown.x, torsoDown.y);
+    const depthAvailable = [11, 12, 23, 24].every(index => Number.isFinite(points[index].z));
+    const torsoDown = new Vector3((hips.x - shoulders.x) * width, (hips.y - shoulders.y) * height,
+      depthAvailable ? ((points[23].z! + points[24].z!) - (points[11].z! + points[12].z!)) * width / 2 : 0);
+    const torsoLength = torsoDown.length();
+    const down = torsoDown.clone().normalize();
+    const sideways = new Vector3(down.y, -down.x, 0).normalize();
+    const forward = down.clone().cross(sideways).normalize();
     const shoulderWidth = Math.hypot((points[11].x - points[12].x) * width,
       (points[11].y - points[12].y) * height);
     if (torsoDown.y <= 0 || torsoLength < height * 0.02 || shoulderWidth < width * 0.025) return undefined;
     const arm = (shoulderIndex: number, elbowIndex: number, wristIndex: number) => {
       const armConfidence = confidence([shoulderIndex, elbowIndex, wristIndex]);
       if (armConfidence < CONFIG.confidenceThreshold) return { confidence: 0 };
-      const shoulder = imagePoint(points[shoulderIndex], width, height);
-      const elbow = imagePoint(points[elbowIndex], width, height);
-      const wrist = imagePoint(points[wristIndex], width, height);
-      const elevation = calculateAngle({ x: shoulder.x + torsoDown.x, y: shoulder.y + torsoDown.y }, shoulder, elbow);
-      const innerElbow = calculateAngle(shoulder, elbow, wrist);
-      if (elevation === undefined || innerElbow === undefined
-        || Math.hypot(elbow.x - shoulder.x, elbow.y - shoulder.y) < torsoLength * 0.05
-        || Math.hypot(wrist.x - elbow.x, wrist.y - elbow.y) < torsoLength * 0.05) return { confidence: 0 };
-      return { elevation, bend: 180 - innerElbow, confidence: armConfidence };
+      const useDepth = depthAvailable && [shoulderIndex, elbowIndex, wristIndex].every(index => Number.isFinite(points[index].z));
+      const point = (index: number) => new Vector3(points[index].x * width, points[index].y * height,
+        useDepth ? points[index].z! * width : 0);
+      const upper = point(elbowIndex).sub(point(shoulderIndex));
+      const lower = point(wristIndex).sub(point(elbowIndex));
+      if (upper.length() < torsoLength * 0.05 || lower.length() < torsoLength * 0.05) return { confidence: 0 };
+      const armDown = useDepth ? down : new Vector3(torsoDown.x, torsoDown.y, 0).normalize();
+      const elevation = MathUtils.radToDeg(upper.angleTo(armDown));
+      // Normalized landmark z uses image-width scale, and is only a bounded visual cue.
+      const forwardReach = useDepth ? Math.max(0, upper.dot(forward)) : 0;
+      const plane = forwardReach > torsoLength * 0.03
+        ? MathUtils.radToDeg(Math.atan2(forwardReach, Math.abs(upper.dot(sideways)))) : 0;
+      return { elevation, plane, bend: MathUtils.radToDeg(upper.angleTo(lower)), confidence: armConfidence };
     };
     // Anatomical IDs remain unchanged by the mirrored webcam element.
     const left = arm(11, 13, 15);
     const right = arm(12, 14, 16);
+    const faceReliable = confidence([0, 7, 8]) >= CONFIG.confidenceThreshold;
+    const earX = faceReliable ? (points[7].x + points[8].x) / 2 : 0;
+    const earY = faceReliable ? (points[7].y + points[8].y) / 2 : 0;
     return {
       leftArmElevation: left.elevation, rightArmElevation: right.elevation,
       leftElbowBend: left.bend, rightElbowBend: right.bend,
+      leftArmPlane: left.plane, rightArmPlane: right.plane,
       leftArmConfidence: left.confidence, rightArmConfidence: right.confidence,
       torsoLean: Math.atan2(-torsoDown.x, torsoDown.y) * 180 / Math.PI,
+      torsoForward: depthAvailable ? MathUtils.radToDeg(Math.atan2(torsoDown.z, torsoDown.y)) : undefined,
+      headYaw: faceReliable ? MathUtils.radToDeg(Math.atan2(-(points[0].x - earX) * width, shoulderWidth / 2)) : undefined,
+      headPitch: faceReliable ? MathUtils.radToDeg(Math.atan2((points[0].y - earY) * height, shoulderWidth / 2)) : undefined,
       activeKneeAngle: knee, centerX: hips.x, bodyScale: shoulderWidth / width,
       trackingConfidence: Math.min(torsoConfidence, kneeConfidence, pose.confidence), timestampMs: frame.timestampMs,
     };

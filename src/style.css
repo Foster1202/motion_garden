@@ -965,6 +965,33 @@ kbd {
   margin-top:.3em;
 }
 
+.person-status {
+  position:absolute;
+  right:2%;
+  bottom:3%;
+  max-width:36%;
+  padding:9px 13px;
+  border:1px solid #c5d2b6;
+  border-radius:14px;
+  background:#fffbedf5;
+  color:var(--ink);
+  font-size:clamp(13px,1.05cqw,20px);
+  line-height:1.4;
+  box-shadow:0 4px 16px #294d3a15;
+  pointer-events:none;
+}
+.person-status::before {
+  content:'';
+  display:inline-block;
+  width:.65em;
+  height:.65em;
+  margin-right:.5em;
+  border-radius:50%;
+  background:#a78b42;
+}
+.person-status[data-tracking-state="TRACKING_READY"]::before { background:#527549; }
+.person-status[hidden] { display:none; }
+
 .motion-switch {
   border:1px solid #a1b08e;
   border-radius:10px;
@@ -1077,10 +1104,10 @@ kbd {
 .calibration-panel {
   pointer-events:auto;
   position:absolute;
-  top:24%;
-  left:4%;
-  width:43%;
-  max-height:68%;
+  top:36%;
+  left:3%;
+  width:30%;
+  max-height:37%;
   overflow:auto;
   padding:1.5cqw;
   border:2px solid #d7dfc2;
@@ -1090,16 +1117,16 @@ kbd {
 }
 
 .calibration-label { font-size:clamp(17px,1.2cqw,24px); color:var(--muted); }
-.calibration-panel h2 { font-size:clamp(25px,2cqw,38px); margin-top:.3em; }
-.calibration-message { font-size:clamp(20px,1.45cqw,28px); line-height:1.5; margin-top:.7em; }
-.calibration-framing { font-size:clamp(16px,1.1cqw,21px); line-height:1.5; color:var(--muted); margin-top:.7em; }
+.calibration-panel h2 { font-size:clamp(23px,1.8cqw,32px); margin-top:.3em; }
+.calibration-message { font-size:clamp(18px,1.3cqw,25px); line-height:1.5; margin-top:.7em; }
+.calibration-framing { font-size:clamp(14px,1cqw,18px); line-height:1.5; color:var(--muted); margin-top:.7em; }
 .calibration-progress { height:12px; margin-top:1em; border-radius:10px; background:#dce3cd; overflow:hidden; }
 .calibration-progress>div { height:100%; background:var(--green); border-radius:inherit; }
 .calibration-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:1em; }
 .calibration-panel .button { font-size:clamp(18px,1.3cqw,25px); min-height:48px; padding:.7em 1em; }
 .calibration-keyboard { font-size:clamp(16px,1.1cqw,21px); margin-top:1em; border:0; background:transparent; text-decoration:underline; min-height:44px; }
 .calibrating .motion-controls,.calibrating .game-footer { display:none; }
-.calibrating .pose-preview { top:24%; bottom:auto; left:auto; right:4%; width:min(42%,480px); padding:8px; }
+.calibrating .pose-preview { top:auto; bottom:3%; left:3%; right:auto; width:21%; padding:5px; }
 .calibrating .pose-preview-label::after { content:' · 頭到腳盡量入鏡'; }
 .calibration-progress[hidden],[data-input-action="recalibrate"][hidden] { display:none; }
 
@@ -1193,7 +1220,7 @@ kbd {
   .rabbit-tools { width:31%; top:37%; max-height:42%; }
   .mocap-debug { padding:6px; font-size:11px; }
 }
-.calibrating .rabbit-tools { visibility:hidden; }
+.calibrating .instruction,.calibrating .steps,.calibrating .hold-indicator { visibility:hidden; }
 @media (max-width:700px) {
   .mocap-debug-visible.using-camera:not(.calibrating) .pose-preview {
     left:2%;

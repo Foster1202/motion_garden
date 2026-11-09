@@ -11,7 +11,7 @@ import { MOCAP_CONFIG } from './mocapConfig';
 import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 
 type MocapRig = Pick<RabbitRigController, 'setArmRotation' | 'setBodyLean' | 'setKneeBend' | 'setRootOffset'>
-  & Partial<Pick<RabbitRigController, 'bones'>>;
+  & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation'>>;
 export type MocapTrackingState = 'disabled' | 'waiting' | 'acquiring-reference' | 'tracking' | 'holding'
   | 'returning-neutral' | 'reference-required' | 'disposed';
 
@@ -30,6 +30,10 @@ export interface MocapSnapshot {
   rejectedFrames: number;
   lastRejection?: string;
   boneDeltasDegrees: Record<string, number>;
+  controllerStatus: 'DISABLED' | 'WAITING' | 'ACTIVE' | 'PAUSED' | 'DISPOSED';
+  framesReceived: number;
+  humanPosesExtracted: number;
+  mappedPoses: number;
 }
 
 /** Consumes shared inference results and advances only on the existing scene clock. */
@@ -52,10 +56,15 @@ export class MocapController {
   private threeFps = 0;
   private rejectedFrames = 0;
   private lastRejection?: string;
+  private framesReceived = 0;
+  private humanPosesExtracted = 0;
+  private mappedPoses = 0;
 
   constructor(private readonly rig: MocapRig, private readonly now = () => performance.now()) {
     for (const [name, bone] of rig.bones ?? []) this.initialBoneRotations.set(name, bone.quaternion.clone().normalize());
   }
+
+  get statusMessage() { return this.message; }
 
   enable(): void {
     if (this.disposed || this.enabled) return;
@@ -108,6 +117,8 @@ export class MocapController {
 
   acceptFrame(frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile | undefined): void {
     if (!this.enabled || this.paused || this.disposed) return;
+    this.framesReceived++;
+    this.mediaPipeFps = Number.isFinite(frame.poseFps) ? Math.max(0, frame.poseFps) : 0;
     const nowMs = this.now();
     const fail = (reason: string) => {
       this.reliable = false;
@@ -126,6 +137,7 @@ export class MocapController {
     if (pose.timestampMs !== frame.timestampMs) { fail('mismatched-pose'); return; }
     const human = this.extractor.extract(frame, pose, profile);
     if (!human) { fail('unreliable-pose'); return; }
+    this.humanPosesExtracted++;
     const recent = this.raw && this.lastReliableTimestamp !== undefined
       && frame.timestampMs - this.lastReliableTimestamp < MOCAP_CONFIG.temporal.neutralAfterMs;
     if (recent && Math.abs(human.centerX - this.raw!.centerX) > MOCAP_CONFIG.temporal.maxLandmarkJump) {
@@ -142,11 +154,17 @@ export class MocapController {
       }
     }
     this.raw = human;
+    const mapped = this.retargeter.update(human, profile);
+    const reference = this.retargeter.snapshot;
+    if (!mapped && reference.referenceReady && !reference.requiresReset) {
+      fail('invalid-retargeted-pose');
+      return;
+    }
     this.lastReliableTimestamp = frame.timestampMs;
     this.reliable = true;
     this.lastRejection = undefined;
-    this.mediaPipeFps = Number.isFinite(frame.poseFps) ? Math.max(0, frame.poseFps) : 0;
-    this.mapped = this.retargeter.update(human, profile);
+    this.mapped = mapped;
+    if (this.mapped) this.mappedPoses++;
   }
 
   update(deltaSeconds: number, nowMs = this.now()): void {
@@ -176,13 +194,15 @@ export class MocapController {
     }
     // Cap only the render step so resume cannot consume a long pause in one jump.
     const step = Math.min(deltaSeconds, MOCAP_CONFIG.temporal.maxStepSeconds);
-    const gain = getGameSettings().mocapGain;
+    const gain = this.trackingState === 'holding' ? 1 : getGameSettings().mocapGain;
     target = { ...target };
-    for (const key of ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend', 'torsoLean', 'bendAmount', 'lateralOffset'] as const) target[key] *= gain;
+    for (const key of ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend',
+      'torsoLean', 'torsoForward', 'headYaw', 'headPitch', 'bendAmount', 'lateralOffset'] as const) target[key] *= gain;
     const smoothed = this.smoother.update(target, step);
-    this.rig.setArmRotation('left', smoothed.leftArmElevation, smoothed.leftElbowBend);
-    this.rig.setArmRotation('right', smoothed.rightArmElevation, smoothed.rightElbowBend);
-    this.rig.setBodyLean(smoothed.torsoLean);
+    this.rig.setArmRotation('left', smoothed.leftArmElevation, smoothed.leftElbowBend, smoothed.leftArmPlane);
+    this.rig.setArmRotation('right', smoothed.rightArmElevation, smoothed.rightElbowBend, smoothed.rightArmPlane);
+    this.rig.setBodyLean(smoothed.torsoLean, smoothed.torsoForward);
+    this.rig.setHeadRotation?.(smoothed.headYaw, smoothed.headPitch, -0.4 * smoothed.torsoLean);
     this.rig.setKneeBend(smoothed.bendAmount);
     this.rig.setRootOffset(smoothed.lateralOffset, 0, 0);
     this.threeFps = deltaSeconds < 1 ? 1 / deltaSeconds : 0;
@@ -202,6 +222,9 @@ export class MocapController {
       referenceProgress: reference.referenceProgress, message: this.message,
       mediaPipeFps: this.mediaPipeFps, threeFps: this.threeFps, rejectedFrames: this.rejectedFrames,
       lastRejection: this.lastRejection, boneDeltasDegrees,
+      controllerStatus: this.disposed ? 'DISPOSED' : this.paused ? 'PAUSED' : !this.enabled ? 'DISABLED'
+        : this.trackingState === 'tracking' ? 'ACTIVE' : 'WAITING',
+      framesReceived: this.framesReceived, humanPosesExtracted: this.humanPosesExtracted, mappedPoses: this.mappedPoses,
     };
   }
 

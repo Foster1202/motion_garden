@@ -124,10 +124,10 @@ test('relative shoulder-width translation has deadzone, mirrored sign, clamp and
 test('joint limits and missing-arm hold never emit invalid values or unsafe range', () => {
   const mapper = ready(); const result = mapper.update(human(640,
     { leftArmElevation: 180, rightArmElevation: 170, leftElbowBend: 150, torsoLean: 45 }), profile)!;
-  close(result.leftArmElevation, 115); close(result.leftElbowBend, 55); close(result.torsoLean, 14);
+  close(result.leftArmElevation, 90); close(result.leftElbowBend, 100); close(result.torsoLean, 18);
   const held = mapper.update(human(680, { leftArmElevation: undefined, leftElbowBend: undefined,
     leftArmConfidence: 0, rightArmElevation: 40 }), profile)!;
-  close(held.leftArmElevation, 115); close(held.rightArmElevation, 40);
+  close(held.leftArmElevation, 90); close(held.rightArmElevation, 40);
   for (const value of [NaN, Infinity, -Infinity]) assert.equal(mapper.update(human(720, { torsoLean: value }), profile), undefined);
   assert.ok(Object.values(neutralRabbitPose(NaN)).every(Number.isFinite));
 });
@@ -160,4 +160,62 @@ test('reference cannot bridge timestamp reversal, long gaps, unstable center, or
   assert.equal(mapper.snapshot.referenceProgress, 0);
   assert.equal(mapper.update(human(640, { centerX: 0.55 }), profile), undefined); assert.equal(mapper.snapshot.referenceProgress, 0);
   assert.equal(mapper.update(human(680, { activeKneeAngle: 150 }), profile), undefined); assert.equal(mapper.snapshot.referenceProgress, 0);
+});
+
+
+test('monocular forward reach uses depth when image-plane arm segments collapse', () => {
+  const raw = frame();
+  const points = raw.landmarks as PoseLandmark[];
+  points.forEach(point => { point.z = 0; });
+  for (const [shoulder, elbow, wrist] of [[11, 13, 15], [12, 14, 16]]) {
+    points[elbow] = { ...points[shoulder], z: -0.1 };
+    points[wrist] = { ...points[shoulder], z: -0.2 };
+  }
+  const extracted = new HumanPoseExtractor().extract(raw, snapshot(), profile)!;
+  close(extracted.leftArmElevation!, 90); close(extracted.rightArmElevation!, 90);
+  close(extracted.leftArmPlane!, 90); close(extracted.rightArmPlane!, 90);
+  close(extracted.leftElbowBend!, 0);
+  const target = ready().update(extracted, profile)!;
+  close(target.leftArmElevation, 90); close(target.leftArmPlane, 90);
+});
+
+test('optional forward and face cues preserve direction and subtract stable reference offsets', () => {
+  const mapper = ready({ torsoForward: 12, headYaw: -3, headPitch: 5 });
+  const target = mapper.update(human(640, { torsoForward: 22, headYaw: 17, headPitch: 12 }), profile)!;
+  close(target.torsoForward, 10); close(target.headYaw, 20); close(target.headPitch, 7);
+  const noDepth = mapper.update(human(680), profile)!;
+  close(noDepth.torsoForward, 0); close(noDepth.headYaw, 0); close(noDepth.headPitch, 0);
+  for (const bad of [NaN, Infinity, 91]) {
+    assert.equal(mapper.update(human(720, { leftArmPlane: bad }), profile), undefined);
+  }
+});
+
+test('forward torso and mirrored head direction are extracted from bounded image cues', () => {
+  const raw = frame();
+  const points = raw.landmarks as PoseLandmark[];
+  points.forEach(point => { point.z = 0; });
+  points[11].z = points[12].z = -0.05;
+  points[7] = { x: 0.45, y: 0.15, visibility: 1 };
+  points[8] = { x: 0.55, y: 0.15, visibility: 1 };
+  points[0] = { x: 0.52, y: 0.17, visibility: 1 };
+  const extracted = new HumanPoseExtractor().extract(raw, snapshot(), profile)!;
+  close(extracted.torsoForward!, Math.atan2(80, 270) * 180 / Math.PI);
+  assert.ok(extracted.headYaw! < 0); assert.ok(extracted.headPitch! > 0);
+});
+
+test('combined arm planes, torso and calibrated knees vary continuously without overwriting channels', () => {
+  const mapper = ready();
+  for (let index = 0; index <= 20; index++) {
+    const amount = index / 20;
+    const target = mapper.update(human(640 + 40 * index, {
+      leftArmElevation: 145 * amount, rightArmElevation: 110 * amount,
+      leftArmPlane: 90 * amount, rightArmPlane: 45 * amount,
+      leftElbowBend: 100 * amount, torsoLean: -18 * amount,
+      torsoForward: 16 * amount, activeKneeAngle: 170 - 30 * amount,
+    }), profile)!;
+    close(target.leftArmElevation, Math.min(90, 145 * amount)); close(target.rightArmElevation, Math.min(90, 110 * amount));
+    close(target.leftArmPlane, 90 * amount); close(target.leftElbowBend, 100 * amount);
+    close(target.torsoLean, -18 * amount); close(target.torsoForward, 16 * amount);
+    close(target.bendAmount, amount);
+  }
 });

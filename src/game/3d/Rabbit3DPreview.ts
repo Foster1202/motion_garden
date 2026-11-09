@@ -8,6 +8,7 @@ import { MocapController } from '../mocap/MocapController';
 import { DEV_MOCAP_DEBUG, MocapDebug } from '../mocap/MocapDebug';
 import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
+import type { MotionInputStatus } from '../input/MotionInput';
 
 export type RabbitRenderMode = '3d' | 'sprite';
 export class Rabbit3DPreview {
@@ -21,6 +22,8 @@ export class Rabbit3DPreview {
   private mocapDebug?: MocapDebug;
   private tools?: HTMLElement;
   private mocapEnabled = false;
+  private manualOverride = false;
+  private inputStatus?: MotionInputStatus;
   private request?: AbortController;
   private generation = 0;
   private destroyed = false;
@@ -30,6 +33,7 @@ export class Rabbit3DPreview {
   private readonly textureKey = `rabbit-three-${crypto.randomUUID()}`;
 
   get isMocapActive() { return this.mode === '3d' && this.mocapEnabled; }
+  get motionHint() { return this.isMocapActive ? this.mocap?.statusMessage : undefined; }
 
   constructor(private readonly scene: Phaser.Scene, private readonly sprite: RabbitCharacter,
     private readonly host: HTMLElement, private readonly changed: (preview: boolean) => void) {
@@ -50,7 +54,7 @@ export class Rabbit3DPreview {
     if (this.destroyed) return;
     const generation = ++this.generation;
     this.release();
-    this.mode = 'sprite'; this.sprite.root.setVisible(true); this.sprite.resume();
+    this.mode = 'sprite'; this.sprite.root.setVisible(true); this.restoreSpritePlayback();
     this.select.value = mode; this.changed(false);
     if (mode === 'sprite') { this.status = 'sprite'; this.label.textContent = 'Sprite · 完整拔蘿蔔'; this.bar.hidden = !import.meta.env.DEV; return; }
     this.bar.hidden = false;
@@ -65,13 +69,13 @@ export class Rabbit3DPreview {
       if (!this.texture) throw new Error('Unable to allocate rabbit texture');
       this.image = this.scene.add.image(RABBIT_VIEWPORT.x, RABBIT_VIEWPORT.y, this.textureKey).setOrigin(0).setDepth(CARROT_PULL_DEPTHS.rabbit);
       this.mode = '3d'; this.status = 'ready'; this.sprite.root.setVisible(false); this.sprite.pause();
+      this.mocap = new MocapController(rabbit.rig);
       this.label.textContent = '3D 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite';
       this.changed(true);
       if (DEV_RABBIT_3D_DEBUG || DEV_MOCAP_DEBUG) {
         this.tools = document.createElement('aside'); this.tools.className = 'rabbit-tools'; this.host.append(this.tools);
         if (DEV_MOCAP_DEBUG) {
           this.host.classList.add('mocap-debug-visible');
-          this.mocap = new MocapController(rabbit.rig);
           this.mocapDebug = new MocapDebug(this.tools, () => this.setMocapEnabled(!this.mocapEnabled), () => this.resetMotionReference());
         }
         this.restoreManualDebug();
@@ -85,7 +89,7 @@ export class Rabbit3DPreview {
 
   private fallback(reason: string) {
     this.release(); this.mode = 'sprite'; this.status = `fallback: ${reason}`;
-    this.select.value = 'sprite'; this.sprite.root.setVisible(true); this.sprite.resume(); this.changed(false);
+    this.select.value = 'sprite'; this.sprite.root.setVisible(true); this.restoreSpritePlayback(); this.changed(false);
     this.label.textContent = '3D 載入失敗，已使用 Sprite 完整遊戲';
     console.warn('Rabbit 3D preview fell back to sprite:', reason);
   }
@@ -98,19 +102,33 @@ export class Rabbit3DPreview {
     context.drawImage(this.overlay.renderer.domElement, 0, 0);
     this.texture.refresh();
     this.debug?.update(this.overlay.fps);
-    if (this.mocap && this.mocapDebug) this.mocapDebug.update(this.mocap.snapshot(), this.overlay.fps);
+    if (this.mocap && this.mocapDebug) this.mocapDebug.update(this.mocap.snapshot(), this.overlay.fps, this.inputStatus);
   }
 
   acceptMotionFrame(frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile) {
-    if (this.mode === '3d' && this.mocapEnabled) this.mocap?.acceptFrame(frame, pose, profile);
+    if (this.mode !== '3d' || this.manualOverride || !this.mocap) return;
+    if (!this.mocapEnabled) this.setMocapEnabled(true);
+    this.mocap.acceptFrame(frame, pose, profile);
   }
 
+  setInputStatus(status: MotionInputStatus) { this.inputStatus = status; }
+  resetMotionInput() {
+    this.manualOverride = false;
+    this.mocap?.stop();
+    this.mocap?.resetReference();
+    this.mocapEnabled = false;
+    if (this.mode === '3d') this.label.textContent = '3D 開發預覽 · 等待鏡頭動作設定';
+    this.overlay?.rabbit.rig.resetPose();
+    this.restoreManualDebug();
+  }
   resetMotionReference() { this.mocap?.resetReference(); }
   pause() { this.mocap?.pause(); }
   resume() { this.mocap?.resume(); }
 
   setMocapEnabled(enabled: boolean) {
     if (!this.mocap || !this.overlay || this.mode !== '3d') return;
+    this.manualOverride = !enabled;
+    if (this.mocapEnabled === enabled) return;
     this.mocapEnabled = enabled;
     this.label.textContent = enabled ? '3D 即時動作同步 · 開發預覽，完整遊戲請切回 Sprite' : '3D 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite';
     this.debug?.destroy(); this.debug = undefined;
@@ -120,9 +138,15 @@ export class Rabbit3DPreview {
   }
 
   private restoreManualDebug() {
-    if (DEV_RABBIT_3D_DEBUG && this.tools && this.overlay && !this.mocapEnabled) {
+    if (DEV_RABBIT_3D_DEBUG && this.tools && this.overlay && !this.mocapEnabled && !this.debug) {
       this.debug = new Rabbit3DDebug(this.tools, this.overlay.rabbit.rig);
     }
+  }
+
+  private restoreSpritePlayback() {
+    const waitingForCamera = this.inputStatus?.mode === 'camera' && (!this.inputStatus.ready || this.inputStatus.suspended);
+    if (waitingForCamera || this.scene.scene.isPaused()) this.sprite.pause();
+    else this.sprite.resume();
   }
 
   snapshot() {
@@ -134,7 +158,7 @@ export class Rabbit3DPreview {
       camera: this.overlay ? { type: 'OrthographicCamera', position: this.overlay.camera.position.toArray(), direction: [0, 0, -1] } : null,
       textureExists: this.scene.textures.exists(this.textureKey), debug: !!this.debug,
       controlSource: this.mode === 'sprite' ? 'sprite' : this.mocapEnabled ? 'mocap' : 'manual',
-      mocap: this.mocap?.snapshot() };
+      input: this.inputStatus, mocap: this.mocap?.snapshot() };
   }
 
   private release() {

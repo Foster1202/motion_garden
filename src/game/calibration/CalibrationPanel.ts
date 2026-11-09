@@ -18,7 +18,7 @@ export class CalibrationPanel {
   private state = '';
   private bendStarted = false;
 
-  constructor(host: HTMLElement, private readonly callbacks: CalibrationPanelActions) {
+  constructor(host: HTMLElement, private readonly callbacks: CalibrationPanelActions, private readonly automatic = false) {
     this.root = document.createElement('section');
     this.root.className = 'calibration-panel';
     this.root.setAttribute('aria-labelledby', 'calibration-title');
@@ -58,15 +58,15 @@ export class CalibrationPanel {
     this.state = snapshot.state;
     this.root.dataset.calibrationState = snapshot.state;
     if (snapshot.state === 'COMPLETE') {
-      this.actions.innerHTML = '<button class="button primary" data-calibration-action="play">開始遊戲</button><button class="button secondary" data-calibration-action="restart">重新設定</button>';
+      this.actions.innerHTML = `${this.automatic ? '' : '<button class="button primary" data-calibration-action="play">開始遊戲</button>'}<button class="button secondary" data-calibration-action="restart">重新設定</button>`;
     } else if (snapshot.state === 'BEND_INSTRUCTIONS') {
-      this.actions.innerHTML = `${snapshot.bendStarted ? '' : '<button class="button primary" data-calibration-action="bend">準備好，開始第二步</button>'}<button class="button secondary" data-calibration-action="restart">重新設定</button>`;
+      this.actions.innerHTML = `${this.automatic || snapshot.bendStarted ? '' : '<button class="button primary" data-calibration-action="bend">準備好，開始第二步</button>'}<button class="button secondary" data-calibration-action="restart">重新設定</button>`;
     } else if (snapshot.state === 'FAILED') {
       this.actions.innerHTML = '<button class="button primary" data-calibration-action="retry">再試一次</button><button class="button secondary" data-calibration-action="restart">重新設定</button>';
     } else {
       this.actions.innerHTML = '<button class="button secondary" data-calibration-action="restart">重新設定</button>';
     }
-    if (snapshot.state === 'COMPLETE' || snapshot.state === 'FAILED' || snapshot.state === 'BEND_INSTRUCTIONS') {
+    if (!this.automatic && (snapshot.state === 'COMPLETE' || snapshot.state === 'FAILED' || snapshot.state === 'BEND_INSTRUCTIONS')) {
       this.title.focus({ preventScroll: true });
     }
   }

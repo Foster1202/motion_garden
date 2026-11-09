@@ -23,8 +23,15 @@ try{
   const sample=await page.evaluate(async()=>({frames:window.__engineFrames,scene:(await import('/src/main.ts')).game.scene.getScene('CarrotPull').getDebugSnapshot()}));
   assert.ok(sample.frames.length>20);assert.ok(sample.frames.every((f,i)=>i===0||f.timestampMs>sample.frames[i-1].timestampMs));
   report.frameCount=sample.frames.length;report.lastFrame=sample.frames.at(-1);report.threeFps=sample.scene.rabbit3d.fps;
+  assert.equal(sample.scene.paused,false);
+  assert.equal(sample.scene.input.requestPause,false);
+  assert.equal(sample.scene.input.suspended,true);
+  assert.equal(sample.scene.score,0);
+  assert.equal(await page.locator('dialog[open]').count(),0);
+  assert.match(await page.locator('.person-status').innerText(),/未偵測到人物/);
+  await page.screenshot({path:`${output}/engine-waiting.png`});
   if (!sample.scene.paused) await page.locator('[data-action=pause]').click();
-  report.trackingLossSafetyPaused=sample.scene.paused;
+  report.waitedWithoutAutomaticRest=true;
   await page.locator('[data-action=home]').click();await page.locator('[data-action=start]').waitFor();
   report.cameraTracks=await page.evaluate(()=>window.__engineStream.getTracks().map(t=>t.readyState));assert.ok(report.cameraTracks.every(s=>s==='ended'));
   assert.deepEqual(report.errors,[]);report.status='PASS';

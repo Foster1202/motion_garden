@@ -27,6 +27,9 @@ export class RabbitRigController {
   private readonly rootOffset = new Vector3();
   private readonly kneeCompensation = new Vector3();
   private readonly legSegments: { upper: Vector3; lower: Vector3 }[] = [];
+  private readonly lowerArmDirections = new Map<'L' | 'R', Vector3>();
+  private readonly armElevations = { L: 0, R: 0 };
+  private readonly headRotation = { yaw: 0, pitch: 0, roll: 0 };
   private kneeAngle = 0;
   private readonly legExtensions = { L: 0, R: 0 };
   private disposed = false;
@@ -57,17 +60,37 @@ export class RabbitRigController {
       const hip = point(`thigh.${side}`);
       const knee = point(`shin.${side}`);
       const ankle = point(`foot.${side}`);
+      this.lowerArmDirections.set(side, point(`hand.${side}`).sub(point(`forearm.${side}`)).normalize());
       this.legSegments.push({ upper: knee.clone().sub(hip), lower: ankle.sub(knee) });
     }
   }
 
-  /** Positive angles raise either arm outward; forearm angles bend inward. */
-  setArmRotation(side: RabbitSide, upperDegrees: number, forearmDegrees = 0): void {
+  /** Plane 0 raises sideways, plane 90 raises forward, around the unchanged shoulder pivot. */
+  setArmRotation(side: RabbitSide, upperDegrees: number, forearmDegrees = 0, planeDegrees = 0): void {
+    if (this.disposed) return;
     const part = suffix(side);
     const sign = part === 'L' ? 1 : -1;
     const limits = RABBIT_3D_CONFIG.limits;
-    this.setRotation(`upper_arm.${part}`, 0, 0, sign * clamp(upperDegrees, limits.arm.min, limits.arm.max));
-    this.setRotation(`forearm.${part}`, 0, 0, -sign * clamp(forearmDegrees, limits.forearm.min, limits.forearm.max));
+    const plane = radians(clamp(planeDegrees, 0, 90));
+    const upper = this.rest.get(`upper_arm.${part}`)!;
+    const axis = upper.axes.z.clone().multiplyScalar(sign * Math.cos(plane))
+      .addScaledVector(upper.axes.x, -Math.sin(plane)).normalize();
+    this.armElevations[part] = clamp(upperDegrees, limits.arm.min, limits.arm.max);
+    const elevation = radians(this.armElevations[part]);
+    upper.targetQuaternion.copy(upper.quaternion).multiply(new Quaternion().setFromAxisAngle(axis, elevation)).normalize();
+    const shoulderDelta = new Quaternion().setFromAxisAngle(
+      new Vector3(-Math.sin(plane), 0, sign * Math.cos(plane)), elevation);
+    const direction = this.lowerArmDirections.get(part)!.clone().applyQuaternion(shoulderDelta);
+    // Keep flexion on the outward/front side of the large head without moving either joint.
+    const outward = new Vector3(sign, 0.4, 1).normalize();
+    const elbowLimit = Math.min(limits.forearm.max, MathUtils.radToDeg(direction.angleTo(outward)));
+    const hinge = direction.cross(outward).normalize().applyQuaternion(shoulderDelta.invert());
+    const forearm = this.rest.get(`forearm.${part}`)!;
+    const localHinge = forearm.axes.x.clone().multiplyScalar(hinge.x)
+      .addScaledVector(forearm.axes.y, hinge.y).addScaledVector(forearm.axes.z, hinge.z).normalize();
+    forearm.targetQuaternion.copy(forearm.quaternion).multiply(new Quaternion().setFromAxisAngle(localHinge,
+      radians(clamp(forearmDegrees, limits.forearm.min, elbowLimit)))).normalize();
+    this.updateHeadRotation();
   }
 
   /** Positive side lean moves the head toward screen left; forward lean bows. */
@@ -79,8 +102,19 @@ export class RabbitRigController {
 
   setHeadRotation(yawDegrees: number, pitchDegrees = 0, rollDegrees = 0): void {
     const limits = RABBIT_3D_CONFIG.limits;
-    this.setRotation('head', clamp(pitchDegrees, -limits.headPitch, limits.headPitch),
-      clamp(yawDegrees, -limits.headYaw, limits.headYaw), clamp(rollDegrees, -limits.headRoll, limits.headRoll));
+    this.headRotation.yaw = clamp(yawDegrees, -limits.headYaw, limits.headYaw);
+    this.headRotation.pitch = clamp(pitchDegrees, -limits.headPitch, limits.headPitch);
+    this.headRotation.roll = clamp(rollDegrees, -limits.headRoll, limits.headRoll);
+    this.updateHeadRotation();
+  }
+
+  private updateHeadRotation(): void {
+    // The existing large head needs neck clearance when either arm approaches shoulder level.
+    const armClearance = 1 - clamp((Math.max(this.armElevations.L, this.armElevations.R) - 60) / 30, 0, 1);
+    const requested = Math.hypot(this.headRotation.pitch, this.headRotation.yaw, this.headRotation.roll);
+    const clearance = armClearance * Math.min(1, RABBIT_3D_CONFIG.limits.headMotionEnvelope / requested);
+    this.setRotation('head', this.headRotation.pitch * clearance, this.headRotation.yaw * clearance,
+      this.headRotation.roll * clearance);
   }
 
   /** Shallow symmetric FK with rest-geometry support compensation; this is not IK. */
@@ -131,6 +165,8 @@ export class RabbitRigController {
     this.rootOffset.set(0, 0, 0);
     this.kneeCompensation.set(0, 0, 0);
     this.kneeAngle = 0;
+    this.armElevations.L = this.armElevations.R = 0;
+    this.headRotation.yaw = this.headRotation.pitch = this.headRotation.roll = 0;
     this.legExtensions.L = this.legExtensions.R = 0;
     for (const state of this.rest.values()) {
       state.targetQuaternion.copy(state.quaternion);
