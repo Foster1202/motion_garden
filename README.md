@@ -103,6 +103,8 @@ Preview 用 CSS 鏡像；骨架 canvas 亦作相同 visual mirror。模型讀取
 
 開發預覽、骨骼角度與此次修復詳見 [Task 4B 文檔](docs/task-4b-motion-retargeting.md)。
 
+Task 4C-1 的 Carrot 3D 開發預覽預設使用獨立 V3 Rabbit Rig，保留 V2 四肢長度與卡通外觀，改善肩部空間及關節權重。直臂側抬／前抬可達 150°；120° 舉手時肘部最多彎曲 45°，最大舉手須頭部中立。`?rabbit3dDebug=1&mocapDebug=1&rabbitRig=v2` 可回退舊模型；Berry 仍使用 V2。建模、組合限制與對比圖詳見 [Task 4C-1 文檔](docs/task-4c1-rabbit-rig-improvement.md)。`npm run build:rabbit3d -- --version v3` 重新產生獨立 V3 資產，`npm run qa:rig-v3` 驗證實際預覽。
+
 ## 開發 Preview／Debug
 
 Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏。Skeleton 和數值 debug 預設關閉：`DEV_POSE_DEBUG = false`、`DEV_POSE_PREVIEW = true` 在 `PoseDebugOverlay.ts`。

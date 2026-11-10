@@ -1,0 +1,1741 @@
+{
+  "source": "/Users/foster/Documents/2026:27 Y4 S1/BME3S02/game/model/assets/blender/rabbit/rabbit_realtime_v2.blend",
+  "protected_sha256": {
+    "assets/blender/rabbit/rabbit_base.blend": "7bbaa295ebd941fcac526692540872039b1aec453616efa771114c32502a0b34",
+    "assets/blender/rabbit/rabbit_rigged.blend": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+    "assets/blender/rabbit/rabbit_realtime_v2.blend": "49f73177672cd61fb6e2f1d4b55fc46654a380ffb99ae6c038e52edbc87a1eff",
+    "dist/rabbit3d/rabbit_realtime.glb": "08c6ad9f8f3aaf127a7ee3dadd5138a9f0f05e4e9d292d3dbf0d918d41108c4b"
+  },
+  "blender_version": "5.2.1 LTS",
+  "armature": {
+    "matrix_world": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "proportions": {
+      "version": "rabbit-realtime-v2",
+      "arm_chain_scale": 1.38,
+      "arm_radial_scale": 0.82,
+      "leg_chain_scale": 1.45,
+      "torso_bone_scale": 1.12,
+      "lower_belly_lift": 0.17,
+      "lower_pelvis_taper": 0.12,
+      "head_face_ear_scale": 0.93,
+      "original_source_sha256": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+      "bone_lengths": {
+        "root": {
+          "old": 0.25,
+          "new": 0.25,
+          "ratio": 1.0
+        },
+        "body": {
+          "old": 0.8800000548362732,
+          "new": 0.9856000542640686,
+          "ratio": 1.1199999918720944
+        },
+        "head": {
+          "old": 0.9500000476837158,
+          "new": 0.8835000991821289,
+          "ratio": 0.9300000577223899
+        },
+        "ear.L": {
+          "old": 1.0286520719528198,
+          "new": 0.9566464424133301,
+          "ratio": 0.9300000150655484
+        },
+        "ear.R": {
+          "old": 1.0286520719528198,
+          "new": 0.9566464424133301,
+          "ratio": 0.9300000150655484
+        },
+        "upper_arm.L": {
+          "old": 0.2823278307914734,
+          "new": 0.38961243629455566,
+          "ratio": 1.3800001055592794
+        },
+        "forearm.L": {
+          "old": 0.2627813518047333,
+          "new": 0.362637996673584,
+          "ratio": 1.3799989770318704
+        },
+        "hand.L": {
+          "old": 0.1073732078075409,
+          "new": 0.14817488193511963,
+          "ratio": 1.3799986510667814
+        },
+        "upper_arm.R": {
+          "old": 0.2823278307914734,
+          "new": 0.38961243629455566,
+          "ratio": 1.3800001055592794
+        },
+        "forearm.R": {
+          "old": 0.2627813518047333,
+          "new": 0.362637996673584,
+          "ratio": 1.3799989770318704
+        },
+        "hand.R": {
+          "old": 0.1073732078075409,
+          "new": 0.14817488193511963,
+          "ratio": 1.3799986510667814
+        },
+        "tail": {
+          "old": 0.27000001072883606,
+          "new": 0.27000001072883606,
+          "ratio": 1.0
+        },
+        "thigh.L": {
+          "old": 0.2024846225976944,
+          "new": 0.2842538356781006,
+          "ratio": 1.4038292490134867
+        },
+        "shin.L": {
+          "old": 0.19235382974147797,
+          "new": 0.27712851762771606,
+          "ratio": 1.4407226411877248
+        },
+        "foot.L": {
+          "old": 0.21000000834465027,
+          "new": 0.20999905467033386,
+          "ratio": 0.9999954586939118
+        },
+        "thigh.R": {
+          "old": 0.2024846225976944,
+          "new": 0.2842538356781006,
+          "ratio": 1.4038292490134867
+        },
+        "shin.R": {
+          "old": 0.19235382974147797,
+          "new": 0.27712851762771606,
+          "ratio": 1.4407226411877248
+        },
+        "foot.R": {
+          "old": 0.21000000834465027,
+          "new": 0.20999905467033386,
+          "ratio": 0.9999954586939118
+        },
+        "carrot_socket": {
+          "old": 0.1499999761581421,
+          "new": 0.1679999828338623,
+          "ratio": 1.1200000635782978
+        }
+      }
+    }
+  },
+  "bones": {
+    "root": {
+      "head": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "tail": [
+        0.0,
+        0.0,
+        0.25
+      ],
+      "length": 0.25,
+      "parent": null,
+      "connected": false,
+      "deform": false,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "body": {
+      "head": [
+        0.0,
+        0.02500000037252903,
+        0.7409999966621399
+      ],
+      "tail": [
+        0.0,
+        0.02500000037252903,
+        1.7266000509262085
+      ],
+      "length": 0.9856000542640686,
+      "parent": "root",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          0.02500000037252903
+        ],
+        [
+          0.0,
+          0.9999999403953552,
+          0.0,
+          0.7409999966621399
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "head": {
+      "head": [
+        0.0,
+        0.0,
+        1.760200023651123
+      ],
+      "tail": [
+        0.0,
+        0.0,
+        2.643700122833252
+      ],
+      "length": 0.8835000991821289,
+      "parent": "body",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          1.862645149230957e-09
+        ],
+        [
+          0.0,
+          0.9999999403953552,
+          0.0,
+          1.760200023651123
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "ear.L": {
+      "head": [
+        0.25575000047683716,
+        0.023250000551342964,
+        2.6809000968933105
+      ],
+      "tail": [
+        0.43709999322891235,
+        0.023250000551342964,
+        3.6202001571655273
+      ],
+      "length": 0.9566464424133301,
+      "parent": "head",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.9640637636184692,
+          0.18956845998764038,
+          -0.18613111972808838,
+          0.25574997067451477
+        ],
+        [
+          -0.18956845998764038,
+          0.0,
+          -0.9818674921989441,
+          0.023250000551342964
+        ],
+        [
+          -0.18613110482692719,
+          0.9818674325942993,
+          0.03593619912862778,
+          2.6809000968933105
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "ear.R": {
+      "head": [
+        -0.25575000047683716,
+        0.023250000551342964,
+        2.6809000968933105
+      ],
+      "tail": [
+        -0.43709999322891235,
+        0.023250000551342964,
+        3.6202001571655273
+      ],
+      "length": 0.9566464424133301,
+      "parent": "head",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.9640637636184692,
+          -0.18956845998764038,
+          0.18613111972808838,
+          -0.25574997067451477
+        ],
+        [
+          0.18956845998764038,
+          0.0,
+          -0.9818674921989441,
+          0.023250000551342964
+        ],
+        [
+          0.18613110482692719,
+          0.9818674325942993,
+          0.03593619912862778,
+          2.6809000968933105
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "upper_arm.L": {
+      "head": [
+        0.5149999856948853,
+        -0.004999999888241291,
+        1.6369999647140503
+      ],
+      "tail": [
+        0.6668000221252441,
+        -0.00914000067859888,
+        1.2781999111175537
+      ],
+      "length": 0.38961243629455566,
+      "parent": "body",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.846568763256073,
+          0.3896181881427765,
+          0.3626587390899658,
+          0.5149999260902405
+        ],
+        [
+          -0.3896186053752899,
+          -0.01062596682459116,
+          0.9209153056144714,
+          -0.004999998956918716
+        ],
+        [
+          0.36266013979911804,
+          -0.9209156036376953,
+          0.14280663430690765,
+          1.6369998455047607
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "forearm.L": {
+      "head": [
+        0.6668000221252441,
+        -0.00914000067859888,
+        1.2781999111175537
+      ],
+      "tail": [
+        0.7979000806808472,
+        -0.011900000274181366,
+        0.9400999546051025
+      ],
+      "length": 0.362637996673584,
+      "parent": "upper_arm.L",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.8683040142059326,
+          0.3615177571773529,
+          0.3396401107311249,
+          0.6668000221252441
+        ],
+        [
+          -0.36151817440986633,
+          -0.007610904052853584,
+          0.932334303855896,
+          -0.009140007197856903
+        ],
+        [
+          0.3396415412425995,
+          -0.9323346018791199,
+          0.12408638000488281,
+          1.2781996726989746
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "hand.L": {
+      "head": [
+        0.7979000806808472,
+        -0.011900000274181366,
+        0.9400999546051025
+      ],
+      "tail": [
+        0.8668999671936035,
+        -0.014659999869763851,
+        0.8089999556541443
+      ],
+      "length": 0.14817488193511963,
+      "parent": "forearm.L",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.7790417075157166,
+          0.46566519141197205,
+          0.41982418298721313,
+          0.7979000806808472
+        ],
+        [
+          -0.465665727853775,
+          -0.018626641482114792,
+          0.8847649693489075,
+          -0.011900010518729687
+        ],
+        [
+          0.4198252260684967,
+          -0.8847653865814209,
+          0.20233318209648132,
+          0.9400997161865234
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "upper_arm.R": {
+      "head": [
+        -0.5149999856948853,
+        -0.004999999888241291,
+        1.6369999647140503
+      ],
+      "tail": [
+        -0.6668000221252441,
+        -0.00914000067859888,
+        1.2781999111175537
+      ],
+      "length": 0.38961243629455566,
+      "parent": "body",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.846568763256073,
+          -0.3896181881427765,
+          -0.3626587390899658,
+          -0.5149999260902405
+        ],
+        [
+          0.3896186053752899,
+          -0.01062596682459116,
+          0.9209153056144714,
+          -0.004999998956918716
+        ],
+        [
+          -0.36266013979911804,
+          -0.9209156036376953,
+          0.14280663430690765,
+          1.6369998455047607
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "forearm.R": {
+      "head": [
+        -0.6668000221252441,
+        -0.00914000067859888,
+        1.2781999111175537
+      ],
+      "tail": [
+        -0.7979000806808472,
+        -0.011900000274181366,
+        0.9400999546051025
+      ],
+      "length": 0.362637996673584,
+      "parent": "upper_arm.R",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.8683040142059326,
+          -0.3615177571773529,
+          -0.3396401107311249,
+          -0.6668000221252441
+        ],
+        [
+          0.36151817440986633,
+          -0.007610904052853584,
+          0.932334303855896,
+          -0.009140007197856903
+        ],
+        [
+          -0.3396415412425995,
+          -0.9323346018791199,
+          0.12408638000488281,
+          1.2781996726989746
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "hand.R": {
+      "head": [
+        -0.7979000806808472,
+        -0.011900000274181366,
+        0.9400999546051025
+      ],
+      "tail": [
+        -0.8668999671936035,
+        -0.014659999869763851,
+        0.8089999556541443
+      ],
+      "length": 0.14817488193511963,
+      "parent": "forearm.R",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          0.7790417075157166,
+          -0.46566519141197205,
+          -0.41982418298721313,
+          -0.7979000806808472
+        ],
+        [
+          0.465665727853775,
+          -0.018626641482114792,
+          0.8847649693489075,
+          -0.011900010518729687
+        ],
+        [
+          -0.4198252260684967,
+          -0.8847653865814209,
+          0.20233318209648132,
+          0.9400997161865234
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "tail": {
+      "head": [
+        0.0,
+        0.3499999940395355,
+        0.8194000124931335
+      ],
+      "tail": [
+        0.0,
+        0.6200000047683716,
+        0.8194000124931335
+      ],
+      "length": 0.27000001072883606,
+      "parent": "body",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.34999996423721313
+        ],
+        [
+          0.0,
+          0.0,
+          0.9999999403953552,
+          0.8194000124931335
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "thigh.L": {
+      "head": [
+        0.26499998569488525,
+        0.0,
+        0.6809999942779541
+      ],
+      "tail": [
+        0.26499998569488525,
+        -0.07000000029802322,
+        0.40549999475479126
+      ],
+      "length": 0.2842538356781006,
+      "parent": "root",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.26499998569488525
+        ],
+        [
+          0.0,
+          -0.24625878036022186,
+          0.969208836555481,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9692041873931885,
+          -0.24625878036022186,
+          0.6809999942779541
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "shin.L": {
+      "head": [
+        0.26499998569488525,
+        -0.07000000029802322,
+        0.40549999475479126
+      ],
+      "tail": [
+        0.26499998569488525,
+        -0.03999999910593033,
+        0.12999999523162842
+      ],
+      "length": 0.27712851762771606,
+      "parent": "thigh.L",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.26499998569488525
+        ],
+        [
+          0.0,
+          0.10825303196907043,
+          0.9941279888153076,
+          -0.07000000029802322
+        ],
+        [
+          0.0,
+          -0.994123637676239,
+          0.10825139284133911,
+          0.40549999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "foot.L": {
+      "head": [
+        0.26499998569488525,
+        -0.03999999910593033,
+        0.12999999523162842
+      ],
+      "tail": [
+        0.26499998569488525,
+        -0.25,
+        0.12999999523162842
+      ],
+      "length": 0.20999905467033386,
+      "parent": "shin.L",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          -1.0,
+          0.0,
+          -1.5099578831723193e-07,
+          0.26499998569488525
+        ],
+        [
+          1.758593271006248e-13,
+          -1.0000044107437134,
+          -1.125037670135498e-06,
+          -0.03999999910593033
+        ],
+        [
+          -1.5099580252808664e-07,
+          0.0,
+          1.0,
+          0.12999999523162842
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "thigh.R": {
+      "head": [
+        -0.26499998569488525,
+        0.0,
+        0.6809999942779541
+      ],
+      "tail": [
+        -0.26499998569488525,
+        -0.07000000029802322,
+        0.40549999475479126
+      ],
+      "length": 0.2842538356781006,
+      "parent": "root",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.26499998569488525
+        ],
+        [
+          0.0,
+          -0.24625878036022186,
+          0.969208836555481,
+          0.0
+        ],
+        [
+          0.0,
+          -0.9692041873931885,
+          -0.24625878036022186,
+          0.6809999942779541
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "shin.R": {
+      "head": [
+        -0.26499998569488525,
+        -0.07000000029802322,
+        0.40549999475479126
+      ],
+      "tail": [
+        -0.26499998569488525,
+        -0.03999999910593033,
+        0.12999999523162842
+      ],
+      "length": 0.27712851762771606,
+      "parent": "thigh.R",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.26499998569488525
+        ],
+        [
+          0.0,
+          0.10825303196907043,
+          0.9941279888153076,
+          -0.07000000029802322
+        ],
+        [
+          0.0,
+          -0.994123637676239,
+          0.10825139284133911,
+          0.40549999475479126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "foot.R": {
+      "head": [
+        -0.26499998569488525,
+        -0.03999999910593033,
+        0.12999999523162842
+      ],
+      "tail": [
+        -0.26499998569488525,
+        -0.25,
+        0.12999999523162842
+      ],
+      "length": 0.20999905467033386,
+      "parent": "shin.R",
+      "connected": false,
+      "deform": true,
+      "matrix": [
+        [
+          -1.0,
+          0.0,
+          -1.5099578831723193e-07,
+          -0.26499998569488525
+        ],
+        [
+          1.758593271006248e-13,
+          -1.0000044107437134,
+          -1.125037670135498e-06,
+          -0.03999999910593033
+        ],
+        [
+          -1.5099580252808664e-07,
+          0.0,
+          1.0,
+          0.12999999523162842
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "carrot_socket": {
+      "head": [
+        0.0,
+        -0.5,
+        1.3345999717712402
+      ],
+      "tail": [
+        0.0,
+        -0.5,
+        1.5025999546051025
+      ],
+      "length": 0.1679999828338623,
+      "parent": "root",
+      "connected": false,
+      "deform": false,
+      "matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          -1.0,
+          -0.5
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          1.3345999717712402
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "objects": {
+    "Rabbit_Root": {
+      "type": "EMPTY",
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": []
+    },
+    "Rabbit_Body": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "body",
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 610,
+      "faces": 640,
+      "bounds": {
+        "min": [
+          -0.5356002449989319,
+          -0.36479994654655457,
+          0.5694002509117126
+        ],
+        "max": [
+          0.5356002449989319,
+          0.4127998352050781,
+          2.012199878692627
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": []
+    },
+    "Rabbit_Head": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "head",
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 922,
+      "faces": 960,
+      "bounds": {
+        "min": [
+          -0.8007200956344604,
+          -0.5626499652862549,
+          1.6253501176834106
+        ],
+        "max": [
+          0.8007200956344604,
+          0.5347497463226318,
+          2.8901498317718506
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": []
+    },
+    "Rabbit_Ear_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "ear.L",
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 534,
+      "faces": 560,
+      "bounds": {
+        "min": [
+          0.1532842516899109,
+          -0.11160015314817429,
+          2.639050006866455
+        ],
+        "max": [
+          0.5535156726837158,
+          0.15809977054595947,
+          3.736449718475342
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": []
+    },
+    "Rabbit_InnerEar_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Ear_L",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 385,
+      "faces": 384,
+      "bounds": {
+        "min": [
+          0.2344031035900116,
+          -0.11710265278816223,
+          2.7924997806549072
+        ],
+        "max": [
+          0.479017049074173,
+          -0.06533060222864151,
+          3.620199680328369
+        ]
+      },
+      "boundary_edges": 48,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_InnerEarPink"
+      ],
+      "groups": []
+    },
+    "Rabbit_Arm_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [
+        {
+          "name": "Rabbit_Limb_Deform",
+          "type": "ARMATURE",
+          "levels": null,
+          "preserve_volume": true
+        },
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 422,
+      "faces": 448,
+      "bounds": {
+        "min": [
+          0.43787509202957153,
+          -0.15188056230545044,
+          0.8157469630241394
+        ],
+        "max": [
+          0.8821358680725098,
+          0.12694135308265686,
+          1.7189571857452393
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": [
+        "upper_arm.L",
+        "forearm.L",
+        "hand.L"
+      ],
+      "weights": {
+        "upper_arm.L": {
+          "vertices": 266,
+          "maximum": 1.0
+        },
+        "forearm.L": {
+          "vertices": 274,
+          "maximum": 1.0
+        },
+        "hand.L": {
+          "vertices": 153,
+          "maximum": 0.9982364773750305
+        }
+      },
+      "weight_sum_range": [
+        0.9999999701976776,
+        1.0000000298023224
+      ],
+      "influence_counts": {
+        "1": 151,
+        "2": 271
+      }
+    },
+    "Rabbit_Leg_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [
+        {
+          "name": "Rabbit_Limb_Deform",
+          "type": "ARMATURE",
+          "levels": null,
+          "preserve_volume": true
+        },
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 364,
+      "faces": 338,
+      "bounds": {
+        "min": [
+          0.08900000154972076,
+          -0.28299999237060547,
+          0.00800000037997961
+        ],
+        "max": [
+          0.4410000145435333,
+          0.1850000023841858,
+          0.75
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": [
+        "thigh.L",
+        "shin.L",
+        "foot.L"
+      ],
+      "weights": {
+        "thigh.L": {
+          "vertices": 196,
+          "maximum": 1.0
+        },
+        "shin.L": {
+          "vertices": 112,
+          "maximum": 1.0
+        },
+        "foot.L": {
+          "vertices": 140,
+          "maximum": 1.0
+        }
+      },
+      "weight_sum_range": [
+        0.9999999739229679,
+        1.0000000298023224
+      ],
+      "influence_counts": {
+        "1": 280,
+        "2": 84
+      }
+    },
+    "Rabbit_Eye_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 422,
+      "faces": 448,
+      "bounds": {
+        "min": [
+          0.2613299489021301,
+          -0.5675980448722839,
+          2.210320234298706
+        ],
+        "max": [
+          0.3896699547767639,
+          -0.5006380677223206,
+          2.360980272293091
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_EyeEspresso"
+      ],
+      "groups": []
+    },
+    "Rabbit_EyeHighlight_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Eye_L",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 178,
+      "faces": 192,
+      "bounds": {
+        "min": [
+          0.29573994874954224,
+          -0.5713180303573608,
+          2.293090343475342
+        ],
+        "max": [
+          0.3217799663543701,
+          -0.5601580142974854,
+          2.3265700340270996
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_EyeCatchlight"
+      ],
+      "groups": []
+    },
+    "Rabbit_Cheek_L": {
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 385,
+      "faces": 384,
+      "bounds": {
+        "min": [
+          0.375003457069397,
+          -0.49109938740730286,
+          2.084620714187622
+        ],
+        "max": [
+          0.6300026178359985,
+          -0.34188228845596313,
+          2.2354373931884766
+        ]
+      },
+      "boundary_edges": 48,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_SoftBlush"
+      ],
+      "groups": []
+    },
+    "Rabbit_Ear_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "ear.R",
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 534,
+      "faces": 560,
+      "bounds": {
+        "min": [
+          -0.5535156726837158,
+          -0.11160015314817429,
+          2.639050006866455
+        ],
+        "max": [
+          -0.1532842516899109,
+          0.15809977054595947,
+          3.736449718475342
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": []
+    },
+    "Rabbit_InnerEar_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Ear_R",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 385,
+      "faces": 384,
+      "bounds": {
+        "min": [
+          -0.479017049074173,
+          -0.11710265278816223,
+          2.7924997806549072
+        ],
+        "max": [
+          -0.2344031035900116,
+          -0.06533060222864151,
+          3.620199680328369
+        ]
+      },
+      "boundary_edges": 48,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_InnerEarPink"
+      ],
+      "groups": []
+    },
+    "Rabbit_Arm_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [
+        {
+          "name": "Rabbit_Limb_Deform",
+          "type": "ARMATURE",
+          "levels": null,
+          "preserve_volume": true
+        },
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 422,
+      "faces": 448,
+      "bounds": {
+        "min": [
+          -0.8821358680725098,
+          -0.15188056230545044,
+          0.8157469630241394
+        ],
+        "max": [
+          -0.43787509202957153,
+          0.12694135308265686,
+          1.7189571857452393
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": [
+        "upper_arm.R",
+        "forearm.R",
+        "hand.R"
+      ],
+      "weights": {
+        "upper_arm.R": {
+          "vertices": 266,
+          "maximum": 1.0
+        },
+        "forearm.R": {
+          "vertices": 274,
+          "maximum": 1.0
+        },
+        "hand.R": {
+          "vertices": 153,
+          "maximum": 0.9982364773750305
+        }
+      },
+      "weight_sum_range": [
+        0.9999999701976776,
+        1.0000000298023224
+      ],
+      "influence_counts": {
+        "1": 151,
+        "2": 271
+      }
+    },
+    "Rabbit_Leg_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [
+        {
+          "name": "Rabbit_Limb_Deform",
+          "type": "ARMATURE",
+          "levels": null,
+          "preserve_volume": true
+        },
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 364,
+      "faces": 338,
+      "bounds": {
+        "min": [
+          -0.4410000145435333,
+          -0.28299999237060547,
+          0.00800000037997961
+        ],
+        "max": [
+          -0.08900000154972076,
+          0.1850000023841858,
+          0.75
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": [
+        "thigh.R",
+        "shin.R",
+        "foot.R"
+      ],
+      "weights": {
+        "thigh.R": {
+          "vertices": 196,
+          "maximum": 1.0
+        },
+        "shin.R": {
+          "vertices": 112,
+          "maximum": 1.0
+        },
+        "foot.R": {
+          "vertices": 140,
+          "maximum": 1.0
+        }
+      },
+      "weight_sum_range": [
+        0.9999999739229679,
+        1.0000000298023224
+      ],
+      "influence_counts": {
+        "1": 280,
+        "2": 84
+      }
+    },
+    "Rabbit_Eye_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 422,
+      "faces": 448,
+      "bounds": {
+        "min": [
+          -0.3896699547767639,
+          -0.5675980448722839,
+          2.210320234298706
+        ],
+        "max": [
+          -0.2613299489021301,
+          -0.5006380677223206,
+          2.360980272293091
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_EyeEspresso"
+      ],
+      "groups": []
+    },
+    "Rabbit_EyeHighlight_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Eye_R",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 178,
+      "faces": 192,
+      "bounds": {
+        "min": [
+          -0.3552599549293518,
+          -0.5713180303573608,
+          2.293090343475342
+        ],
+        "max": [
+          -0.3292199373245239,
+          -0.5601580142974854,
+          2.3265700340270996
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_EyeCatchlight"
+      ],
+      "groups": []
+    },
+    "Rabbit_Cheek_R": {
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 385,
+      "faces": 384,
+      "bounds": {
+        "min": [
+          -0.630001962184906,
+          -0.4910908639431,
+          2.084620714187622
+        ],
+        "max": [
+          -0.3750040531158447,
+          -0.34185051918029785,
+          2.2354373931884766
+        ]
+      },
+      "boundary_edges": 48,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_SoftBlush"
+      ],
+      "groups": []
+    },
+    "Rabbit_Tail": {
+      "type": "MESH",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "tail",
+      "modifiers": [
+        {
+          "name": "Soft_Subdivision",
+          "type": "SUBSURF",
+          "levels": 1,
+          "preserve_volume": null
+        }
+      ],
+      "vertices": 422,
+      "faces": 448,
+      "bounds": {
+        "min": [
+          -0.20499996840953827,
+          0.23500004410743713,
+          0.6060001254081726
+        ],
+        "max": [
+          0.20499996840953827,
+          0.6449999809265137,
+          1.0160000324249268
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_WarmIvory"
+      ],
+      "groups": []
+    },
+    "Rabbit_Nose": {
+      "type": "MESH",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": [],
+      "vertices": 362,
+      "faces": 384,
+      "bounds": {
+        "min": [
+          -0.04974408820271492,
+          -0.6033023595809937,
+          2.153590202331543
+        ],
+        "max": [
+          0.04974408820271492,
+          -0.5549423694610596,
+          2.2131099700927734
+        ]
+      },
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "materials": [
+        "Rabbit_NoseRoseBrown"
+      ],
+      "groups": []
+    },
+    "Rabbit_Mouth_Stem": {
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": []
+    },
+    "Rabbit_Mouth_L": {
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": []
+    },
+    "Rabbit_Mouth_R": {
+      "type": "CURVE",
+      "parent": "Rabbit_Head",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": []
+    },
+    "Rabbit_Rig": {
+      "type": "ARMATURE",
+      "parent": "Rabbit_Root",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "modifiers": []
+    },
+    "Carrot_Attach_Point": {
+      "type": "EMPTY",
+      "parent": "Rabbit_Rig",
+      "parent_type": "BONE",
+      "parent_bone": "carrot_socket",
+      "modifiers": []
+    }
+  },
+  "unclamped_probes": [
+    {
+      "plane": 0,
+      "elevation": 0,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 0,
+      "elevation": 90,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 0,
+      "elevation": 120,
+      "head_inside_vertices": 176,
+      "maximum_head_penetration": 0.08427021652460098
+    },
+    {
+      "plane": 0,
+      "elevation": 150,
+      "head_inside_vertices": 1149,
+      "maximum_head_penetration": 0.31686368584632874
+    },
+    {
+      "plane": 45,
+      "elevation": 0,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 45,
+      "elevation": 90,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 45,
+      "elevation": 120,
+      "head_inside_vertices": 147,
+      "maximum_head_penetration": 0.06795638054609299
+    },
+    {
+      "plane": 45,
+      "elevation": 150,
+      "head_inside_vertices": 587,
+      "maximum_head_penetration": 0.23289550840854645
+    },
+    {
+      "plane": 90,
+      "elevation": 0,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 90,
+      "elevation": 90,
+      "head_inside_vertices": 0,
+      "maximum_head_penetration": 0
+    },
+    {
+      "plane": 90,
+      "elevation": 120,
+      "head_inside_vertices": 91,
+      "maximum_head_penetration": 0.04161889851093292
+    },
+    {
+      "plane": 90,
+      "elevation": 150,
+      "head_inside_vertices": 319,
+      "maximum_head_penetration": 0.14248532056808472
+    }
+  ]
+}

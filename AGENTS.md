@@ -1,6 +1,6 @@
 # Motion Garden — agent handoff and working agreement
 
-Updated: 2026-11-06. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
+Updated: 2026-11-10. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
 
 ## Mandatory workflow
 
@@ -70,6 +70,7 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 - Vite + TypeScript + Phaser 3, 1600×900 logical world with FIT scaling. Traditional Hong Kong Chinese UI.
 - Menu offers Carrot Pull and Berry Kick; Apple Harvest and Rabbit Goes Home remain disabled.
 - Carrot Pull: complete five-carrot Sprite gameplay, camera/keyboard input, pause/replay/home. Three.js rabbit mode is still explicitly a development preview; do not report it as full 3D Carrot scoring.
+- Carrot development preview defaults to separately exported V3 Rabbit Rig. V2 chain lengths/head scale are preserved, shoulder pivots widen, head/face/ears rise together, joint weights use export-equivalent LBS. Nineteen bone names/hierarchy remain. Straight lateral/forward/diagonal raise reaches150° with neutral head; at120° elbow≤45° and head target norm≤10°. Measured model curves also constrain interpolated actual joints. `rabbitRig=v2` restores the canonical V2 asset/limits; Berry continues V2. Full IK and real carrot grasp remain unimplemented. See `docs/task-4c1-rabbit-rig-improvement.md`.
 - Homepage settings retain manual thresholds, hold times, smoothing/confidence and display controls. Carrot camera now waits for reliable person detection, guides session-only personal standing/shallow-bend calibration automatically, waits for relaxed standing reference and enables mocap without an extra click.
 - Local MediaPipe Pose Landmarker, one inference scheduler, camera lifecycle/error handling, pose extraction/retargeting and continuous GLB FK. Ordinary tracking loss suspends actions and waits without a rest modal, retains calibration/reference and recovers after reliable-frame confirmation. Explicit Pause/Rest and page-focus safeguards remain. Bottom-right debounced person status and developer pipeline telemetry are available.
 - Berry Kick: actual continuous GLB leg motion, independent lateral movement, normalized no-calibration leg detection, real foot-bone projection into Phaser trunk hit zones, left/right three hits each, retraction plus cooldown, pause and cleanup. A/D movement, Q/E extension, release to retract, Esc pause. GLB failure disables scoring with an honest fallback message.
@@ -81,9 +82,9 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 From repository root: `npm ci`, `npm run dev` (default 5173), `npm run typecheck`, `npm test`, `npm run build`.
 Use `npm run dev -- --port 5175 --strictPort` when needed. `scripts/dev.mjs` handles the parent's colon-containing path with a temporary symlink; do not bypass Vite filesystem protections. Restart Vite if symlink watching serves stale source/assets.
 
-`npm run sync:assets` syncs required model exports and MediaPipe. `npm run build:rabbit3d` rebuilds GLB; `npm run build:berry-art` rebuilds berry art (Blender required). Preserve original Blender sources.
+`npm run sync:assets` syncs required model exports and MediaPipe. `npm run build:rabbit3d` rebuilds V2 GLB; `npm run build:rabbit3d -- --version v3` derives the separate V3 from saved V2 and exports a named GLB; `npm run build:berry-art` rebuilds berry art (Blender required). Preserve original Blender sources. V3 diagnostics, fixed-bind geometry validator, rendering and contact-sheet tools live under `model/scripts/`; final evidence lives in `model/qa/rig-v3/`.
 
-Browser suites: `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:berry-camera`. Set `QA_URL` explicitly and `QA_OUTPUT` to an absolute temporary directory. Existing scripts use installed Chrome/Playwright; most default to 5173 while Berry defaults to 5175. Check script defaults. Never accept Xcode licenses on the user's behalf.
+Browser suites: `qa:rig-v3`, `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:berry-camera`. Set `QA_URL` explicitly and `QA_OUTPUT` to an absolute temporary directory. Existing scripts use installed Chrome/Playwright; most default to 5173 while Berry defaults to 5175 and V3 to5177. Check script defaults. Never accept Xcode licenses on the user's behalf.
 
 ## Open work / next ideas (not authorization)
 
@@ -92,14 +93,24 @@ Browser suites: `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:be
 3. Decide with user whether Carrot 3D preview should become full gameplay; do not silently replace stable Sprite path.
 4. Complete third-party attribution/license audit before external redistribution; optimize duplicate source/runtime assets only with a reproducible clean-clone workflow.
 5. Consider CI for typecheck/tests/build and browser smoke checks. Currently no verified CI/deployment pipeline.
-6. Keep historical Task 4A evidence distinct from current Task 4B-Fix behavior. Personal calibration is active again for Carrot camera. Larger overhead reach requires a separately authorized Blender rig/head-clearance review.
+6. Keep historical Task4A/V2 and Task4B-Fix limits distinct from current V3 model evidence. Personal calibration remains active for Carrot camera. Task4C-1 completes the bounded Blender review; IK, foot locking and grasp need a separately authorized Task4C-2. High raise plus deep elbow flexion still collides outside the declared V3 envelope.
 7. Further visual polish and future minigames require explicit user authorization.
 
 ## Active work
 
-None. See the latest handoff below for completed work.
+None.
 
 ## Verification and handoff history
+
+### 2026-11-10 — 2026-11-09-lead-task4c1-rig-v3 — V3 Blender joint clearance and skinning
+- Owner / agent: Codex Lead with bounded export/build, geometry QA and runtime compatibility workers; final read-only review collected.
+- Branch / base: main / 2b4e2f0, clean upstream synchronized before edits.
+- Request / scope: Diagnose saved V2, improve Blender shoulder/elbow/leg geometry and weights, produce separate reproducible V3, preserve19-bone API and verify actual GLB/runtime. Excludes IK, human extraction/calibration/retargeting algorithm changes, CarrotRound/game rules, new games and old asset regeneration. Stops at Task4C-1.
+- Changes: `improve_rabbit_rig_v3.py` retains V2 segment lengths/head scale, moves shoulders±.515→±.770, changes rest splay23°→6°, raises head/face/ears.18, adds rounded connectors and rebakes V2 rounded rest surfaces before linear skinning with joint-based weights. Same19bones/parents, root-parented controllable carrot_socket. Separate V3 blend/GLB, exporter/build/sync extensions preserve V2. Controller reads verified per-model curves, uses V3 anatomical elbow hinge and constrains targets plus actual interpolation. Carrot dev preview defaults V3; explicit V2 fallback and Berry V2 remain. Blender validator/render/contact tools, V3 unit/browser QA, README and Task4C-1 document added.
+- Validation: PASS `npm run typecheck`, `npm test`183/183 zero skipped, `npm run build`, V3 build/export/sync, Python/Node/Bash syntax and `git diff --check`. Fixed-rest topology Blender QA: PASS_WITH_LIMITS,973 raw poses,945 supported PASS,0 supported failures,19 unsupported clear and9 unsupported geometric FAIL; max supported head penetration0, symmetry4.92e-7, rest recovery0. Actual exported GLB static/continuous mesh tests PASS. Chrome157: `qa:rig-v3`7checks/17poses, `qa:rabbit3d`15, `qa:mocap`22, `qa:berry`7, `qa:berry-camera`7 PASS; `qa:mocap-engine`121real WASM/model empty-camera frames PASS. V3 Three~60.04FPS; simulated pose/Three~20/60FPS. Inspected86 Blender renders/five contact sheets and actual browser screenshots. Base/rigged/V2/canonical old GLB hashes unchanged, no old Sprite/animation/scene PNG or human-pipeline/game-rule diff. Repeated build has identical attributes/oriented geometry, only rigid-shoulder triangle ordering differs. Evidence: `model/qa/rig-v3/acceptance-summary.json`, geometry/browser/reproducibility reports and contact sheets; details `docs/task-4c1-rabbit-rig-improvement.md`.
+- Risks / blockers: No delivery blocker.150° raise requires straight elbows/neutral head;120° permits elbow45°/head norm10°. Elbow110° supported at low raises, with residual LBS compression; knee inner crease remains. Elbow110° maxedge stretch1.614→1.703 versus V2 while area compression improves; knee area ratio.0738→.139. Extreme raw high-raise/deep-elbow combinations still collide and remain visible in reports. Root/ankle compensation is FK, no all-pose foot lock. Human webcam/target hardware/other browsers NOT RUN; synthetic pose and empty-camera engine tests do not establish human accuracy.
+- Next action: None within Task4C-1. Assets/interfaces can support separately authorized Task4C-2 IK work within measured geometry limits; do not start automatically.
+- Delivery: Local main commit only. User explicitly requested reporting before remote push, overriding the normal push workflow for this task. No remote push performed; final reply reports local commit/status.
 
 - 2026-10-25 (historical): Berry visual v2; 155 tests and browser keyboard six-hit flow reported passing; no human webcam validation. See `docs/berry-kick-game.md`.
 - 2026-10-31: Repository-wide source/docs/assets audit; established this agreement, expanded .gitignore, added software/art noncommercial licensing and README pointers. Identified untracked required `model/dist` exports hidden by broad `dist/` ignore; include current exports so clean clones can run asset sync. No gameplay changes. Current validation recorded below after checks. Git synchronization is verified by upstream status rather than assumed from this history.

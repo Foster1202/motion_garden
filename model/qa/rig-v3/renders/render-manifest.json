@@ -1,0 +1,1180 @@
+{
+  "rendering": "Cycles CPU, LBS, identical view angles/light rig, equal standing pixel height",
+  "samples": 24,
+  "resolution": 512,
+  "images": [
+    {
+      "version": "v2",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "front",
+      "image": "v2-rest-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "quarter",
+      "image": "v2-rest-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "side",
+      "image": "v2-rest-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "front",
+      "image": "v2-both_90-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "quarter",
+      "image": "v2-both_90-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "side",
+      "image": "v2-both_90-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "front",
+      "image": "v2-both_120-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "quarter",
+      "image": "v2-both_120-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "side",
+      "image": "v2-both_120-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "front",
+      "image": "v2-both_150-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "quarter",
+      "image": "v2-both_150-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "side",
+      "image": "v2-both_150-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "front",
+      "image": "v2-forward_120-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "quarter",
+      "image": "v2-forward_120-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "side",
+      "image": "v2-forward_120-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "front",
+      "image": "v2-diagonal_120-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "quarter",
+      "image": "v2-diagonal_120-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "side",
+      "image": "v2-diagonal_120-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "front",
+      "image": "v2-elbow_110-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v2-elbow_110-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v2-elbow_110-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "front",
+      "image": "v2-raised_elbow_45-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "quarter",
+      "image": "v2-raised_elbow_45-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "side",
+      "image": "v2-raised_elbow_45-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "front",
+      "image": "v2-lean-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "quarter",
+      "image": "v2-lean-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "side",
+      "image": "v2-lean-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "front",
+      "image": "v2-knee_50-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "quarter",
+      "image": "v2-knee_50-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "side",
+      "image": "v2-knee_50-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "front",
+      "image": "v2-knee_100-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "quarter",
+      "image": "v2-knee_100-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "side",
+      "image": "v2-knee_100-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "front",
+      "image": "v2-combined-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "quarter",
+      "image": "v2-combined-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "side",
+      "image": "v2-combined-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "front",
+      "image": "v2-unsupported_150_elbow_110-front.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v2-unsupported_150_elbow_110-quarter.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v2-unsupported_150_elbow_110-side.png",
+      "standing_height": 3.726902530528605,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.621359348297119
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "elbow_detail",
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v2-elbow_detail-quarter.png",
+      "camera_ortho_scale": 1.9,
+      "supported_by_profile": false
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "elbow_detail",
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v2-elbow_detail-side.png",
+      "camera_ortho_scale": 1.9,
+      "supported_by_profile": false
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_detail",
+        "knee": 1
+      },
+      "view": "quarter",
+      "image": "v2-knee_detail-quarter.png",
+      "camera_ortho_scale": 1.1,
+      "supported_by_profile": true
+    },
+    {
+      "version": "v2",
+      "pose": {
+        "name": "knee_detail",
+        "knee": 1
+      },
+      "view": "side",
+      "image": "v2-knee_detail-side.png",
+      "camera_ortho_scale": 1.1,
+      "supported_by_profile": true
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "front",
+      "image": "v3-rest-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "quarter",
+      "image": "v3-rest-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "rest"
+      },
+      "view": "side",
+      "image": "v3-rest-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "front",
+      "image": "v3-both_90-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "quarter",
+      "image": "v3-both_90-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_90",
+        "left": 90,
+        "right": 90
+      },
+      "view": "side",
+      "image": "v3-both_90-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "front",
+      "image": "v3-both_120-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "quarter",
+      "image": "v3-both_120-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_120",
+        "left": 120,
+        "right": 120
+      },
+      "view": "side",
+      "image": "v3-both_120-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "front",
+      "image": "v3-both_150-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "quarter",
+      "image": "v3-both_150-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "both_150",
+        "left": 150,
+        "right": 150
+      },
+      "view": "side",
+      "image": "v3-both_150-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "front",
+      "image": "v3-forward_120-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "quarter",
+      "image": "v3-forward_120-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "forward_120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "view": "side",
+      "image": "v3-forward_120-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "front",
+      "image": "v3-diagonal_120-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "quarter",
+      "image": "v3-diagonal_120-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "diagonal_120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "view": "side",
+      "image": "v3-diagonal_120-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "front",
+      "image": "v3-elbow_110-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v3-elbow_110-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "elbow_110",
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v3-elbow_110-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "front",
+      "image": "v3-raised_elbow_45-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "quarter",
+      "image": "v3-raised_elbow_45-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "raised_elbow_45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "view": "side",
+      "image": "v3-raised_elbow_45-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "front",
+      "image": "v3-lean-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "quarter",
+      "image": "v3-lean-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "lean",
+        "side": 18,
+        "yaw": 18,
+        "pitch": 8,
+        "roll": -7.2
+      },
+      "view": "side",
+      "image": "v3-lean-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "front",
+      "image": "v3-knee_50-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "quarter",
+      "image": "v3-knee_50-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_50",
+        "knee": 0.5
+      },
+      "view": "side",
+      "image": "v3-knee_50-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "front",
+      "image": "v3-knee_100-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "quarter",
+      "image": "v3-knee_100-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_100",
+        "knee": 1
+      },
+      "view": "side",
+      "image": "v3-knee_100-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "front",
+      "image": "v3-combined-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "quarter",
+      "image": "v3-combined-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "side": -18,
+        "forward": 10,
+        "knee": 1,
+        "yaw": -5,
+        "roll": 5
+      },
+      "view": "side",
+      "image": "v3-combined-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": true,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "front",
+      "image": "v3-unsupported_150_elbow_110-front.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v3-unsupported_150_elbow_110-quarter.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "unsupported_150_elbow_110",
+        "left": 150,
+        "right": 150,
+        "plane": 45,
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v3-unsupported_150_elbow_110-side.png",
+      "standing_height": 3.906902600079775,
+      "supported_by_profile": false,
+      "camera_ortho_scale": 4.844559192657471
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "elbow_detail",
+        "elbow": 110
+      },
+      "view": "quarter",
+      "image": "v3-elbow_detail-quarter.png",
+      "camera_ortho_scale": 1.9,
+      "supported_by_profile": true
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "elbow_detail",
+        "elbow": 110
+      },
+      "view": "side",
+      "image": "v3-elbow_detail-side.png",
+      "camera_ortho_scale": 1.9,
+      "supported_by_profile": true
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_detail",
+        "knee": 1
+      },
+      "view": "quarter",
+      "image": "v3-knee_detail-quarter.png",
+      "camera_ortho_scale": 1.1,
+      "supported_by_profile": true
+    },
+    {
+      "version": "v3",
+      "pose": {
+        "name": "knee_detail",
+        "knee": 1
+      },
+      "view": "side",
+      "image": "v3-knee_detail-side.png",
+      "camera_ortho_scale": 1.1,
+      "supported_by_profile": true
+    }
+  ],
+  "sources": {
+    "v2": {
+      "path": "assets/blender/rabbit/rabbit_realtime_v2.blend",
+      "sha256": "49f73177672cd61fb6e2f1d4b55fc46654a380ffb99ae6c038e52edbc87a1eff"
+    },
+    "v3": {
+      "path": "assets/blender/rabbit/rabbit_realtime_v3.blend",
+      "sha256": "764d2fdc3b8683b418e860d983a97969ee1284b0f801baeb7cbfa9cb5e416558"
+    }
+  },
+  "scope": "Unclamped asset pose requests, including V2 diagnostic poses above its runtime limit"
+}

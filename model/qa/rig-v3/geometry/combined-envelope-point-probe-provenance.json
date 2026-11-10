@@ -1,0 +1,14 @@
+{
+  "artifact": "combined-envelope-point-probe.json",
+  "artifact_sha256": "cd758fc29ed5ebbf870224691519ba56db886d9cc2457a82c7c0167a20dd5b95",
+  "provided_by": "Codex Lead",
+  "geometry": {
+    "shoulder_x": 0.77,
+    "head_lift": 0.18,
+    "surface_basis": "Baked rounded V2 rest surfaces with revised linear weights",
+    "bone_count": 19
+  },
+  "saved_final_blend_sha256": "764d2fdc3b8683b418e860d983a97969ee1284b0f801baeb7cbfa9cb5e416558",
+  "provenance": "Lead scan used the same final geometry before curve metadata was embedded. Source hashes differ when metadata is added. This supplemental containment scan does not replace the validator triangle-crossing and strain checks.",
+  "scope": "41 elevations at3.75deg increments,5planes,14head directions at simultaneous elbow/head curve bounds, both arms. No human input."
+}

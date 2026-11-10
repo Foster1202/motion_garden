@@ -9,6 +9,7 @@ import { DEV_MOCAP_DEBUG, MocapDebug } from '../mocap/MocapDebug';
 import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
 import type { MotionInputStatus } from '../input/MotionInput';
+import { rabbitPreviewModelUrl } from './rabbit3dConfig';
 
 export type RabbitRenderMode = '3d' | 'sprite';
 export class Rabbit3DPreview {
@@ -61,7 +62,7 @@ export class Rabbit3DPreview {
     this.status = 'loading'; this.label.textContent = '正在載入 3D 阿兔…';
     this.request = new AbortController();
     try {
-      const rabbit = await Rabbit3D.load(`${import.meta.env.BASE_URL}assets/rabbit3d/rabbit_realtime.glb`, this.request.signal);
+      const rabbit = await Rabbit3D.load(rabbitPreviewModelUrl(import.meta.env.BASE_URL, location.search), this.request.signal);
       if (generation !== this.generation || this.destroyed) { rabbit.dispose(); return; }
       try { this.overlay = new ThreeOverlay(rabbit, () => this.fallback('WebGL context lost')); }
       catch (error) { rabbit.dispose(); throw error; }
@@ -70,7 +71,7 @@ export class Rabbit3DPreview {
       this.image = this.scene.add.image(RABBIT_VIEWPORT.x, RABBIT_VIEWPORT.y, this.textureKey).setOrigin(0).setDepth(CARROT_PULL_DEPTHS.rabbit);
       this.mode = '3d'; this.status = 'ready'; this.sprite.root.setVisible(false); this.sprite.pause();
       this.mocap = new MocapController(rabbit.rig);
-      this.label.textContent = '3D 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite';
+      this.label.textContent = `3D ${rabbit.rig.version.toUpperCase()} 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite`;
       this.changed(true);
       if (DEV_RABBIT_3D_DEBUG || DEV_MOCAP_DEBUG) {
         this.tools = document.createElement('aside'); this.tools.className = 'rabbit-tools'; this.host.append(this.tools);
@@ -158,6 +159,9 @@ export class Rabbit3DPreview {
       camera: this.overlay ? { type: 'OrthographicCamera', position: this.overlay.camera.position.toArray(), direction: [0, 0, -1] } : null,
       textureExists: this.scene.textures.exists(this.textureKey), debug: !!this.debug,
       controlSource: this.mode === 'sprite' ? 'sprite' : this.mocapEnabled ? 'mocap' : 'manual',
+      rigVersion: this.overlay?.rabbit.rig.version, limits: this.overlay?.rabbit.rig.limits,
+      elbowLimitsByRaise: this.overlay?.rabbit.rig.elbowLimitsByRaise,
+      headLimitsByRaise: this.overlay?.rabbit.rig.headLimitsByRaise,
       input: this.inputStatus, mocap: this.mocap?.snapshot() };
   }
 

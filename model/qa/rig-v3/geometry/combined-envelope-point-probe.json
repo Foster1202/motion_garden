@@ -1,0 +1,392 @@
+{
+  "elbow_curve": [
+    [
+      0,
+      110
+    ],
+    [
+      75,
+      110
+    ],
+    [
+      90,
+      75
+    ],
+    [
+      105,
+      60
+    ],
+    [
+      120,
+      45
+    ],
+    [
+      135,
+      20
+    ],
+    [
+      150,
+      0
+    ]
+  ],
+  "head_curve": [
+    [
+      0,
+      40
+    ],
+    [
+      75,
+      25
+    ],
+    [
+      90,
+      20
+    ],
+    [
+      105,
+      15
+    ],
+    [
+      120,
+      10
+    ],
+    [
+      135,
+      5
+    ],
+    [
+      150,
+      0
+    ]
+  ],
+  "samples": [
+    {
+      "elevation": 0.0,
+      "elbow": 110.0,
+      "head_cap": 40.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 3.75,
+      "elbow": 110.0,
+      "head_cap": 39.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 7.5,
+      "elbow": 110.0,
+      "head_cap": 38.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 11.25,
+      "elbow": 110.0,
+      "head_cap": 37.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 15.0,
+      "elbow": 110.0,
+      "head_cap": 37.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 18.75,
+      "elbow": 110.0,
+      "head_cap": 36.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 22.5,
+      "elbow": 110.0,
+      "head_cap": 35.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 26.25,
+      "elbow": 110.0,
+      "head_cap": 34.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 30.0,
+      "elbow": 110.0,
+      "head_cap": 34.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 33.75,
+      "elbow": 110.0,
+      "head_cap": 33.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 37.5,
+      "elbow": 110.0,
+      "head_cap": 32.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 41.25,
+      "elbow": 110.0,
+      "head_cap": 31.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 45.0,
+      "elbow": 110.0,
+      "head_cap": 31.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 48.75,
+      "elbow": 110.0,
+      "head_cap": 30.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 52.5,
+      "elbow": 110.0,
+      "head_cap": 29.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 56.25,
+      "elbow": 110.0,
+      "head_cap": 28.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 60.0,
+      "elbow": 110.0,
+      "head_cap": 28.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 63.75,
+      "elbow": 110.0,
+      "head_cap": 27.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 67.5,
+      "elbow": 110.0,
+      "head_cap": 26.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 71.25,
+      "elbow": 110.0,
+      "head_cap": 25.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 75.0,
+      "elbow": 110.0,
+      "head_cap": 25.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 78.75,
+      "elbow": 101.25,
+      "head_cap": 23.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 82.5,
+      "elbow": 92.5,
+      "head_cap": 22.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 86.25,
+      "elbow": 83.75,
+      "head_cap": 21.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 90.0,
+      "elbow": 75.0,
+      "head_cap": 20.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 93.75,
+      "elbow": 71.25,
+      "head_cap": 18.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 97.5,
+      "elbow": 67.5,
+      "head_cap": 17.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 101.25,
+      "elbow": 63.75,
+      "head_cap": 16.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 105.0,
+      "elbow": 60.0,
+      "head_cap": 15.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 108.75,
+      "elbow": 56.25,
+      "head_cap": 13.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 112.5,
+      "elbow": 52.5,
+      "head_cap": 12.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 116.25,
+      "elbow": 48.75,
+      "head_cap": 11.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 120.0,
+      "elbow": 45.0,
+      "head_cap": 10.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 123.75,
+      "elbow": 38.75,
+      "head_cap": 8.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 127.5,
+      "elbow": 32.5,
+      "head_cap": 7.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 131.25,
+      "elbow": 26.25,
+      "head_cap": 6.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 135.0,
+      "elbow": 20.0,
+      "head_cap": 5.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 138.75,
+      "elbow": 15.0,
+      "head_cap": 3.75,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 142.5,
+      "elbow": 10.0,
+      "head_cap": 2.5,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 146.25,
+      "elbow": 5.0,
+      "head_cap": 1.25,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    },
+    {
+      "elevation": 150.0,
+      "elbow": 0.0,
+      "head_cap": 0.0,
+      "severe_vertices": 0,
+      "maximum_depth": 0,
+      "worst": null
+    }
+  ]
+}

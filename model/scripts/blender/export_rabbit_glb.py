@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import struct
 import sys
 from pathlib import Path
@@ -210,14 +211,25 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=Path, default=ROOT / 'assets/blender/rabbit/rabbit_realtime_v2.blend')
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'dist/rabbit3d')
+    parser.add_argument('--output-name', default='rabbit_realtime', help='Output filename stem without an extension')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
-    source = args.source
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', args.output_name):
+        parser.error('--output-name must be a filename stem using letters, numbers, dots, underscores or hyphens')
+    source = args.source.resolve()
     original = ROOT / 'assets/blender/rabbit/rabbit_rigged.blend'
     base = ROOT / 'assets/blender/rabbit/rabbit_base.blend'
-    before = {path.name: digest(path) for path in (base, original, source)}
+    v2 = ROOT / 'assets/blender/rabbit/rabbit_realtime_v2.blend'
+    protected_sources = tuple(dict.fromkeys(path.resolve() for path in (base, original, v2, source)))
+    before = {path: digest(path) for path in protected_sources}
     bpy.ops.wm.open_mainfile(filepath=str(source))
     rig = bpy.data.objects['Rabbit_Rig']
     assert len(rig.data.bones) == 19
+    rig_version = rig.get('rig_version', rig.get('proportion_version', 'v1'))
+    rig_motion_limits = json.loads(rig.get('rig_motion_limits', '{}'))
+    assert isinstance(rig_motion_limits, dict), 'Rig motion limits must be a JSON object'
+    elbow_limits_by_raise = json.loads(rig.get('elbow_limits_by_raise', '[]'))
+    head_limits_by_raise = json.loads(rig.get('head_limits_by_raise', '[]'))
+    assert isinstance(elbow_limits_by_raise, list) and isinstance(head_limits_by_raise, list), 'Rig limit curves must be JSON arrays'
     rig.animation_data_clear()
     for obj in bpy.data.objects:
         obj.animation_data_clear()
@@ -268,7 +280,7 @@ def main():
     for obj in collection.all_objects:
         obj.select_set(True)
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    path = args.output_dir / '.rabbit_realtime.export.glb'
+    path = args.output_dir / f'.{args.output_name}.export.glb'
     bpy.ops.export_scene.gltf(filepath=str(path), export_format='GLB', use_selection=True,
                               export_apply=True, export_animations=False, export_cameras=False,
                               export_lights=False, export_skins=True, export_def_bones=False,
@@ -278,21 +290,26 @@ def main():
     report = audit_glb(path, [bone['name'] for bone in bones], bindings, source_positions, source_materials, source_colors)
     for bone in bones:
         assert report['node_hierarchy'][bone['name']] == (bone['parent'] or 'Rabbit_Rig'), 'Changed bone hierarchy: ' + bone['name']
-    after = {file.name: digest(file) for file in (base, original, source)}
+    after = {file: digest(file) for file in protected_sources}
     assert before == after, 'Source blend files changed'
-    path = path.replace(args.output_dir / 'rabbit_realtime.glb')
-    report.update({'blender_version': bpy.app.version_string, 'source_sha256': before,
+    path = path.replace(args.output_dir / f'{args.output_name}.glb')
+    report.update({'blender_version': bpy.app.version_string,
+                   'source_sha256': {file.name: checksum for file, checksum in before.items()},
                    'source_files_unchanged': before == after, 'glb_sha256': digest(path),
                    'glb_bytes': path.stat().st_size, 'bones_blender': bones,
                    'rigid_bone_bindings': bindings,
                    'proportions': json.loads(rig.get('proportion_metrics', '{}')),
+                   'rig_version': rig_version,
+                   'rig_motion_limits': rig_motion_limits,
+                   'elbow_limits_by_raise': elbow_limits_by_raise,
+                   'head_limits_by_raise': head_limits_by_raise,
                    'leg_parenting': 'Thighs attach to root so torso lean preserves standing legs.' if rig.data.bones['thigh.L'].parent.name == 'root' else 'Original body-parented legs',
                    'coordinate_system': {'blender_up': '+Z', 'blender_front': '-Y',
                                          'gltf_up': '+Y', 'gltf_front': '+Z',
                                          'conversion': 'gltf(x,y,z) = blender(x,z,-y)'},
                    'limitations': ['glTF uses linear blend skinning; source preserve-volume dual quaternion deformation is approximated.',
                                    'FK knee controls do not implement planted-foot IK.']})
-    destination = args.output_dir / 'rabbit_realtime.report.json'
+    destination = args.output_dir / f'{args.output_name}.report.json'
     destination.write_text(json.dumps(report, indent=2) + '\n')
     print('RABBIT_GLTF_EXPORT', json.dumps({'status': 'PASS', 'glb': str(path), 'report': str(destination),
                                           'vertices': report['vertex_count'], 'triangles': report['triangle_count']}))

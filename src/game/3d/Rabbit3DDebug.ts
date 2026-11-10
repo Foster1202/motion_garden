@@ -1,5 +1,4 @@
 import type { RabbitRigController } from './RabbitRigController';
-import { RABBIT_3D_CONFIG } from './rabbit3dConfig';
 
 export const DEV_RABBIT_3D_DEBUG = import.meta.env.DEV &&
   (import.meta.env.VITE_DEV_RABBIT_3D_DEBUG === 'true' || new URLSearchParams(location.search).get('rabbit3dDebug') === '1');
@@ -10,7 +9,7 @@ export class Rabbit3DDebug {
   constructor(host: HTMLElement, rig: RabbitRigController) {
     this.root.className = 'rabbit-3d-debug';
     this.root.open = true;
-    this.root.innerHTML = '<summary>骨骼測試</summary><p>控制來源 · 手動滑桿。完成鏡頭動作設定後會自動交由體感控制。</p>';
+    this.root.innerHTML = `<summary>骨骼測試 · ${rig.version.toUpperCase()}</summary><p>控制來源 · 手動滑桿。完成鏡頭動作設定後會自動交由體感控制。</p>`;
     const slider = (name: string, bone: string, min: number, max: number, step: number, apply: (value: number) => void) => {
       const label = document.createElement('label');
       label.innerHTML = `<span>${name} <output>0</output></span><small>${bone}</small>`;
@@ -20,7 +19,7 @@ export class Rabbit3DDebug {
       input.addEventListener('input', () => { label.querySelector('output')!.value = input.value; apply(Number(input.value)); });
       label.append(input); this.root.append(label);
     };
-    const limits = RABBIT_3D_CONFIG.limits;
+    const limits = rig.limits;
     for (const [side, label] of [['L', '左'], ['R', '右']] as const) {
       const apply = () => rig.setArmRotation(side,
         Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂"]`)!.value),

@@ -12,7 +12,7 @@ const sceneMetadataFile = 'carrot_scene_assets.json';
 const groups = [
   { name: 'berry_kick', source: path.join(root, 'model/dist/berry_kick'), files: ['berry_background.png', 'berry_foreground.png', 'berry_tree_left.png', 'berry_tree_right.png', 'berry.png', 'berry_basket.png', 'manifest.json', 'tree-art-v2.json'] },
   { name: 'rabbit', source: path.join(root, 'model/dist/rabbit'), files: rabbitFiles },
-  { name: 'rabbit3d', source: path.join(root, 'model/dist/rabbit3d'), files: ['rabbit_realtime.glb'] },
+  { name: 'rabbit3d', source: path.join(root, 'model/dist/rabbit3d'), files: ['rabbit_realtime.glb'], optionalFiles: ['rabbit_realtime_v3.glb'] },
   { name: 'carrot_pull', source: path.join(root, 'model/assets/rendered/carrot_pull'),
     files: [...sceneLayers.map(layer => `${layer}.png`), sceneMetadataFile] },
 ];
@@ -20,6 +20,7 @@ const groups = [
 // Validate both sources before replacing either public asset group.
 for (const group of groups) {
   const available = await readdir(group.source);
+  group.files.push(...(group.optionalFiles ?? []).filter(file => available.includes(file)));
   for (const file of group.files) {
     if (!available.includes(file)) throw new Error(`${group.name} asset missing: ${path.join(group.source, file)}`);
     if (file.endsWith('.json')) JSON.parse(await readFile(path.join(group.source, file), 'utf8'));

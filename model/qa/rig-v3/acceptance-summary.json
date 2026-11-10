@@ -1,0 +1,79 @@
+{
+  "status": "PASS_WITH_LIMITS",
+  "completed_utc": "2026-11-10T03:20:16.873258+00:00",
+  "scope": "Task4C-1 only, no IK, no human tracking/calibration algorithm changes",
+  "commands": {
+    "typecheck": "PASS",
+    "npm test": "PASS 183/183, zero skipped",
+    "npm run build": "PASS",
+    "npm run build:rabbit3d -- --version v3": "PASS",
+    "sync-game-assets": "PASS",
+    "python/script syntax and git diff --check": "PASS"
+  },
+  "geometry": {
+    "status": "PASS_WITH_LIMITS",
+    "raw_pose_count": 973,
+    "supported_pass": 945,
+    "supported_fail": 0,
+    "unsupported_without_geometric_failure": 19,
+    "unsupported_with_geometric_failure": 9,
+    "report": "geometry/rig-geometry-report.json"
+  },
+  "browser": {
+    "rig-v3": {
+      "status": "PASS",
+      "check_count": 7,
+      "report": "browser/rig-v3.json",
+      "expected_diagnostics": []
+    },
+    "rabbit3d": {
+      "status": "PASS",
+      "check_count": 15,
+      "report": "browser/rabbit3d.json",
+      "expected_diagnostics": []
+    },
+    "mocap": {
+      "status": "PASS",
+      "check_count": 22,
+      "report": "browser/mocap.json",
+      "expected_diagnostics": []
+    },
+    "berry": {
+      "status": "PASS",
+      "check_count": 7,
+      "report": "browser/berry.json",
+      "expected_diagnostics": [
+        "Failed to load resource: net::ERR_FAILED"
+      ]
+    },
+    "berry-camera": {
+      "status": "PASS",
+      "check_count": 7,
+      "report": "browser/berry-camera.json",
+      "expected_diagnostics": []
+    },
+    "engine": {
+      "status": "PASS",
+      "check_count": 0,
+      "report": "browser/engine.json",
+      "expected_diagnostics": []
+    }
+  },
+  "browser_environment": "Installed Chrome157.0.8103.39, Playwright, local Vite5177; browser plugin unavailable",
+  "human_webcam": "NOT_RUN; virtual webcam with simulated poses, plus actual MediaPipe WASM/model on empty test pattern",
+  "visual_qa": {
+    "render_count": 86,
+    "contact_sheets": 5,
+    "manual_review": "PASS for supported poses; residual inner elbow/knee compression retained; unsupported high raise plus deep elbow visibly collides",
+    "manifest": "renders/render-manifest.json"
+  },
+  "asset_sha256": {
+    "model/assets/blender/rabbit/rabbit_realtime_v3.blend": "764d2fdc3b8683b418e860d983a97969ee1284b0f801baeb7cbfa9cb5e416558",
+    "model/dist/rabbit3d/rabbit_realtime_v3.glb": "68ea7937ec5ff78ace5f8162f711569b149aa8d71f94a6b016c7eb6d756235bd",
+    "public/assets/rabbit3d/rabbit_realtime_v3.glb": "68ea7937ec5ff78ace5f8162f711569b149aa8d71f94a6b016c7eb6d756235bd"
+  },
+  "preservation": "Base, rigged, V2 and canonical old GLB SHA verified; no tracked Sprite, original animation, scene PNG, extractor, calibration or CarrotRound diff",
+  "reproducibility": "PASS_CONTENT_EQUIVALENT; rigid shoulder triangle order varies; see reproducibility.json",
+  "delivery": "Local commit only; remote push not requested for this task",
+  "next_phase": "Ready as a bounded FK asset foundation for separately authorized Task4C-2; stopped before IK"
+}

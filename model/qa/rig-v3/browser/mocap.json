@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.39",
+  "url": "http://127.0.0.1:5177/",
+  "browserPlugin": "Browser plugin not available; Playwright with installed Google Chrome",
+  "input": "Virtual webcam and simulated Landmarker output through the production PoseEstimator scheduler. No human webcam validation.",
+  "checks": [
+    {
+      "name": "Page identity, meaningful screen and no framework error overlay",
+      "result": "PASS"
+    },
+    {
+      "name": "Camera waits beyond the former automatic-rest timeout with no person, calibration or modal",
+      "result": "PASS"
+    },
+    {
+      "name": "Bent arrival cannot establish a natural standing reference or start gameplay",
+      "result": "PASS"
+    },
+    {
+      "name": "An inference stall pauses calibration sampling and its timeout until reliable frames resume",
+      "result": "PASS"
+    },
+    {
+      "name": "Person entry starts calibration, completed calibration automatically enables mocap, standing establishes reference",
+      "result": "PASS",
+      "detail": {
+        "standingAngle": 170.00000000000003,
+        "bendingAngle": 150.00000853548994,
+        "range": 19.99999146451009,
+        "standingThreshold": 166.00000170709802,
+        "bendingThreshold": 157.00000554806846,
+        "timestamp": 12931.800000011921,
+        "leftStanding": 170.00000000000003,
+        "rightStanding": 170.00000000000003,
+        "leftBending": 150.00000853548994,
+        "rightBending": 150.00000853548994,
+        "leftRange": 19.99999146451009,
+        "rightRange": 19.99999146451009,
+        "standingIqr": 0,
+        "bendingIqr": 0.0006338945281640918,
+        "reliableSide": "both"
+      }
+    },
+    {
+      "name": "Continuous anatomical left arm reaches the bounded high-raise pose through actual GLB bones independently",
+      "result": "PASS"
+    },
+    {
+      "name": "Continuous anatomical right arm reaches the bounded high-raise pose independently",
+      "result": "PASS"
+    },
+    {
+      "name": "Combined arms, signed torso lean, shallow continuous knee and relative lateral movement drive actual rig",
+      "result": "PASS"
+    },
+    {
+      "name": "Partial arm occlusion returns that arm towards neutral while the reliable arm continues",
+      "result": "PASS"
+    },
+    {
+      "name": "Opposite torso and lateral directions remain correct during combined recovery",
+      "result": "PASS"
+    },
+    {
+      "name": "Lowering both hands continuously returns both arms to relaxed standing",
+      "result": "PASS"
+    },
+    {
+      "name": "Landmark depth drives forward arm raises through multi-axis shoulder quaternions",
+      "result": "PASS"
+    },
+    {
+      "name": "Short loss holds, longer loss eases to standing and waits without modal, stable recovery retains calibration and reference",
+      "result": "PASS"
+    },
+    {
+      "name": "Explicit Pause and Resume freeze inference and Three rendering, preserving the motion reference",
+      "result": "PASS"
+    },
+    {
+      "name": "Manual sliders own bones exclusively until mocap is restored, with developer reference reset retained",
+      "result": "PASS"
+    },
+    {
+      "name": "Desktop and narrow layouts keep preview and scrollable developer panel separate",
+      "result": "PASS"
+    },
+    {
+      "name": "WebGL context loss cleanly returns to the complete Sprite game",
+      "result": "PASS"
+    },
+    {
+      "name": "Sprite bend/return holds and success animation freeze through loss, then resume without false scoring",
+      "result": "PASS"
+    },
+    {
+      "name": "Single model, ordered inference, stopped webcam and disposed Three/debug resources",
+      "result": "PASS",
+      "detail": {
+        "tracks": [
+          "ended"
+        ],
+        "models": 1,
+        "inferences": 862,
+        "closed": 1,
+        "textures": [],
+        "renderer": {
+          "geometries": 0,
+          "programs": 0,
+          "children": 0,
+          "contextLost": true
+        }
+      }
+    },
+    {
+      "name": "Restart after tracking loss restores the scene timer for keyboard and missing-asset fallback",
+      "result": "PASS"
+    },
+    {
+      "name": "Automatic mocap works without mocapDebug, accepts personal standing below the manual default and releases the second camera",
+      "result": "PASS"
+    },
+    {
+      "name": "Console health",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "Rabbit 3D preview fell back to sprite: WebGL context lost"
+  ],
+  "performance": {
+    "mediaPipeFps": 19.9993227223407,
+    "threeFps": 60.000393445202874,
+    "kind": "Simulated landmarks, real shared scheduler and render loop"
+  },
+  "resources": {
+    "tracks": [
+      "ended"
+    ],
+    "models": 1,
+    "inferences": 862,
+    "closed": 1,
+    "textures": [],
+    "renderer": {
+      "geometries": 0,
+      "programs": 0,
+      "children": 0,
+      "contextLost": true
+    }
+  }
+}

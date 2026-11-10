@@ -12,6 +12,7 @@
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "test": "node node_modules/tsx/dist/cli.mjs --test tests/*.test.ts",
     "qa:rabbit3d": "node scripts/qa-rabbit-3d.mjs",
+    "qa:rig-v3": "node scripts/qa-rabbit-rig-v3.mjs",
     "build:rabbit3d": "bash model/scripts/build_rabbit_glb.sh",
     "qa:mocap": "node scripts/qa-rabbit-mocap.mjs",
     "qa:mocap-engine": "node scripts/qa-mocap-engine.mjs",

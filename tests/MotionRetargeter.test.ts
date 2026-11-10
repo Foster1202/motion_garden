@@ -5,6 +5,7 @@ import { MotionRetargeter } from '../src/game/mocap/MotionRetargeter';
 import { neutralRabbitPose } from '../src/game/mocap/RabbitPose';
 import type { CalibrationProfile } from '../src/game/calibration/calibrationTypes';
 import type { PoseFrame, PoseLandmark, PoseSnapshot } from '../src/game/vision/poseTypes';
+import { RABBIT_3D_CONFIG } from '../src/game/3d/rabbit3dConfig';
 const profile: CalibrationProfile = {
   standingAngle: 170, bendingAngle: 140, range: 30, standingThreshold: 164, bendingThreshold: 150.5, timestamp: 100,
   reliableSide: 'both', leftStanding: 170, rightStanding: 170, leftBending: 140, rightBending: 140, leftRange: 30, rightRange: 30,
@@ -124,10 +125,11 @@ test('relative shoulder-width translation has deadzone, mirrored sign, clamp and
 test('joint limits and missing-arm hold never emit invalid values or unsafe range', () => {
   const mapper = ready(); const result = mapper.update(human(640,
     { leftArmElevation: 180, rightArmElevation: 170, leftElbowBend: 150, torsoLean: 45 }), profile)!;
-  close(result.leftArmElevation, 90); close(result.leftElbowBend, 100); close(result.torsoLean, 18);
+  close(result.leftArmElevation, RABBIT_3D_CONFIG.limits.arm.max);
+  close(result.leftElbowBend, RABBIT_3D_CONFIG.limits.forearm.max); close(result.torsoLean, 18);
   const held = mapper.update(human(680, { leftArmElevation: undefined, leftElbowBend: undefined,
     leftArmConfidence: 0, rightArmElevation: 40 }), profile)!;
-  close(held.leftArmElevation, 90); close(held.rightArmElevation, 40);
+  close(held.leftArmElevation, RABBIT_3D_CONFIG.limits.arm.max); close(held.rightArmElevation, 40);
   for (const value of [NaN, Infinity, -Infinity]) assert.equal(mapper.update(human(720, { torsoLean: value }), profile), undefined);
   assert.ok(Object.values(neutralRabbitPose(NaN)).every(Number.isFinite));
 });
@@ -213,7 +215,8 @@ test('combined arm planes, torso and calibrated knees vary continuously without 
       leftElbowBend: 100 * amount, torsoLean: -18 * amount,
       torsoForward: 16 * amount, activeKneeAngle: 170 - 30 * amount,
     }), profile)!;
-    close(target.leftArmElevation, Math.min(90, 145 * amount)); close(target.rightArmElevation, Math.min(90, 110 * amount));
+    close(target.leftArmElevation, Math.min(RABBIT_3D_CONFIG.limits.arm.max, 145 * amount));
+    close(target.rightArmElevation, Math.min(RABBIT_3D_CONFIG.limits.arm.max, 110 * amount));
     close(target.leftArmPlane, 90 * amount); close(target.leftElbowBend, 100 * amount);
     close(target.torsoLean, -18 * amount); close(target.torsoForward, 16 * amount);
     close(target.bendAmount, amount);

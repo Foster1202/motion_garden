@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Page identity, nonblank, GLB, no framework overlay",
+    "Extension away from tree rejected",
+    "Translation and wrong foot rejected",
+    "Left3, geometric contact, held-leg prevention, retract, cooldown, pause",
+    "Resize and full keyboard6 completion",
+    "Restart and scene cleanup",
+    "Model failure disables scoring"
+  ],
+  "fps": [
+    60.002754224784134,
+    60.00216401247258,
+    60.0027542247841,
+    60.0015738117721,
+    60.003344448706926,
+    59.99999999999997
+  ],
+  "errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "url": "http://127.0.0.1:5177/",
+  "browser": "157.0.8103.39"
+}

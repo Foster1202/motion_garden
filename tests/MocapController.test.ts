@@ -94,7 +94,7 @@ test('smoother rejects nonfinite values and clamps every target to rig constrain
     leftElbowBend: 1e6, rightElbowBend: -1e6, torsoLean: -1e6, bendAmount: 100, lateralOffset: 100 };
   smoother.update(target, 100);
   assert.deepEqual(smoother.pose, { ...target, leftArmElevation: RABBIT_3D_CONFIG.limits.arm.max, rightArmElevation: -12,
-    leftElbowBend: 100, rightElbowBend: 0, torsoLean: -18, bendAmount: 1, lateralOffset: 0.45 });
+    leftElbowBend: RABBIT_3D_CONFIG.limits.forearm.max, rightElbowBend: 0, torsoLean: -18, bendAmount: 1, lateralOffset: 0.45 });
   const before = smoother.pose;
   const invalid = Object.fromEntries(Object.keys(before).map(key => [key, Number.NaN])) as unknown as typeof before;
   smoother.update(invalid, 1 / 60);

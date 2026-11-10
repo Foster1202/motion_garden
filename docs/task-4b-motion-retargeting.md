@@ -2,6 +2,8 @@
 
 Current update 2026-11-09. Task 4B-Fix repairs automatic camera-to-rabbit startup, restores guided personal calibration, expands bounded FK and replaces tracking-loss rest dialogs with waiting. Verification and limitations are recorded below. Earlier numerical results are historical. Human webcam validation remains outstanding. Work stops at Task 4B-Fix.
 
+Task 4C-1 update (2026-11-10): Carrot development preview now uses the separately exported V3 rig with measured shoulder/elbow/head envelopes. The 90° model limits below describe preserved V2 behavior. Berry and the explicit `rabbitRig=v2` preview retain V2. Human extraction, calibration and retargeting calculations are unchanged. See [Task 4C-1](task-4c1-rabbit-rig-improvement.md) for current asset validation and remaining geometry limits.
+
 ## Open the preview
 
 From `game/`:

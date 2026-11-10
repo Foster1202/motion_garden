@@ -114,11 +114,11 @@ try {
   const resources = await page.evaluate(async()=>{const {game}=await import('/src/main.ts');return {textures:game.textures.getTextureKeys().filter(key=>key.startsWith('rabbit-three-')),canvases:document.querySelectorAll('#phaser-stage canvas').length};});
   assert.equal(resources.textures.length,0);assert.equal(resources.canvases,1);
   check('Scene shutdown removes debug UI, dynamic textures and extra canvases',resources);
-  await page.route('**/assets/rabbit3d/rabbit_realtime.glb', route=>route.fulfill({status:404,body:'not found'}));
+  await page.route('**/assets/rabbit3d/rabbit_realtime*.glb', route=>route.fulfill({status:404,body:'not found'}));
   await enter(); const failed=await waitSnapshot(s=>s.rabbit3d.status.startsWith('fallback:'));
   assert.equal(failed.rabbit3d.mode,'sprite');assert.equal(failed.rabbit3d.spriteVisible,true);assert.equal(failed.rabbit3d.textureExists,false);
   check('Actual GLB HTTP failure returns to playable sprite',failed.rabbit3d.status);
-  await page.unroute('**/assets/rabbit3d/rabbit_realtime.glb');
+  await page.unroute('**/assets/rabbit3d/rabbit_realtime*.glb');
   await page.getByRole('combobox',{name:'阿兔渲染模式'}).selectOption('3d');await waitSnapshot(s=>s.rabbit3d.status==='ready');
   for(let i=0;i<3;i++){await page.getByRole('combobox',{name:'阿兔渲染模式'}).selectOption('sprite');await page.getByRole('combobox',{name:'阿兔渲染模式'}).selectOption('3d');await waitSnapshot(s=>s.rabbit3d.status==='ready');}
   await page.evaluate(async()=>{const {game}=await import('/src/main.ts');game.scene.getScene('CarrotPull').rabbit3d.overlay.renderer.forceContextLoss();});
@@ -135,7 +135,7 @@ try {
   report.disposedRenderer=disposed;
   assert.equal(await page.locator('.rabbit-render-mode,.rabbit-3d-debug').count(),0);
   check('Repeated 3D/sprite switching and shutdown while 3D active');
-  await page.route('**/assets/rabbit3d/rabbit_realtime.glb',async route=>{await new Promise(resolve=>setTimeout(resolve,1500));await route.fulfill({status:404,body:'delayed failure'}).catch(()=>{});});
+  await page.route('**/assets/rabbit3d/rabbit_realtime*.glb',async route=>{await new Promise(resolve=>setTimeout(resolve,1500));await route.fulfill({status:404,body:'delayed failure'}).catch(()=>{});});
   await enter();await page.locator('[data-action=pause]').click();await page.locator('[data-action=home]').click();await page.waitForTimeout(1700);
   assert.equal(await page.locator('.rabbit-render-mode,.rabbit-3d-debug').count(),0);
   check('Shutdown during pending GLB fetch cannot attach late model');

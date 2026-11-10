@@ -1,0 +1,48 @@
+{
+  "status": "PASS_CONTENT_EQUIVALENT",
+  "generated_utc": "2026-11-10T03:16:25.219127+00:00",
+  "source": "rabbit_realtime_v2.blend reopened independently for each build",
+  "primary_sha256": "68ea7937ec5ff78ace5f8162f711569b149aa8d71f94a6b016c7eb6d756235bd",
+  "repeat_sha256": "668fc1c5c8d8e46d8e36ae185d146fdb7d1a067aca62c3266ec339a02950d9ab",
+  "byte_identical": false,
+  "json_identical": true,
+  "binary_unchanged_accessor_count": 74,
+  "binary_index_order_differences": [
+    {
+      "accessor": 58,
+      "meshes": [
+        "Rabbit_Shoulder_L"
+      ],
+      "oriented_triangle_multisets_equal": true,
+      "difference": "triangle ordering only"
+    },
+    {
+      "accessor": 62,
+      "meshes": [
+        "Rabbit_Shoulder_R"
+      ],
+      "oriented_triangle_multisets_equal": true,
+      "difference": "triangle ordering only"
+    }
+  ],
+  "positions_normals_weights_bind_matrices_materials_identical": true,
+  "no_duplicate_objects_bones_materials": true,
+  "counts": {
+    "meshes": 23,
+    "nodes": 45,
+    "materials": 7,
+    "bones": 19
+  },
+  "protected_assets_sha256": {
+    "model/assets/blender/rabbit/rabbit_base.blend": "7bbaa295ebd941fcac526692540872039b1aec453616efa771114c32502a0b34",
+    "model/assets/blender/rabbit/rabbit_rigged.blend": "aa82f5bec29fa588696fa312b52f757f2ad30915e8bb1d6a9847412b64479f29",
+    "model/assets/blender/rabbit/rabbit_realtime_v2.blend": "49f73177672cd61fb6e2f1d4b55fc46654a380ffb99ae6c038e52edbc87a1eff",
+    "model/dist/rabbit3d/rabbit_realtime.glb": "08c6ad9f8f3aaf127a7ee3dadd5138a9f0f05e4e9d292d3dbf0d918d41108c4b",
+    "public/assets/rabbit3d/rabbit_realtime.glb": "08c6ad9f8f3aaf127a7ee3dadd5138a9f0f05e4e9d292d3dbf0d918d41108c4b"
+  },
+  "public_v3_matches_export": true,
+  "repeat_build_logs": [
+    "/private/tmp/rabbit-v3-repro/generate.log",
+    "/private/tmp/rabbit-v3-repro/export.log"
+  ]
+}
