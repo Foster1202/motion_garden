@@ -1,0 +1,103 @@
+{
+  "status": "PASS_WITH_LIMITS",
+  "date": "2026-11-10",
+  "scope": "Task4C-2 only; no Blender/GLB/calibration/extraction/game-rule changes",
+  "tests": {
+    "typecheck": "PASS",
+    "npm test": "215/215 PASS, all183 original retained,32 added,0 skipped",
+    "production build": "PASS",
+    "git diff --check": "PASS"
+  },
+  "browser": [
+    {
+      "suite": "ik",
+      "status": "PASS",
+      "checks": 11,
+      "poses": 24
+    },
+    {
+      "suite": "mocap",
+      "status": "PASS",
+      "checks": 22,
+      "expected_errors": []
+    },
+    {
+      "suite": "rabbit3d",
+      "status": "PASS",
+      "checks": 15,
+      "expected_errors": []
+    },
+    {
+      "suite": "rig-v3",
+      "status": "PASS",
+      "checks": 7,
+      "expected_errors": []
+    },
+    {
+      "suite": "berry",
+      "status": "PASS",
+      "checks": 7,
+      "expected_errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ]
+    },
+    {
+      "suite": "berry-camera",
+      "status": "PASS",
+      "checks": 7,
+      "expected_errors": []
+    },
+    {
+      "suite": "engine",
+      "status": "PASS",
+      "checks": 0,
+      "expected_errors": []
+    }
+  ],
+  "performance": {
+    "disabled": {
+      "enabled": false,
+      "measurement": "Existing scene-clock FPS; controller update wall time includes FK, constraints, IK and final commit, with browser timer quantization",
+      "elapsedMs": 5847.088041999999,
+      "renderedFrames": 351,
+      "observedFps": 60.029881109835365,
+      "reportedFps": 60.00275422478412,
+      "solverTimeMs": {
+        "samples": 100,
+        "mean": 0.20400000095367432,
+        "p95": 0.40000003576278687,
+        "maximum": 0.40000003576278687
+      }
+    },
+    "enabled": {
+      "enabled": true,
+      "measurement": "Existing scene-clock FPS; controller update wall time includes FK, constraints, IK and final commit, with browser timer quantization",
+      "elapsedMs": 5842.639041999999,
+      "renderedFrames": 350,
+      "observedFps": 59.9044365883317,
+      "reportedFps": 60.00157381177214,
+      "solverTimeMs": {
+        "samples": 100,
+        "mean": 0.2720000010728836,
+        "p95": 0.5,
+        "maximum": 0.5999999642372131
+      }
+    }
+  },
+  "foot_contact": {
+    "maximum_static_ankle_model_units": 5.95e-07,
+    "maximum_sole_height_model_units": 5.33e-07,
+    "translation_0_1_fk_sliding": 0.1,
+    "translation_0_1_ik_sliding": 4.11e-07,
+    "acceptance_tolerance": 0.005
+  },
+  "limitations": [
+    "Human webcam not tested",
+    "Fixed flat model-space contacts, no walking/physics/moving-platform solver",
+    "Unreachable hand targets retain measured residual within V3 coupled envelope",
+    "V3 existing inner elbow/knee LBS compression remains",
+    "Chrome synthetic performance does not establish target hardware or human latency"
+  ],
+  "asset_preservation": "Original protected hashes match HEAD and no scoped game-rule/human-pipeline diff",
+  "delivery": "Commit and push origin/main, final parity verified separately; stop before Task4D"
+}

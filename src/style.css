@@ -1206,19 +1206,19 @@ kbd {
   width:auto;
   max-height:none;
 }
-.mocap-debug {
+.mocap-debug, .rabbit-ik-debug {
   padding:12px;
   border:1px solid #a1b08e;
   border-radius:14px;
   font-size:clamp(11px,.95cqw,16px);
 }
-.mocap-debug summary { font-weight:700; cursor:pointer; }
-.mocap-debug p { margin-top:.5em; line-height:1.45; }
-.mocap-debug button { font:inherit; min-height:36px; margin:8px 6px 4px 0; padding:5px 8px; }
-.mocap-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:220px; overflow:auto; }
+.mocap-debug summary, .rabbit-ik-debug summary { font-weight:700; cursor:pointer; }
+.mocap-debug p, .rabbit-ik-debug p { margin-top:.5em; line-height:1.45; }
+.mocap-debug button, .rabbit-ik-debug button { font:inherit; min-height:36px; margin:8px 6px 4px 0; padding:5px 8px; }
+.mocap-debug pre, .rabbit-ik-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:220px; overflow:auto; }
 @media (max-width:700px) {
   .rabbit-tools { width:31%; top:37%; max-height:42%; }
-  .mocap-debug { padding:6px; font-size:11px; }
+  .mocap-debug, .rabbit-ik-debug { padding:6px; font-size:11px; }
 }
 .calibrating .instruction,.calibrating .steps,.calibrating .hold-indicator { visibility:hidden; }
 @media (max-width:700px) {

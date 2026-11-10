@@ -11,7 +11,7 @@ import { MOCAP_CONFIG } from './mocapConfig';
 import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 
 type MocapRig = Pick<RabbitRigController, 'setArmRotation' | 'setBodyLean' | 'setKneeBend' | 'setRootOffset'>
-  & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation'>>;
+  & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation' | 'applyPose' | 'version'>>;
 export type MocapTrackingState = 'disabled' | 'waiting' | 'acquiring-reference' | 'tracking' | 'holding'
   | 'returning-neutral' | 'reference-required' | 'disposed';
 
@@ -40,7 +40,7 @@ export interface MocapSnapshot {
 export class MocapController {
   private readonly extractor = new HumanPoseExtractor();
   private readonly retargeter = new MotionRetargeter();
-  private readonly smoother = new MotionSmoother();
+  private readonly smoother: MotionSmoother;
   private readonly initialBoneRotations = new Map<string, Quaternion>();
   private enabled = false;
   private paused = false;
@@ -61,6 +61,7 @@ export class MocapController {
   private mappedPoses = 0;
 
   constructor(private readonly rig: MocapRig, private readonly now = () => performance.now()) {
+    this.smoother = new MotionSmoother(rig.version === 'v3');
     for (const [name, bone] of rig.bones ?? []) this.initialBoneRotations.set(name, bone.quaternion.clone().normalize());
   }
 
@@ -199,12 +200,15 @@ export class MocapController {
     for (const key of ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend',
       'torsoLean', 'torsoForward', 'headYaw', 'headPitch', 'bendAmount', 'lateralOffset'] as const) target[key] *= gain;
     const smoothed = this.smoother.update(target, step);
-    this.rig.setArmRotation('left', smoothed.leftArmElevation, smoothed.leftElbowBend, smoothed.leftArmPlane);
-    this.rig.setArmRotation('right', smoothed.rightArmElevation, smoothed.rightElbowBend, smoothed.rightArmPlane);
-    this.rig.setBodyLean(smoothed.torsoLean, smoothed.torsoForward);
-    this.rig.setHeadRotation?.(smoothed.headYaw, smoothed.headPitch, -0.4 * smoothed.torsoLean);
-    this.rig.setKneeBend(smoothed.bendAmount);
-    this.rig.setRootOffset(smoothed.lateralOffset, 0, 0);
+    if (this.rig.applyPose) this.rig.applyPose(smoothed);
+    else {
+      this.rig.setArmRotation('left', smoothed.leftArmElevation, smoothed.leftElbowBend, smoothed.leftArmPlane);
+      this.rig.setArmRotation('right', smoothed.rightArmElevation, smoothed.rightElbowBend, smoothed.rightArmPlane);
+      this.rig.setBodyLean(smoothed.torsoLean, smoothed.torsoForward);
+      this.rig.setHeadRotation?.(smoothed.headYaw, smoothed.headPitch, -0.4 * smoothed.torsoLean);
+      this.rig.setKneeBend(smoothed.bendAmount);
+      this.rig.setRootOffset(smoothed.lateralOffset, 0, 0);
+    }
     this.threeFps = deltaSeconds < 1 ? 1 / deltaSeconds : 0;
   }
 

@@ -1,4 +1,8 @@
 import { Bone, MathUtils, Object3D, Quaternion, Vector3 } from 'three';
+import type { RabbitPose } from '../mocap/RabbitPose';
+import { RabbitPoseBuffer } from './ik/RabbitPoseBuffer';
+import { RabbitLegIK } from './ik/RabbitLegIK';
+import { RabbitArmIK } from './ik/RabbitArmIK';
 import {
   RABBIT_3D_CONFIG, RABBIT_REQUIRED_BONES,
   rabbitRigProfile, rabbitRaiseLimit, type RabbitBoneName, type RabbitRaiseLimitCurve,
@@ -6,12 +10,15 @@ import {
 } from './rabbit3dConfig';
 
 interface RestBone {
+  name: RabbitBoneName;
   bone: Bone;
   quaternion: Quaternion;
   position: Vector3;
   scale: Vector3;
   targetQuaternion: Quaternion;
   targetPosition: Vector3;
+  blendedQuaternion: Quaternion;
+  blendedPosition: Vector3;
   axes: { x: Vector3; y: Vector3; z: Vector3 };
 }
 
@@ -38,6 +45,17 @@ export class RabbitRigController {
   private kneeAngle = 0;
   private readonly legExtensions = { L: 0, R: 0 };
   private disposed = false;
+  private ikEnabled = false;
+  private ikWeight = 0;
+  private solverTimeMs = 0;
+  private readonly poseBuffer: RabbitPoseBuffer;
+  private readonly legIK: RabbitLegIK;
+  private readonly armIK = new Map<'L' | 'R', RabbitArmIK>();
+  private readonly armRequests = { L: { raise: 0, elbow: 0, plane: 0 }, R: { raise: 0, elbow: 0, plane: 0 } };
+  private readonly handTargets = new Map<'L' | 'R', Vector3>();
+  private readonly targetScratch = new Vector3();
+  private readonly bodyRestOrientation = new Quaternion();
+  private readonly armResults = new Map<'L' | 'R', ReturnType<RabbitArmIK['solve']>>();
 
   constructor(private readonly model: Object3D) {
     const profile = rabbitRigProfile(model);
@@ -58,8 +76,9 @@ export class RabbitRigController {
       const worldToLocal = bone.getWorldQuaternion(new Quaternion()).invert();
       const axis = (value: Vector3) => value.applyQuaternion(modelWorld).applyQuaternion(worldToLocal).normalize();
       this.rest.set(name, {
-        bone, quaternion: bone.quaternion.clone(), position: bone.position.clone(), scale: bone.scale.clone(),
+        name, bone, quaternion: bone.quaternion.clone(), position: bone.position.clone(), scale: bone.scale.clone(),
         targetQuaternion: bone.quaternion.clone(), targetPosition: bone.position.clone(),
+        blendedQuaternion: bone.quaternion.clone(), blendedPosition: bone.position.clone(),
         axes: { x: axis(new Vector3(1, 0, 0)), y: axis(new Vector3(0, 1, 0)), z: axis(new Vector3(0, 0, 1)) },
       });
     }
@@ -70,14 +89,82 @@ export class RabbitRigController {
       const hip = point(`thigh.${side}`);
       const knee = point(`shin.${side}`);
       const ankle = point(`foot.${side}`);
-      this.lowerArmDirections.set(side, point(`hand.${side}`).sub(point(`forearm.${side}`)).normalize());
+      const upperArm = point(`forearm.${side}`).sub(point(`upper_arm.${side}`));
+      const lowerArm = point(`hand.${side}`).sub(point(`forearm.${side}`));
+      this.lowerArmDirections.set(side, lowerArm.clone().normalize());
+      this.armIK.set(side, new RabbitArmIK(upperArm, lowerArm, side === 'L' ? 1 : -1,
+        this.elbowLimitsByRaise, this.limits));
       this.legSegments.push({ upper: knee.clone().sub(hip), lower: ankle.sub(knee) });
     }
+    this.bodyRestOrientation.copy(model.getWorldQuaternion(new Quaternion()).invert())
+      .multiply(this.bones.get('body')!.getWorldQuaternion(new Quaternion()));
+    this.poseBuffer = new RabbitPoseBuffer(model, this.bones);
+    this.legIK = new RabbitLegIK(model, this.bones);
   }
+
+  /** A single staged target transaction; update() owns the final bone commit. */
+  applyPose(pose: RabbitPose): void {
+    this.setArmRotation('left', pose.leftArmElevation, pose.leftElbowBend, pose.leftArmPlane);
+    this.setArmRotation('right', pose.rightArmElevation, pose.rightElbowBend, pose.rightArmPlane);
+    this.setBodyLean(pose.torsoLean, pose.torsoForward);
+    this.setHeadRotation(pose.headYaw, pose.headPitch, -.4 * pose.torsoLean);
+    this.setKneeBend(pose.bendAmount);
+    this.setRootOffset(pose.lateralOffset);
+  }
+
+  setIKEnabled(enabled: boolean): void {
+    if (this.disposed) return;
+    this.ikEnabled = enabled && this.version === 'v3';
+  }
+
+  /** Shoulder-relative model axes; depth is a stylized target, not reconstructed human XYZ. */
+  setHandTarget(side: RabbitSide, x: number, y: number, z: number): boolean {
+    if (this.disposed || ![x, y, z].every(Number.isFinite) || Math.hypot(x, y, z) > 1e4) return false;
+    this.handTargets.set(suffix(side), new Vector3(x, y, z));
+    return true;
+  }
+
+  clearHandTarget(side: RabbitSide): void { this.handTargets.delete(suffix(side)); }
+
+  ikSnapshot() {
+    const copyFoot = (foot: NonNullable<typeof this.legSnapshot>['left']) => ({ ...foot,
+      target: [...foot.target], position: [...foot.position], contact: [...foot.contact] });
+    const feet = this.legSnapshot && { ...this.legSnapshot,
+      left: copyFoot(this.legSnapshot.left), right: copyFoot(this.legSnapshot.right) };
+    if (feet && this.ikWeight === 0) {
+      feet.rootClamped = feet.left.clamped = feet.right.clamped = false;
+    }
+    const body = this.model.getWorldQuaternion(new Quaternion()).invert()
+      .multiply(this.bones.get('body')!.getWorldQuaternion(new Quaternion())).invert();
+    const undoBody = this.bodyRestOrientation.clone().multiply(body);
+    const hands = Object.fromEntries([...this.armResults].filter(() => this.ikWeight > 0).map(([side, result]) => {
+      const request = this.armRequests[side];
+      const target = this.handTargets.get(side) ?? this.armIK.get(side)!.forward(request.raise, request.elbow, request.plane, new Vector3());
+      const shoulder = this.model.worldToLocal(this.bones.get(`upper_arm.${side}`)!.getWorldPosition(new Vector3()));
+      const position = this.model.worldToLocal(this.bones.get(`hand.${side}`)!.getWorldPosition(new Vector3()))
+        .sub(shoulder).applyQuaternion(undoBody);
+      return [side, { ...result, solverResidual: result.residual, residual: position.distanceTo(target),
+        target: target.toArray(), position: position.toArray() }];
+    }));
+    return { enabled: this.ikEnabled, available: this.version === 'v3', weight: this.ikWeight,
+      solverTimeMs: this.solverTimeMs, feet, hands,
+      constraintClamped: this.ikWeight > 0 && (!!feet?.rootClamped || [...this.armResults.values()].some(value => value.clamped)),
+    };
+  }
+
+  private legSnapshot?: ReturnType<RabbitLegIK['solve']>;
 
   /** Plane 0 raises sideways, plane 90 raises forward, around the unchanged shoulder pivot. */
   setArmRotation(side: RabbitSide, upperDegrees: number, forearmDegrees = 0, planeDegrees = 0): void {
     if (this.disposed) return;
+    const part = suffix(side);
+    Object.assign(this.armRequests[part], { raise: clamp(upperDegrees, this.limits.arm.min, this.limits.arm.max),
+      elbow: clamp(forearmDegrees, 0, this.limits.forearm.max), plane: clamp(planeDegrees, 0, 90) });
+    this.handTargets.delete(part);
+    this.targetArmRotation(side, upperDegrees, forearmDegrees, planeDegrees);
+  }
+
+  private targetArmRotation(side: RabbitSide, upperDegrees: number, forearmDegrees: number, planeDegrees: number): void {
     const part = suffix(side);
     const sign = part === 'L' ? 1 : -1;
     const limits = this.limits;
@@ -205,6 +292,12 @@ export class RabbitRigController {
     this.armElevations.L = this.armElevations.R = 0;
     this.headRotation.yaw = this.headRotation.pitch = this.headRotation.roll = 0;
     this.legExtensions.L = this.legExtensions.R = 0;
+    this.handTargets.clear();
+    this.armResults.clear();
+    this.armRequests.L.raise = this.armRequests.L.elbow = this.armRequests.L.plane = 0;
+    this.armRequests.R.raise = this.armRequests.R.elbow = this.armRequests.R.plane = 0;
+    this.armIK.forEach(solver => solver.reset());
+    this.legIK?.reset();
     for (const state of this.rest.values()) {
       state.targetQuaternion.copy(state.quaternion);
       state.targetPosition.copy(state.position);
@@ -212,6 +305,8 @@ export class RabbitRigController {
         state.bone.quaternion.copy(state.quaternion);
         state.bone.position.copy(state.position);
         state.bone.scale.copy(state.scale);
+        state.blendedPosition.copy(state.position);
+        state.blendedQuaternion.copy(state.quaternion);
       }
     }
     if (immediate) this.model.updateWorldMatrix(true, true);
@@ -219,31 +314,71 @@ export class RabbitRigController {
 
   update(deltaSeconds: number): void {
     if (this.disposed || !Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return;
-    const blend = 1 - Math.exp(-RABBIT_3D_CONFIG.smoothingRate * deltaSeconds);
-    for (const state of this.rest.values()) {
-      state.bone.quaternion.slerp(state.targetQuaternion, blend);
-      state.bone.position.lerp(state.targetPosition, blend);
-      const normalization = Math.sqrt(state.bone.quaternion.lengthSq() * state.targetQuaternion.lengthSq());
-      if (1 - Math.abs(state.bone.quaternion.dot(state.targetQuaternion)) / normalization < 1e-12) {
-        state.bone.quaternion.copy(state.targetQuaternion);
+    const started = performance.now();
+    const previousWeight = this.ikWeight;
+    const step = Math.min(deltaSeconds, .05);
+    this.ikWeight = MathUtils.clamp(this.ikWeight + (this.ikEnabled ? 1 : -1) * step / .2, 0, 1);
+    if (this.ikWeight > 0) {
+      for (const side of ['L', 'R'] as const) {
+        const solver = this.armIK.get(side)!;
+        const request = this.armRequests[side];
+        const target = this.handTargets.get(side) ?? solver.forward(request.raise, request.elbow, request.plane, this.targetScratch);
+        const solution = solver.solve(target, request);
+        this.armResults.set(side, solution);
+        this.targetArmRotation(side, MathUtils.lerp(request.raise, solution.raise, this.ikWeight),
+          MathUtils.lerp(request.elbow, solution.elbow, this.ikWeight), MathUtils.lerp(request.plane, solution.plane, this.ikWeight));
       }
-      if (state.bone.position.distanceToSquared(state.targetPosition) < 1e-16) {
-        state.bone.position.copy(state.targetPosition);
+    } else if (previousWeight > 0) {
+      for (const side of ['L', 'R'] as const) {
+        const request = this.armRequests[side];
+        this.targetArmRotation(side, request.raise, request.elbow, request.plane);
       }
     }
+    const blend = 1 - Math.exp(-RABBIT_3D_CONFIG.smoothingRate * deltaSeconds);
+    this.poseBuffer.prepare(this.model);
+    for (const [name, state] of this.rest) {
+      state.blendedQuaternion.slerp(state.targetQuaternion, blend);
+      state.blendedPosition.lerp(state.targetPosition, blend);
+      const normalization = Math.sqrt(state.blendedQuaternion.lengthSq() * state.targetQuaternion.lengthSq());
+      if (1 - Math.abs(state.blendedQuaternion.dot(state.targetQuaternion)) / normalization < 1e-12) {
+        state.blendedQuaternion.copy(state.targetQuaternion);
+      }
+      if (state.blendedPosition.distanceToSquared(state.targetPosition) < 1e-16) state.blendedPosition.copy(state.targetPosition);
+      const work = this.poseBuffer.bones.get(name)!;
+      work.quaternion.copy(state.blendedQuaternion);
+      work.position.copy(state.blendedPosition);
+    }
     if (this.version === 'v3') this.constrainInterpolatedPose();
+    this.poseBuffer.model.updateWorldMatrix(true, true);
+    if (this.ikWeight > 0) {
+      this.legSnapshot = this.legIK.solve(this.poseBuffer.model, this.poseBuffer.bones);
+      // Blend only the mode transition; steady IK has no extra temporal filter.
+      if (this.ikWeight < 1) for (const [name, state] of this.rest) {
+        if (!/^(root|thigh\.|shin\.|foot\.)/.test(name)) continue;
+        const work = this.poseBuffer.bones.get(name)!;
+        work.quaternion.slerpQuaternions(state.blendedQuaternion, work.quaternion, this.ikWeight);
+        work.position.lerpVectors(state.blendedPosition, work.position, this.ikWeight);
+      }
+    }
+    for (const [name, state] of this.rest) {
+      const work = this.poseBuffer.bones.get(name)!;
+      state.bone.quaternion.copy(work.quaternion);
+      state.bone.position.copy(work.position);
+    }
     this.model.updateWorldMatrix(true, true);
+    this.legSnapshot = this.legIK.measure(this.model, this.bones);
+    this.solverTimeMs = performance.now() - started;
   }
 
   private constrainInterpolatedPose(): void {
     // Safe target joints can interpolate beyond a coupled limit between curve points.
     const angle = (state: RestBone) => MathUtils.radToDeg(state.quaternion.clone().normalize()
-      .angleTo(state.bone.quaternion.clone().normalize()));
+      .angleTo(this.poseBuffer.bones.get(state.name)!.quaternion.clone().normalize()));
     const constrain = (state: RestBone, maximum: number) => {
       const current = angle(state);
       if (current > maximum && current > 1e-8) {
-        const rotation = state.bone.quaternion.clone().normalize();
-        state.bone.quaternion.copy(state.quaternion).normalize().slerp(rotation, maximum / current);
+        const rotation = this.poseBuffer.bones.get(state.name)!.quaternion.clone().normalize();
+        this.poseBuffer.bones.get(state.name)!.quaternion.copy(state.quaternion).normalize().slerp(rotation, maximum / current);
       }
     };
     let maximumRaise = 0;
@@ -258,6 +393,9 @@ export class RabbitRigController {
   dispose(): void {
     this.resetPose(true);
     this.disposed = true;
+    this.poseBuffer.dispose();
+    this.ikEnabled = false;
+    this.ikWeight = 0;
   }
 
   private setRotation(name: RabbitBoneName, xDegrees: number, yDegrees: number, zDegrees: number): void {

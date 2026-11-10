@@ -6,6 +6,8 @@ import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 export class MotionSmoother {
   private current = neutralRabbitPose();
 
+  constructor(private readonly responsiveArms = false) {}
+
   get pose(): RabbitPose { return { ...this.current }; }
 
   reset(pose = neutralRabbitPose()): void {
@@ -22,7 +24,14 @@ export class MotionSmoother {
       if (!Number.isFinite(requested)) return;
       const bounded = Math.max(min, Math.min(max, requested));
       const distance = bounded - this.current[key];
-      this.current[key] += Math.sign(distance) * Math.min(Math.abs(distance), rate * deltaSeconds);
+      let travel = rate * deltaSeconds;
+      if (this.responsiveArms && (key.includes('Arm') || key.includes('Elbow'))) {
+        // Integrate two velocity bands exactly; no extra low-pass filter.
+        const active = Math.max(0, Math.abs(distance) - 12);
+        const fast = Math.min(active, 540 * deltaSeconds);
+        travel = fast + rate * Math.max(0, deltaSeconds - fast / 540);
+      }
+      this.current[key] += Math.sign(distance) * Math.min(Math.abs(distance), travel);
     };
     move('leftArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);
     move('rightArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);

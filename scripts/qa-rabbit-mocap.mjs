@@ -215,7 +215,8 @@ try {
   await wait(s => s.rabbit3d.mocap.smoothed.leftArmElevation < 1 && s.rabbit3d.mocap.smoothed.rightArmElevation < 1);
   check('Lowering both hands continuously returns both arms to relaxed standing');
   await fixture({ forward: true });
-  await wait(s => s.rabbit3d.mocap.smoothed.leftArmPlane > 70 && s.rabbit3d.mocap.smoothed.rightArmPlane > 70);
+  await wait(s => s.rabbit3d.mocap.smoothed.leftArmPlane > 70 && s.rabbit3d.mocap.smoothed.rightArmPlane > 70
+    && s.rabbit3d.mocap.boneDeltasDegrees['upper_arm.L'] > 50);
   value = await snapshot();
   assert.ok(value.rabbit3d.mocap.smoothed.leftArmElevation > 70);
   assert.ok(value.rabbit3d.mocap.boneDeltasDegrees['upper_arm.L'] > 50);

@@ -10,6 +10,7 @@ import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
 import type { MotionInputStatus } from '../input/MotionInput';
 import { rabbitPreviewModelUrl } from './rabbit3dConfig';
+import { RabbitIKDebug } from './RabbitIKDebug';
 
 export type RabbitRenderMode = '3d' | 'sprite';
 export class Rabbit3DPreview {
@@ -19,6 +20,7 @@ export class Rabbit3DPreview {
   private image?: Phaser.GameObjects.Image;
   private texture?: Phaser.Textures.CanvasTexture;
   private debug?: Rabbit3DDebug;
+  private ikDebug?: RabbitIKDebug;
   private mocap?: MocapController;
   private mocapDebug?: MocapDebug;
   private tools?: HTMLElement;
@@ -70,11 +72,13 @@ export class Rabbit3DPreview {
       if (!this.texture) throw new Error('Unable to allocate rabbit texture');
       this.image = this.scene.add.image(RABBIT_VIEWPORT.x, RABBIT_VIEWPORT.y, this.textureKey).setOrigin(0).setDepth(CARROT_PULL_DEPTHS.rabbit);
       this.mode = '3d'; this.status = 'ready'; this.sprite.root.setVisible(false); this.sprite.pause();
+      rabbit.rig.setIKEnabled(rabbit.rig.version === 'v3' && new URLSearchParams(location.search).get('rabbitIK') !== '0');
       this.mocap = new MocapController(rabbit.rig);
       this.label.textContent = `3D ${rabbit.rig.version.toUpperCase()} 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite`;
       this.changed(true);
       if (DEV_RABBIT_3D_DEBUG || DEV_MOCAP_DEBUG) {
         this.tools = document.createElement('aside'); this.tools.className = 'rabbit-tools'; this.host.append(this.tools);
+        this.ikDebug = new RabbitIKDebug(this.tools, rabbit.rig);
         if (DEV_MOCAP_DEBUG) {
           this.host.classList.add('mocap-debug-visible');
           this.mocapDebug = new MocapDebug(this.tools, () => this.setMocapEnabled(!this.mocapEnabled), () => this.resetMotionReference());
@@ -103,6 +107,7 @@ export class Rabbit3DPreview {
     context.drawImage(this.overlay.renderer.domElement, 0, 0);
     this.texture.refresh();
     this.debug?.update(this.overlay.fps);
+    this.ikDebug?.update(deltaSeconds);
     if (this.mocap && this.mocapDebug) this.mocapDebug.update(this.mocap.snapshot(), this.overlay.fps, this.inputStatus);
   }
 
@@ -162,12 +167,14 @@ export class Rabbit3DPreview {
       rigVersion: this.overlay?.rabbit.rig.version, limits: this.overlay?.rabbit.rig.limits,
       elbowLimitsByRaise: this.overlay?.rabbit.rig.elbowLimitsByRaise,
       headLimitsByRaise: this.overlay?.rabbit.rig.headLimitsByRaise,
+      ik: this.overlay?.rabbit.rig.ikSnapshot(),
       input: this.inputStatus, mocap: this.mocap?.snapshot() };
   }
 
   private release() {
     this.request?.abort(); this.request = undefined;
     this.debug?.destroy(); this.debug = undefined;
+    this.ikDebug?.destroy(); this.ikDebug = undefined;
     this.mocap?.dispose(); this.mocap = undefined; this.mocapEnabled = false;
     this.mocapDebug?.destroy(); this.mocapDebug = undefined;
     this.tools?.remove(); this.tools = undefined;

@@ -16,7 +16,7 @@ page.on('console', message => { if (message.type() === 'error') report.errors.pu
 const snapshot = () => page.evaluate(async () =>
   (await import('/src/main.ts')).game.scene.getScene('CarrotPull').getDebugSnapshot());
 const enter = async version => {
-  await page.goto(`${base}?rabbit3dDebug=1&mocapDebug=1&rabbitRig=${version}`);
+  await page.goto(`${base}?rabbit3dDebug=1&mocapDebug=1&rabbitRig=${version}&rabbitIK=0`);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await page.locator('[data-input-action=keyboard]').click();

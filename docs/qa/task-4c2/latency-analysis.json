@@ -1,0 +1,59 @@
+{
+  "scope": "Analytical/code-based filter timing; not camera-to-photon or human measurement",
+  "inference_scheduler": {
+    "maximum_hz": 25,
+    "nominal_wait_ms": [
+      0,
+      40
+    ],
+    "sixty_hz_raf_often_hz": 20,
+    "sixty_hz_raf_wait_ms": [
+      0,
+      50
+    ],
+    "inference_time": "Device-dependent and measured separately by browser engine QA"
+  },
+  "landmark_filter": {
+    "applies_to": "Lower-body knee landmarks in PoseClassifier only; arms/torso use current raw landmarks",
+    "alpha": 0.35,
+    "low_frequency_lag_frames": 1.8571428571428574,
+    "lag_ms_at25hz": 74.28571428571429,
+    "lag_ms_at20hz": 92.85714285714286
+  },
+  "motion_target_filter": {
+    "kind": "Slew limit, not EMA",
+    "legacy_arm_deg_s": 180,
+    "v3_large_arm_deg_s": 540,
+    "v3_terminal_band_deg": 12,
+    "body_deg_s": 60,
+    "bend_per_s": 1.8,
+    "root_model_units_per_s": 0.6
+  },
+  "bone_interpolation": {
+    "kind": "Existing quaternion exponential",
+    "rate_per_s": 14,
+    "time_constant_ms": 71.42857142857143,
+    "ninety_percent_step_ms": 164.47036378528898
+  },
+  "synthetic120degree_step_at240hz": {
+    "legacy_target90_ms": 600,
+    "responsive_target90_ms": 200,
+    "legacy_displayed90_ms": 670.8333333333,
+    "responsive_displayed90_ms": 308.3333333333,
+    "note": "Target slew plus existing quaternion response; excludes sensor capture, inference, landmark filter and geometry-dependent IK projection"
+  },
+  "synthetic6degree_step": {
+    "legacy_and_responsive_target90_ms": 33.3333333333,
+    "legacy_and_responsive_displayed90_ms": 183.3333333333
+  },
+  "startup_only": {
+    "reference_ms": 600,
+    "calibration_sample_ms_per_step": 2000
+  },
+  "not_added_to_continuous_pose_latency": [
+    "Game classifier state debounce200ms; HumanPoseExtractor acceptsTRANSITION",
+    "One-time reference capture and calibration sampling"
+  ],
+  "warning": "Filter delays are frequency/amplitude dependent and cannot simply be summed into one universal latency figure",
+  "test": "tests/RabbitIKLifecycle.test.ts, current8/8PASS"
+}
