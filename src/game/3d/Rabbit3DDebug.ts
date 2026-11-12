@@ -1,4 +1,5 @@
 import type { RabbitRigController } from './RabbitRigController';
+import { RABBIT_INWARD_ARM_MAX_PLANE } from './rabbit3dConfig';
 
 export const DEV_RABBIT_3D_DEBUG = import.meta.env.DEV &&
   (import.meta.env.VITE_DEV_RABBIT_3D_DEBUG === 'true' || new URLSearchParams(location.search).get('rabbit3dDebug') === '1');
@@ -27,7 +28,8 @@ export class Rabbit3DDebug {
         Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂前抬方向"]`)!.value));
       slider(`${label}臂`, `upper_arm.${side}`, 0, limits.arm.max, 1, apply);
       slider(`${label}手肘`, `forearm.${side}`, 0, limits.forearm.max, 1, apply);
-      slider(`${label}臂前抬方向`, '0° 側抬 / 90° 前抬', 0, 90, 1, apply);
+      slider(`${label}臂前抬方向`, rig.armInwardEnabled ? '0° 側抬 / 90° 前抬 / 145° 內收' : '0° 側抬 / 90° 前抬',
+        0, rig.armInwardEnabled ? RABBIT_INWARD_ARM_MAX_PLANE : 90, 1, apply);
     }
     slider('身體側傾', 'body', -limits.bodySide, limits.bodySide, 1, value => rig.setBodyLean(value, Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體前後傾"]')!.value)));
     slider('身體前後傾', 'body', -limits.bodyForward, limits.bodyForward, 1, value => rig.setBodyLean(Number(this.root.querySelector<HTMLInputElement>('[aria-label="身體側傾"]')!.value), value));

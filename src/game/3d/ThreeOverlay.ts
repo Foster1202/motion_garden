@@ -2,8 +2,13 @@ import { AmbientLight, DirectionalLight, HemisphereLight, OrthographicCamera, Sc
 import { Rabbit3D } from './Rabbit3D';
 
 export const RABBIT_VIEWPORT = { x: 634, y: 229, width: 520, height: 520 } as const;
+export const CARROT_GRAB_VIEWPORT = { x: 574, y: 119, width: 640, height: 700 } as const;
+export interface ThreeViewport { x: number; y: number; width: number; height: number }
 export function rabbitWorldToPhaser(x: number, y: number, pixelsPerUnit: number) {
   return { x: 894 + x * pixelsPerUnit, y: 681 - y * pixelsPerUnit };
+}
+export function phaserToRabbitWorld(x: number, y: number, pixelsPerUnit: number) {
+  return { x: (x - 894) / pixelsPerUnit, y: (681 - y) / pixelsPerUnit };
 }
 
 export class ThreeOverlay {
@@ -17,20 +22,21 @@ export class ThreeOverlay {
   private destroyed = false;
   private readonly contextLost: (event: Event) => void;
 
-  constructor(readonly rabbit: Rabbit3D, onFailure: () => void) {
+  constructor(readonly rabbit: Rabbit3D, onFailure: () => void,
+    readonly viewport: ThreeViewport = RABBIT_VIEWPORT) {
     this.renderer = new WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: false, powerPreference: 'low-power' });
     this.renderer.setPixelRatio(1);
-    this.renderer.setSize(RABBIT_VIEWPORT.width, RABBIT_VIEWPORT.height, false);
+    this.renderer.setSize(viewport.width, viewport.height, false);
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = NeutralToneMapping;
     this.renderer.toneMappingExposure = 1;
     this.renderer.domElement.dataset.rabbitThree = 'true';
     const p = rabbit.pixelsPerUnit;
-    this.camera.left = (RABBIT_VIEWPORT.x - 894) / p;
-    this.camera.right = (RABBIT_VIEWPORT.x + RABBIT_VIEWPORT.width - 894) / p;
-    this.camera.top = (681 - RABBIT_VIEWPORT.y) / p;
-    this.camera.bottom = (681 - RABBIT_VIEWPORT.y - RABBIT_VIEWPORT.height) / p;
+    this.camera.left = (viewport.x - 894) / p;
+    this.camera.right = (viewport.x + viewport.width - 894) / p;
+    this.camera.top = (681 - viewport.y) / p;
+    this.camera.bottom = (681 - viewport.y - viewport.height) / p;
     this.camera.near = .1; this.camera.far = 50;
     this.camera.position.set(0, 0, 12); this.camera.lookAt(0, 0, 0);
     this.camera.updateProjectionMatrix();
@@ -41,9 +47,10 @@ export class ThreeOverlay {
     this.renderer.domElement.addEventListener('webglcontextlost', this.contextLost);
   }
 
-  render(deltaSeconds: number) {
+  render(deltaSeconds: number, afterPose?: (deltaSeconds: number) => void) {
     if (this.destroyed || document.hidden) return false;
     this.rabbit.rig.update(deltaSeconds);
+    afterPose?.(deltaSeconds);
     this.renderer.render(this.scene, this.camera);
     this.renderedFrames++;
     this.samples++; this.elapsed += deltaSeconds;

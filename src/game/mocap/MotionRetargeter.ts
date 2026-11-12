@@ -30,6 +30,7 @@ const armKeys = ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'righ
 const depthKeys = ['torsoForward', 'headYaw', 'headPitch'] as const;
 
 export class MotionRetargeter {
+  constructor(private readonly maximumArmPlane = 90) {}
   /** Berry motion already uses anatomical sides and normalized, mirrored root translation. */
   retargetLegMotion(sample: BerryMotionSample): BerryMotionSample {
     const valid = sample.reliable && [sample.leftLegExtensionAmount, sample.rightLegExtensionAmount,
@@ -105,7 +106,7 @@ export class MotionRetargeter {
       if (reliable) {
         this.lastReliableArm[side] = human.timestampMs;
         target[elevation] = clamp(human[elevation]! - reference[elevation], 0, CONFIG.limits.arm.max);
-        target[plane] = clamp(human[plane] ?? 0, 0, 90);
+        target[plane] = clamp(human[plane] ?? 0, 0, this.maximumArmPlane);
         target[elbow] = clamp(human[elbow]! - reference[elbow], 0, CONFIG.limits.elbow.max);
       } else if (human.timestampMs - (this.lastReliableArm[side] ?? reference.timestampMs) > CONFIG.temporal.neutralAfterMs) {
         target[elevation] = 0;
@@ -127,7 +128,8 @@ export class MotionRetargeter {
       && armKeys.every(key => human[key] === undefined || (finite(human[key]) && human[key]! >= 0 && human[key]! <= 180))
       && (['leftArmPlane', 'rightArmPlane'] as const).every(key => {
         const value = human[key];
-        return value === undefined || (Number.isFinite(value) && value >= 0 && value <= 90);
+        return value === undefined || (Number.isFinite(value) && value >= 0
+          && value <= (this.maximumArmPlane > 90 ? 180 : 90));
       })
       && depthKeys.every(key => human[key] === undefined || (finite(human[key]) && Math.abs(human[key]!) < 80));
   }

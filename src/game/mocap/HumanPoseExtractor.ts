@@ -29,6 +29,7 @@ export interface HumanPose {
 
 export class HumanPoseExtractor {
   private readonly legDetector = new LegExtensionDetector();
+  constructor(private readonly allowInwardArms = false) {}
 
   extractLegMotion(frame: PoseFrame): BerryMotionSample { return this.legDetector.update(frame); }
   resetLegMotion(): void { this.legDetector.reset(); }
@@ -91,8 +92,15 @@ export class HumanPoseExtractor {
       const elevation = MathUtils.radToDeg(upper.angleTo(armDown));
       // Normalized landmark z uses image-width scale, and is only a bounded visual cue.
       const forwardReach = useDepth ? Math.max(0, upper.dot(forward)) : 0;
-      const plane = forwardReach > torsoLength * 0.03
+      let plane = forwardReach > torsoLength * 0.03
         ? MathUtils.radToDeg(Math.atan2(forwardReach, Math.abs(upper.dot(sideways)))) : 0;
+      if (this.allowInwardArms) {
+        const shoulderSide = new Vector3((points[shoulderIndex].x - shoulders.x) * width,
+          (points[shoulderIndex].y - shoulders.y) * height, 0).dot(sideways);
+        const outward = upper.dot(sideways) * Math.sign(shoulderSide);
+        // Preserve anatomical identity while retaining the sign of inward movement.
+        plane = MathUtils.radToDeg(Math.atan2(forwardReach, outward));
+      }
       return { elevation, plane, bend: MathUtils.radToDeg(upper.angleTo(lower)), confidence: armConfidence };
     };
     // Anatomical IDs remain unchanged by the mirrored webcam element.

@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.39",
+  "checks": [
+    "Production page identity, meaningful game screen and no framework error overlay",
+    "All three developer queries keep grab, bypass and render controls hidden",
+    "Production keyboard bend, stand, pull and celebration award one Sprite score",
+    "Production player mode never fetches the prototype Carrot GLB",
+    "Production console and page errors are clear"
+  ],
+  "errors": [],
+  "carrotRequests": []
+}

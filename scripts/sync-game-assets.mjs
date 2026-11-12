@@ -13,6 +13,7 @@ const groups = [
   { name: 'berry_kick', source: path.join(root, 'model/dist/berry_kick'), files: ['berry_background.png', 'berry_foreground.png', 'berry_tree_left.png', 'berry_tree_right.png', 'berry.png', 'berry_basket.png', 'manifest.json', 'tree-art-v2.json'] },
   { name: 'rabbit', source: path.join(root, 'model/dist/rabbit'), files: rabbitFiles },
   { name: 'rabbit3d', source: path.join(root, 'model/dist/rabbit3d'), files: ['rabbit_realtime.glb'], optionalFiles: ['rabbit_realtime_v3.glb'] },
+  { name: 'carrot3d', source: path.join(root, 'model/dist/carrot3d'), files: ['carrot_realtime.glb'] },
   { name: 'carrot_pull', source: path.join(root, 'model/assets/rendered/carrot_pull'),
     files: [...sceneLayers.map(layer => `${layer}.png`), sceneMetadataFile] },
 ];

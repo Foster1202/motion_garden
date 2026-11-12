@@ -9,6 +9,7 @@ import { MotionRetargeter } from './MotionRetargeter';
 import { MotionSmoother } from './MotionSmoother';
 import { MOCAP_CONFIG } from './mocapConfig';
 import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
+import { RABBIT_INWARD_ARM_MAX_PLANE } from '../3d/rabbit3dConfig';
 
 type MocapRig = Pick<RabbitRigController, 'setArmRotation' | 'setBodyLean' | 'setKneeBend' | 'setRootOffset'>
   & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation' | 'applyPose' | 'version'>>;
@@ -38,8 +39,8 @@ export interface MocapSnapshot {
 
 /** Consumes shared inference results and advances only on the existing scene clock. */
 export class MocapController {
-  private readonly extractor = new HumanPoseExtractor();
-  private readonly retargeter = new MotionRetargeter();
+  private readonly extractor: HumanPoseExtractor;
+  private readonly retargeter: MotionRetargeter;
   private readonly smoother: MotionSmoother;
   private readonly initialBoneRotations = new Map<string, Quaternion>();
   private enabled = false;
@@ -60,8 +61,12 @@ export class MocapController {
   private humanPosesExtracted = 0;
   private mappedPoses = 0;
 
-  constructor(private readonly rig: MocapRig, private readonly now = () => performance.now()) {
-    this.smoother = new MotionSmoother(rig.version === 'v3');
+  constructor(private readonly rig: MocapRig, private readonly now = () => performance.now(), allowInwardArms = false) {
+    const inward = allowInwardArms && rig.version === 'v3';
+    const maximumPlane = inward ? RABBIT_INWARD_ARM_MAX_PLANE : 90;
+    this.extractor = new HumanPoseExtractor(inward);
+    this.retargeter = new MotionRetargeter(maximumPlane);
+    this.smoother = new MotionSmoother(rig.version === 'v3', maximumPlane);
     for (const [name, bone] of rig.bones ?? []) this.initialBoneRotations.set(name, bone.quaternion.clone().normalize());
   }
 

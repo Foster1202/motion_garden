@@ -20,8 +20,12 @@ const enter = async version => {
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await page.locator('[data-input-action=keyboard]').click();
-  await page.waitForFunction(async () =>
-    (await import('/src/main.ts')).game.scene.getScene('CarrotPull').getDebugSnapshot().rabbit3d.status === 'ready');
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    if ((await snapshot()).rabbit3d.status === 'ready') return;
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`Rabbit preview readiness timeout ${JSON.stringify(await snapshot())}`);
 };
 const check = (name, detail) => report.checks.push({ name, result: 'PASS', detail });
 const cases = [

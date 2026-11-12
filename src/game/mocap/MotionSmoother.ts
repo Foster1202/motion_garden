@@ -6,7 +6,7 @@ import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 export class MotionSmoother {
   private current = neutralRabbitPose();
 
-  constructor(private readonly responsiveArms = false) {}
+  constructor(private readonly responsiveArms = false, private readonly maximumArmPlane = 90) {}
 
   get pose(): RabbitPose { return { ...this.current }; }
 
@@ -35,8 +35,8 @@ export class MotionSmoother {
     };
     move('leftArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);
     move('rightArmElevation', limits.arm.min, limits.arm.max, rates.armDegreesPerSecond);
-    move('leftArmPlane', 0, 90, rates.armDegreesPerSecond);
-    move('rightArmPlane', 0, 90, rates.armDegreesPerSecond);
+    move('leftArmPlane', 0, this.maximumArmPlane, rates.armDegreesPerSecond);
+    move('rightArmPlane', 0, this.maximumArmPlane, rates.armDegreesPerSecond);
     move('leftElbowBend', limits.forearm.min, limits.forearm.max, rates.armDegreesPerSecond);
     move('rightElbowBend', limits.forearm.min, limits.forearm.max, rates.armDegreesPerSecond);
     move('torsoLean', -limits.bodySide, limits.bodySide, rates.bodyDegreesPerSecond);

@@ -3,6 +3,7 @@ import type { Object3D } from 'three';
 export type RabbitRenderMode = '3d' | 'sprite';
 export type RabbitSide = 'L' | 'R' | 'left' | 'right';
 export type RabbitRigVersion = 'v2' | 'v3';
+export const RABBIT_INWARD_ARM_MAX_PLANE = 145;
 
 export const RABBIT_REQUIRED_BONES = [
   'root', 'body', 'head', 'ear.L', 'ear.R',

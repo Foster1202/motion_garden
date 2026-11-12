@@ -1,0 +1,80 @@
+{
+  "unitTests": {
+    "passed": 260,
+    "original": 215,
+    "added": 45,
+    "skipped": 0
+  },
+  "typecheck": "PASS",
+  "build": "PASS",
+  "suites": [
+    {
+      "command": "qa:rabbit3d",
+      "status": "PASS",
+      "checks": 15,
+      "errors": [],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/rabbit/browser-report.json"
+    },
+    {
+      "command": "qa:mocap",
+      "status": "PASS",
+      "checks": 22,
+      "errors": [],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/mocap/browser-report.json"
+    },
+    {
+      "command": "qa:ik",
+      "status": "PASS",
+      "checks": 11,
+      "errors": [],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/ik/browser-report.json"
+    },
+    {
+      "command": "qa:rig-v3",
+      "status": "PASS",
+      "checks": 7,
+      "errors": [],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/rig-v3/browser-report.json"
+    },
+    {
+      "command": "qa:berry",
+      "status": "PASS",
+      "checks": 7,
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "expectedDiagnostics": "Deliberate model-failure net::ERR_FAILED",
+      "evidence": "/private/tmp/motion-garden-4d1-regression/berry/results.json"
+    },
+    {
+      "command": "qa:berry-camera",
+      "status": "PASS",
+      "checks": 7,
+      "errors": [],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/berry-camera/results.json"
+    },
+    {
+      "command": "qa:mocap-engine",
+      "status": "PASS",
+      "frameCount": 121,
+      "errors": [],
+      "expectedDiagnostics": [
+        "INFO: Created TensorFlow Lite XNNPACK delegate for CPU."
+      ],
+      "evidence": "/private/tmp/motion-garden-4d1-regression/engine/engine-report.json"
+    }
+  ],
+  "production": {
+    "status": "PASS",
+    "browser": "157.0.8103.39",
+    "checks": [
+      "Production page identity, meaningful game screen and no framework error overlay",
+      "All three developer queries keep grab, bypass and render controls hidden",
+      "Production keyboard bend, stand, pull and celebration award one Sprite score",
+      "Production player mode never fetches the prototype Carrot GLB",
+      "Production console and page errors are clear"
+    ],
+    "errors": [],
+    "carrotRequests": []
+  }
+}

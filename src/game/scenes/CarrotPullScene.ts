@@ -13,6 +13,7 @@ import { resumeTweenClock } from '../systems/pauseTweenClock';
 import { Overlay, sproutIcon, carrotIcon } from '../ui/Overlay';
 import { REDUCED_MOTION, SHOW_KEYBOARD_HINTS } from '../config';
 import { Rabbit3DPreview } from '../3d/Rabbit3DPreview';
+import { DEV_CARROT_GRAB_DEBUG } from '../3d/CarrotGrabDebug';
 
 // Zero-based atlas index 5 is Blender Pull source frame 10; peak is index 8.
 export const PULL_CARROT_ATTACH_FRAME = 5;
@@ -111,8 +112,11 @@ export class CarrotPullScene extends Phaser.Scene {
     });
     this.rabbit3d = new Rabbit3DPreview(this, this.rabbit, this.ui.root, preview => {
       this.ui.root.classList.toggle('rabbit-preview', preview);
+      const grabPreview = preview && DEV_CARROT_GRAB_DEBUG;
+      this.carrot.root.setVisible(!grabPreview);
+      this.soil.setVisible(!grabPreview);
       this.ui.text('#prompt', preview ? '3D 阿兔 · 開發預覽' : PROMPTS[this.model.state][0]);
-      this.ui.text('#helper', preview ? '骨骼滑塊與即時同步只供開發測試；完整拔蘿蔔請切回 Sprite。' : PROMPTS[this.model.state][1]);
+      this.ui.text('#helper', grabPreview ? '用手動骨骼或鏡頭移動雙手，再以開發按鈕測試抓握。' : preview ? '骨骼滑塊與即時同步只供開發測試；完整拔蘿蔔請切回 Sprite。' : PROMPTS[this.model.state][1]);
     });
     this.audio.playVoice('ready');
   }
@@ -296,10 +300,10 @@ export class CarrotPullScene extends Phaser.Scene {
       rabbit: { x: this.rabbit.root.x, y: this.rabbit.root.y, scale: this.rabbit.root.scaleX,
         originX: sprite?.originX, originY: sprite?.originY },
       attached: this.attached, phase: this.successPhase, socket: this.rabbit.getAttachmentPoint(),
-      carrot: { x: this.carrot.root.x, y: this.carrot.root.y, alpha: this.carrot.root.alpha, depth: this.carrot.root.depth },
+      carrot: { x: this.carrot.root.x, y: this.carrot.root.y, alpha: this.carrot.root.alpha, depth: this.carrot.root.depth, visible: this.carrot.root.visible },
       grip: this.carrot.gripWorld(), attachmentBlend: this.attachmentBlend.remaining,
       carrotOrigin: { x: this.carrot.vegetable.originX, y: this.carrot.vegetable.originY },
-      carrotScale: this.carrot.root.scaleX, soil: { x: this.soil.x, y: this.soil.y, scale: this.soil.scaleX },
+      carrotScale: this.carrot.root.scaleX, soil: { x: this.soil.x, y: this.soil.y, scale: this.soil.scaleX, visible: this.soil.visible },
       basket: { x: this.basket.image.x, y: this.basket.image.y, scale: this.basket.image.scaleX, dropTarget: BASKET_DROP_TARGET },
       layers: this.garden.layers.map(layer => ({ name: layer.name, key: layer.texture.key, x: layer.x, y: layer.y, scaleX: layer.scaleX, scaleY: layer.scaleY, originX: layer.originX, originY: layer.originY, depth: layer.depth })),
       missingAssets: getMissingCarrotPullAssets(this),

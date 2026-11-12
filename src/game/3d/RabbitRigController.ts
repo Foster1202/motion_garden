@@ -46,6 +46,7 @@ export class RabbitRigController {
   private readonly legExtensions = { L: 0, R: 0 };
   private disposed = false;
   private ikEnabled = false;
+  private inwardEnabled = false;
   private ikWeight = 0;
   private solverTimeMs = 0;
   private readonly poseBuffer: RabbitPoseBuffer;
@@ -117,6 +118,20 @@ export class RabbitRigController {
     this.ikEnabled = enabled && this.version === 'v3';
   }
 
+  get armInwardEnabled(): boolean { return this.inwardEnabled; }
+
+  /** Opt-in V3 extension for the carrot prototype; other callers retain the original planes. */
+  setArmInwardEnabled(enabled: boolean): void {
+    if (this.disposed) return;
+    this.inwardEnabled = enabled && this.version === 'v3';
+    this.armIK.forEach(solver => solver.setInwardEnabled(this.inwardEnabled));
+    for (const side of ['L', 'R'] as const) {
+      const request = this.armRequests[side];
+      request.plane = Math.min(request.plane, this.armIK.get(side)!.maximumPlane);
+      this.targetArmRotation(side, request.raise, request.elbow, request.plane);
+    }
+  }
+
   /** Shoulder-relative model axes; depth is a stylized target, not reconstructed human XYZ. */
   setHandTarget(side: RabbitSide, x: number, y: number, z: number): boolean {
     if (this.disposed || ![x, y, z].every(Number.isFinite) || Math.hypot(x, y, z) > 1e4) return false;
@@ -159,7 +174,7 @@ export class RabbitRigController {
     if (this.disposed) return;
     const part = suffix(side);
     Object.assign(this.armRequests[part], { raise: clamp(upperDegrees, this.limits.arm.min, this.limits.arm.max),
-      elbow: clamp(forearmDegrees, 0, this.limits.forearm.max), plane: clamp(planeDegrees, 0, 90) });
+      elbow: clamp(forearmDegrees, 0, this.limits.forearm.max), plane: clamp(planeDegrees, 0, this.armIK.get(part)!.maximumPlane) });
     this.handTargets.delete(part);
     this.targetArmRotation(side, upperDegrees, forearmDegrees, planeDegrees);
   }
@@ -168,7 +183,13 @@ export class RabbitRigController {
     const part = suffix(side);
     const sign = part === 'L' ? 1 : -1;
     const limits = this.limits;
-    const plane = radians(clamp(planeDegrees, 0, 90));
+    if (this.inwardEnabled) {
+      const constrained = this.armIK.get(part)!.constrain(upperDegrees, forearmDegrees, planeDegrees);
+      upperDegrees = constrained.raise;
+      forearmDegrees = constrained.elbow;
+      planeDegrees = constrained.plane;
+    }
+    const plane = radians(clamp(planeDegrees, 0, this.armIK.get(part)!.maximumPlane));
     const upper = this.rest.get(`upper_arm.${part}`)!;
     const axis = upper.axes.z.clone().multiplyScalar(sign * Math.cos(plane))
       .addScaledVector(upper.axes.x, -Math.sin(plane)).normalize();
@@ -178,7 +199,7 @@ export class RabbitRigController {
     if (this.version === 'v3') {
       // The V3 mesh supports a fixed anatomical hinge carried by its upper arm.
       this.setRotation(`forearm.${part}`, -clamp(forearmDegrees, limits.forearm.min,
-        this.maximumElbowBend(this.armElevations[part])), 0, 0);
+        this.maximumElbowBend(this.armElevations[part], planeDegrees)), 0, 0);
     } else {
       const shoulderDelta = new Quaternion().setFromAxisAngle(
         new Vector3(-Math.sin(plane), 0, sign * Math.cos(plane)), elevation);
@@ -196,7 +217,8 @@ export class RabbitRigController {
     this.updateHeadRotation();
   }
 
-  maximumElbowBend(upperDegrees: number): number {
+  maximumElbowBend(upperDegrees: number, planeDegrees = 0): number {
+    if (this.inwardEnabled) return this.armIK.get('L')!.maximumElbow(upperDegrees, planeDegrees);
     return rabbitRaiseLimit(this.elbowLimitsByRaise, clamp(upperDegrees, 0, this.limits.arm.max));
   }
 
@@ -383,9 +405,28 @@ export class RabbitRigController {
     };
     let maximumRaise = 0;
     for (const side of ['L', 'R'] as const) {
-      const elevation = angle(this.rest.get(`upper_arm.${side}`)!);
+      const upper = this.rest.get(`upper_arm.${side}`)!;
+      let elevation = angle(upper);
+      let plane = 0;
+      if (this.inwardEnabled) {
+        const work = this.poseBuffer.bones.get(upper.name)!;
+        const delta = upper.quaternion.clone().invert().multiply(work.quaternion).normalize();
+        const vector = new Vector3(delta.x, delta.y, delta.z);
+        const sign = side === 'L' ? 1 : -1;
+        let x = vector.dot(upper.axes.x), z = vector.dot(upper.axes.z);
+        const negative = x > 1e-8 || (Math.abs(x) < 1e-8 && sign * z < 0);
+        if (negative) { x = -x; z = -z; }
+        plane = MathUtils.radToDeg(Math.atan2(-x, sign * z));
+        const applied = this.armIK.get(side)!.constrain(negative ? -elevation : elevation, 0, plane);
+        elevation = Math.abs(applied.raise);
+        plane = applied.plane;
+        const axis = upper.axes.z.clone().multiplyScalar(sign * Math.cos(radians(plane)))
+          .addScaledVector(upper.axes.x, -Math.sin(radians(plane))).normalize();
+        work.quaternion.copy(upper.quaternion)
+          .multiply(new Quaternion().setFromAxisAngle(axis, radians(applied.raise))).normalize();
+      }
       maximumRaise = Math.max(maximumRaise, elevation);
-      constrain(this.rest.get(`forearm.${side}`)!, this.maximumElbowBend(elevation));
+      constrain(this.rest.get(`forearm.${side}`)!, this.maximumElbowBend(elevation, plane));
     }
     constrain(this.rest.get('head')!, this.maximumHeadEnvelope(maximumRaise));
   }

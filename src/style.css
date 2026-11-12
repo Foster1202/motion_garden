@@ -1206,7 +1206,7 @@ kbd {
   width:auto;
   max-height:none;
 }
-.mocap-debug, .rabbit-ik-debug {
+.mocap-debug, .rabbit-ik-debug, .carrot-grab-debug {
   padding:12px;
   border:1px solid #a1b08e;
   border-radius:14px;
@@ -1216,9 +1216,15 @@ kbd {
 .mocap-debug p, .rabbit-ik-debug p { margin-top:.5em; line-height:1.45; }
 .mocap-debug button, .rabbit-ik-debug button { font:inherit; min-height:36px; margin:8px 6px 4px 0; padding:5px 8px; }
 .mocap-debug pre, .rabbit-ik-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:220px; overflow:auto; }
+.carrot-grab-debug summary { font-weight:700; cursor:pointer; }
+.carrot-grab-debug button { font:inherit; min-height:36px; margin:6px 5px 4px 0; padding:5px 8px; }
+.carrot-grab-debug label { display:block; margin:8px 0; }
+.carrot-grab-debug input { margin-right:7px; accent-color:var(--green); }
+.carrot-grab-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:240px; overflow:auto; }
+.carrot-grab-debug [role="status"] { font-size:.9em; line-height:1.45; }
 @media (max-width:700px) {
   .rabbit-tools { width:31%; top:37%; max-height:42%; }
-  .mocap-debug, .rabbit-ik-debug { padding:6px; font-size:11px; }
+  .mocap-debug, .rabbit-ik-debug, .carrot-grab-debug { padding:6px; font-size:11px; }
 }
 .calibrating .instruction,.calibrating .steps,.calibrating .hold-indicator { visibility:hidden; }
 @media (max-width:700px) {

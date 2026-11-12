@@ -1,0 +1,369 @@
+{
+  "status": "PASS",
+  "mesh_count": 8,
+  "meshes": [
+    {
+      "name": "Carrot_Leaf_01.004",
+      "vertices": 530,
+      "triangles": 1056,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Leaf_02.004",
+      "vertices": 530,
+      "triangles": 1056,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Leaf_03.004",
+      "vertices": 530,
+      "triangles": 1056,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Leaf_04.004",
+      "vertices": 530,
+      "triangles": 1056,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Leaf_05.004",
+      "vertices": 530,
+      "triangles": 1056,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Soft_Crease_01.004",
+      "vertices": 104,
+      "triangles": 204,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Soft_Crease_02.004",
+      "vertices": 104,
+      "triangles": 204,
+      "parent": "Carrot_Grip_Root"
+    },
+    {
+      "name": "Carrot_Taproot.004",
+      "vertices": 1826,
+      "triangles": 3648,
+      "parent": "Carrot_Grip_Root"
+    }
+  ],
+  "vertex_count": 4684,
+  "triangle_count": 9336,
+  "material_count": 5,
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Garden_Leaf_Sage",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.19120168685913086,
+          0.3915724754333496,
+          0.07227185368537903,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.75
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Garden_Leaf_Green",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.13286831974983215,
+          0.2961382567882538,
+          0.05448027700185776,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.75
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Garden_Leaf_Light",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.2622506618499756,
+          0.4677838087081909,
+          0.10224173218011856,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.75
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Garden_Carrot_Crease",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.6938717365264893,
+          0.1384316086769104,
+          0.011612244881689548,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.75
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Garden_Carrot_Orange",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.9046611785888672,
+          0.18447498977184296,
+          0.014443843625485897,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.75
+      }
+    }
+  ],
+  "material_values_preserved": true,
+  "node_hierarchy": {
+    "Carrot_Grip_Point": "Carrot_Grip_Root",
+    "Carrot_Leaf_01.004": "Carrot_Grip_Root",
+    "Carrot_Leaf_02.004": "Carrot_Grip_Root",
+    "Carrot_Leaf_03.004": "Carrot_Grip_Root",
+    "Carrot_Leaf_04.004": "Carrot_Grip_Root",
+    "Carrot_Leaf_05.004": "Carrot_Grip_Root",
+    "Carrot_Soft_Crease_01.004": "Carrot_Grip_Root",
+    "Carrot_Soft_Crease_02.004": "Carrot_Grip_Root",
+    "Carrot_Taproot.004": "Carrot_Grip_Root",
+    "Carrot_Grip_Root": null
+  },
+  "bounds_gltf": {
+    "minimum": [
+      -0.346277,
+      -1.09966075,
+      -0.25258598
+    ],
+    "maximum": [
+      0.36058566,
+      0.64841658,
+      0.29791734
+    ]
+  },
+  "mesh_bounds_gltf": {
+    "Carrot_Leaf_01.004": {
+      "minimum": [
+        -0.346277,
+        0.00328284,
+        -0.07369692
+      ],
+      "maximum": [
+        0.01226098,
+        0.51873326,
+        0.1435236
+      ]
+    },
+    "Carrot_Leaf_02.004": {
+      "minimum": [
+        -0.10613734,
+        0.00372476,
+        -0.00353492
+      ],
+      "maximum": [
+        0.1092728,
+        0.58856273,
+        0.29791734
+      ]
+    },
+    "Carrot_Leaf_03.004": {
+      "minimum": [
+        -0.01055919,
+        0.00334597,
+        -0.08066667
+      ],
+      "maximum": [
+        0.36058566,
+        0.52870888,
+        0.14197277
+      ]
+    },
+    "Carrot_Leaf_04.004": {
+      "minimum": [
+        -0.03558135,
+        0.00378789,
+        -0.22198504
+      ],
+      "maximum": [
+        0.21584274,
+        0.59853834,
+        0.03385393
+      ]
+    },
+    "Carrot_Leaf_05.004": {
+      "minimum": [
+        -0.11730448,
+        0.00410355,
+        -0.19872786
+      ],
+      "maximum": [
+        0.06750999,
+        0.64841658,
+        0.02022282
+      ]
+    },
+    "Carrot_Soft_Crease_01.004": {
+      "minimum": [
+        -0.09730683,
+        -0.30600002,
+        0.2211618
+      ],
+      "maximum": [
+        0.0465293,
+        -0.28611094,
+        0.25199416
+      ]
+    },
+    "Carrot_Soft_Crease_02.004": {
+      "minimum": [
+        -0.03678012,
+        -0.60600001,
+        0.16010924
+      ],
+      "maximum": [
+        0.07759086,
+        -0.58617288,
+        0.18799202
+      ]
+    },
+    "Carrot_Taproot.004": {
+      "minimum": [
+        -0.25258598,
+        -1.09966075,
+        -0.25258598
+      ],
+      "maximum": [
+        0.25258598,
+        0.00465934,
+        0.25258598
+      ]
+    }
+  },
+  "grip_point": {
+    "name": "Carrot_Grip_Point",
+    "parent": "Carrot_Grip_Root",
+    "local_position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "world_position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "world_local_axes_columns": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "description": "Leaf-root junction. Leaves +Y, taproot -Y, front +Z."
+  },
+  "source_geometry_maximum_error": 0.0,
+  "source_geometry_errors": {
+    "Carrot_Leaf_01.004": 0.0,
+    "Carrot_Leaf_02.004": 0.0,
+    "Carrot_Leaf_03.004": 0.0,
+    "Carrot_Leaf_04.004": 0.0,
+    "Carrot_Leaf_05.004": 0.0,
+    "Carrot_Soft_Crease_01.004": 0.0,
+    "Carrot_Soft_Crease_02.004": 0.0,
+    "Carrot_Taproot.004": 0.0
+  },
+  "animation_count": 0,
+  "camera_count": 0,
+  "light_count": 0,
+  "skin_count": 0,
+  "texture_count": 0,
+  "blender_version": "5.2.1 LTS",
+  "source": "model/assets/blender/scenes/carrot_pull_scene.blend",
+  "source_collection": "carrot",
+  "source_sha256": "fca00b17c627c16eb74f324ceb0506f8d6417143bdafb3129ad0ead313144ba0",
+  "source_file_unchanged": true,
+  "source_materials": {
+    "Garden_Carrot_Orange": {
+      "base_color_factor": [
+        0.9046611785888672,
+        0.18447498977184296,
+        0.014443843625485897,
+        1.0
+      ],
+      "roughness": 0.75,
+      "metallic": 0.0
+    },
+    "Garden_Carrot_Crease": {
+      "base_color_factor": [
+        0.6938717365264893,
+        0.1384316086769104,
+        0.011612244881689548,
+        1.0
+      ],
+      "roughness": 0.75,
+      "metallic": 0.0
+    },
+    "Garden_Leaf_Sage": {
+      "base_color_factor": [
+        0.19120168685913086,
+        0.3915724754333496,
+        0.07227185368537903,
+        1.0
+      ],
+      "roughness": 0.75,
+      "metallic": 0.0
+    },
+    "Garden_Leaf_Green": {
+      "base_color_factor": [
+        0.13286831974983215,
+        0.2961382567882538,
+        0.05448027700185776,
+        1.0
+      ],
+      "roughness": 0.75,
+      "metallic": 0.0
+    },
+    "Garden_Leaf_Light": {
+      "base_color_factor": [
+        0.2622506618499756,
+        0.4677838087081909,
+        0.10224173218011856,
+        1.0
+      ],
+      "roughness": 0.75,
+      "metallic": 0.0
+    }
+  },
+  "glb_sha256": "35d112f6924b02432dd8342e5ee1ba7700817db1dd495e4105e5a13e2b95aaa0",
+  "glb_bytes": 148596,
+  "coordinate_system": {
+    "blender_up": "+Z",
+    "blender_front": "-Y",
+    "gltf_up": "+Y",
+    "gltf_front": "+Z",
+    "conversion": "gltf(x,y,z) = blender(x,z,-y)"
+  },
+  "limitations": [
+    "Original evaluated geometry and proportions are retained. Runtime supplies scene placement and uniform scale."
+  ]
+}

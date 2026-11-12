@@ -20,6 +20,15 @@ page.on('console', message => { if (message.type() === 'error') report.errors.pu
 const check = (name, detail) => report.checks.push({ name, result: 'PASS', detail });
 const snap = () => page.evaluate(async () =>
   (await import('/src/main.ts')).game.scene.getScene('CarrotPull').getDebugSnapshot());
+async function waitForIKReady() {
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    const value = await snap();
+    if (value.rabbit3d.status === 'ready' && value.rabbit3d.ik?.enabled) return;
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`IK preview readiness timeout ${JSON.stringify(await snap())}`);
+}
 const poses = [
   { name: 'rest', label: 'Rest Pose' },
   { name: 'knee25', label: 'Knee 25%', knee: .25 },
@@ -41,10 +50,7 @@ async function enter() {
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await page.locator('[data-input-action=keyboard]').click();
-  await page.waitForFunction(async () => {
-    const preview = (await import('/src/main.ts')).game.scene.getScene('CarrotPull')?.rabbit3d;
-    return preview?.status === 'ready' && preview.snapshot().ik?.enabled === true;
-  });
+  await waitForIKReady();
 }
 
 async function applyPose(value, immediate = true) {
@@ -234,10 +240,7 @@ try {
   assert.equal(await page.getByRole('button', { name: '啟用 IK', exact: true }).count(), 0);
   check('Sprite switch releases IK UI, Three texture and model');
   await page.getByRole('combobox', { name: '阿兔渲染模式' }).selectOption('3d');
-  await page.waitForFunction(async () => {
-    const preview = (await import('/src/main.ts')).game.scene.getScene('CarrotPull')?.rabbit3d;
-    return preview?.status === 'ready' && preview.snapshot().ik?.enabled === true;
-  });
+  await waitForIKReady();
   assert.equal((await snap()).rabbit3d.ik.enabled, true);
   await page.locator('[data-action=pause]').click();
   await page.locator('[data-action=home]').click();

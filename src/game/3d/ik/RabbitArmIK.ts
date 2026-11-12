@@ -1,5 +1,5 @@
 import { MathUtils, Vector3 } from 'three';
-import { rabbitRaiseLimit, type RabbitRaiseLimitCurve, type RabbitRigLimits } from '../rabbit3dConfig';
+import { RABBIT_INWARD_ARM_MAX_PLANE, rabbitRaiseLimit, type RabbitRaiseLimitCurve, type RabbitRigLimits } from '../rabbit3dConfig';
 
 export interface RabbitArmAngles { raise: number; elbow: number; plane: number }
 export interface RabbitArmIKResult extends RabbitArmAngles {
@@ -31,6 +31,7 @@ export class RabbitArmIK {
   private bestPlane = 0;
   private evaluations = 0;
   private solved = false;
+  private inwardEnabled = false;
 
   constructor(upperRest: Vector3, lowerRest: Vector3, private readonly sideSign: number,
     private readonly elbowCurve: RabbitRaiseLimitCurve, private readonly limits: RabbitRigLimits) {
@@ -41,11 +42,43 @@ export class RabbitArmIK {
     this.maximumReach = this.upper.length() + this.lower.length();
   }
 
+  get maximumPlane(): number { return this.inwardEnabled ? RABBIT_INWARD_ARM_MAX_PLANE : 90; }
+
+  setInwardEnabled(enabled: boolean): void {
+    this.inwardEnabled = enabled;
+    this.reset();
+  }
+
+  maximumRaise(plane: number): number {
+    const inward = this.inwardEnabled ? bounded((plane - 90) / 55, 0, 1) : 0;
+    return Math.min(this.limits.arm.max, 150 - 60 * inward);
+  }
+
+  maximumPlaneForRaise(raise: number): number {
+    // Mid-height inward arms need extra torso clearance until the wrists rise above it.
+    return this.inwardEnabled ? 140 + 5 * bounded((raise - 75) / 10, 0, 1) : 90;
+  }
+
+  maximumElbow(raise: number, plane = 0): number {
+    // The added inward envelope keeps the original forward/lateral curve at plane 90.
+    const inward = this.inwardEnabled ? bounded((plane - 90) / 10, 0, 1) : 0;
+    return Math.min(this.limits.forearm.max, rabbitRaiseLimit(this.elbowCurve, Math.max(0, raise)),
+      110 - 100 * inward);
+  }
+
+  constrain(raise: number, elbow: number, plane: number): RabbitArmAngles {
+    plane = bounded(plane, 0, this.maximumPlane);
+    raise = bounded(raise, this.limits.arm.min, this.maximumRaise(plane));
+    plane = Math.min(plane, this.maximumPlaneForRaise(raise));
+    elbow = bounded(elbow, this.limits.forearm.min, this.maximumElbow(raise, plane));
+    return { raise, elbow, plane };
+  }
+
   /** Relative shoulder-to-hand target; coupling is intentionally applied by solve(). */
   forward(raise: number, elbow: number, plane: number, out: Vector3): Vector3 {
     const elevation = radians(bounded(raise, this.limits.arm.min, this.limits.arm.max));
     const flexion = radians(bounded(elbow, this.limits.forearm.min, this.limits.forearm.max));
-    const azimuth = radians(bounded(plane, 0, 90));
+    const azimuth = radians(bounded(plane, 0, this.maximumPlane));
     const flexCos = Math.cos(flexion), flexSin = Math.sin(flexion);
     const x = this.upper.x + this.lower.x;
     const y = this.upper.y + this.lower.y * flexCos + this.lower.z * flexSin;
@@ -73,7 +106,7 @@ export class RabbitArmIK {
     this.prior.plane = this.result.plane;
     const requestedRaise = bounded(seed?.raise ?? this.result.raise, this.limits.arm.min, this.limits.arm.max);
     const requestedElbow = bounded(seed?.elbow ?? this.result.elbow, this.limits.forearm.min, this.limits.forearm.max);
-    const requestedPlane = bounded(seed?.plane ?? this.result.plane, 0, 90);
+    const requestedPlane = bounded(seed?.plane ?? this.result.plane, 0, this.maximumPlane);
     this.consider(requestedRaise, requestedElbow, requestedPlane);
     // Exact feasible human-derived targets need no iterative work.
     if (this.point.distanceToSquared(this.target) > 1e-16) {
@@ -85,14 +118,14 @@ export class RabbitArmIK {
           this.refine();
         }
         for (let raise = this.limits.arm.min; raise < this.limits.arm.max; raise += 30) {
-          for (let plane = 0; plane <= 90; plane += 30) {
+          for (let plane = 0; plane <= this.maximumPlane; plane += 30) {
             this.consider(raise, radialElbow, plane);
             this.consider(raise, 0, plane);
-            this.consider(raise, this.elbowLimit(raise), plane);
+            this.consider(raise, this.maximumElbow(raise, plane), plane);
           }
         }
         for (const [raise] of this.elbowCurve) {
-          for (let plane = 0; plane <= 90; plane += 30) this.consider(raise, radialElbow, plane);
+          for (let plane = 0; plane <= this.maximumPlane; plane += 30) this.consider(raise, radialElbow, plane);
         }
         this.refine();
       }
@@ -106,7 +139,9 @@ export class RabbitArmIK {
       && (Math.abs(requestedRaise - finite(seed.raise)) > 1e-8
         || Math.abs(requestedElbow - finite(seed.elbow)) > 1e-8
         || Math.abs(requestedPlane - finite(seed.plane)) > 1e-8
-        || requestedElbow > this.elbowLimit(requestedRaise) + 1e-8));
+        || requestedElbow > this.maximumElbow(requestedRaise, requestedPlane) + 1e-8
+        || requestedRaise > this.maximumRaise(requestedPlane) + 1e-8
+        || requestedPlane > this.maximumPlaneForRaise(requestedRaise) + 1e-8));
     this.result.valid = true;
     this.result.iterations = this.evaluations;
     this.solved = true;
@@ -119,10 +154,6 @@ export class RabbitArmIK {
     this.result.valid = true;
     this.result.iterations = 0;
     this.solved = false;
-  }
-
-  private elbowLimit(raise: number): number {
-    return Math.min(this.limits.forearm.max, rabbitRaiseLimit(this.elbowCurve, Math.max(0, raise)));
   }
 
   private analyticSeed(): number {
@@ -141,7 +172,7 @@ export class RabbitArmIK {
     const z = this.upper.z - this.lower.y * sin + this.lower.z * cos;
     let plane = MathUtils.radToDeg(Math.atan2(this.target.z - z, this.sideSign * (this.target.x - x)));
     if (plane < 0) plane += 180;
-    plane = bounded(plane, 0, 90);
+    plane = bounded(plane, 0, this.maximumPlane);
     const ax = -Math.sin(radians(plane)), az = this.sideSign * Math.cos(radians(plane));
     const fromAxis = ax * x + az * z;
     const toAxis = ax * this.target.x + az * this.target.z;
@@ -154,9 +185,10 @@ export class RabbitArmIK {
   }
 
   private consider(raise: number, elbow: number, plane: number): void {
-    raise = bounded(raise, this.limits.arm.min, this.limits.arm.max);
-    elbow = bounded(elbow, this.limits.forearm.min, this.elbowLimit(raise));
-    plane = bounded(plane, 0, 90);
+    const constrained = this.constrain(raise, elbow, plane);
+    raise = constrained.raise;
+    elbow = constrained.elbow;
+    plane = constrained.plane;
     this.forward(raise, elbow, plane, this.point);
     this.evaluations++;
     const priorDistance = ((raise - this.prior.raise) ** 2 + (elbow - this.prior.elbow) ** 2
