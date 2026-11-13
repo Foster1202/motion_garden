@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5178/",
+  "browserPlugin": "Browser plugin not available; installed Chrome through Playwright",
+  "input": "Existing manual sliders and developer grab controls. Strict-contact fixture and explicit distance-bypass stress poses use actual bones and renderer. Human webcam NOT tested.",
+  "flow": "Start game, Carrot Pull, keyboard input, manual arm controls, grab, live motion, release and reset",
+  "checks": [
+    {
+      "name": "Page identity, meaningful grab interface and no framework error overlay",
+      "result": "PASS"
+    },
+    {
+      "name": "One 3D carrot shares the rabbit scene and texture, duplicate Sprite carrot hidden, initial crop contains geometry",
+      "result": "PASS",
+      "detail": {
+        "gripNodes": 1,
+        "spriteCarrotVisible": false,
+        "spriteRabbitVisible": false,
+        "canvasCount": 1,
+        "dynamicTextures": [
+          "rabbit-three-32fc2726-d9fe-4359-8a7e-c7735a871287"
+        ],
+        "geometryCount": 31,
+        "textureCount": 2,
+        "logicalBounds": {
+          "left": 812.4037613696232,
+          "right": 975.5962386303768,
+          "top": 339,
+          "bottom": 725.7568367944392
+        },
+        "viewport": {
+          "x": 574,
+          "y": 119,
+          "width": 640,
+          "height": 700
+        }
+      }
+    },
+    {
+      "name": "Matched-crop baseline and feature-enabled actual-render performance measured",
+      "result": "PASS",
+      "detail": {
+        "disabled": {
+          "enabled": false,
+          "elapsedMs": 5158.4000000059605,
+          "frames": 310,
+          "observedFps": 60.096153846084405,
+          "reportedFps": 60.001573811772154,
+          "renderCalls": 23,
+          "triangles": 48176,
+          "viewport": {
+            "x": 574,
+            "y": 119,
+            "width": 640,
+            "height": 700
+          },
+          "scope": "Identical expanded crop, existing Phaser/Three clock. Disabled sample omits carrot draw and attachment/debug updates while retaining loaded asset allocation."
+        },
+        "enabled": {
+          "enabled": true,
+          "elapsedMs": 5140.10000000149,
+          "frames": 309,
+          "observedFps": 60.115561954030156,
+          "reportedFps": 60.00216401247258,
+          "renderCalls": 31,
+          "triangles": 57512,
+          "updateMs": {
+            "mean": 0.0630000001937151,
+            "p95": 0.20000000298023224,
+            "maximum": 0.29999999701976776
+          },
+          "viewport": {
+            "x": 574,
+            "y": 119,
+            "width": 640,
+            "height": 700
+          },
+          "scope": "Identical expanded crop, existing Phaser/Three clock. Disabled sample omits carrot draw and attachment/debug updates while retaining loaded asset allocation."
+        }
+      }
+    }
+  ],
+  "poses": [],
+  "screenshots": [
+    "01-initial.png",
+    "01-initial-three.png"
+  ],
+  "performance": {
+    "disabled": {
+      "enabled": false,
+      "elapsedMs": 5158.4000000059605,
+      "frames": 310,
+      "observedFps": 60.096153846084405,
+      "reportedFps": 60.001573811772154,
+      "renderCalls": 23,
+      "triangles": 48176,
+      "viewport": {
+        "x": 574,
+        "y": 119,
+        "width": 640,
+        "height": 700
+      },
+      "scope": "Identical expanded crop, existing Phaser/Three clock. Disabled sample omits carrot draw and attachment/debug updates while retaining loaded asset allocation."
+    },
+    "enabled": {
+      "enabled": true,
+      "elapsedMs": 5140.10000000149,
+      "frames": 309,
+      "observedFps": 60.115561954030156,
+      "reportedFps": 60.00216401247258,
+      "renderCalls": 31,
+      "triangles": 57512,
+      "updateMs": {
+        "mean": 0.0630000001937151,
+        "p95": 0.20000000298023224,
+        "maximum": 0.29999999701976776
+      },
+      "viewport": {
+        "x": 574,
+        "y": 119,
+        "width": 640,
+        "height": 700
+      },
+      "scope": "Identical expanded crop, existing Phaser/Three clock. Disabled sample omits carrot draw and attachment/debug updates while retaining loaded asset allocation."
+    }
+  },
+  "errors": [],
+  "warnings": []
+}

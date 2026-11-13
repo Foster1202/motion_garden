@@ -1,0 +1,820 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5178/",
+  "browserPlugin": "Browser plugin not available, using installed Chrome through Playwright",
+  "input": "Manual and scripted FK through the running Three.js preview. Human webcam not tested.",
+  "checks": [
+    {
+      "name": "V3 loads through the normal development preview with 19 bones and versioned controls",
+      "result": "PASS"
+    },
+    {
+      "name": "All requested pose categories use actual 90/120/150 shoulder angles, bounded elbow angles and preserved foot anchors",
+      "result": "PASS"
+    },
+    {
+      "name": "The known unsupported high-raise and deep-elbow request is visibly constrained by the model profile",
+      "result": "PASS",
+      "detail": {
+        "name": "limited150",
+        "requested": {
+          "name": "limited150",
+          "left": 150,
+          "right": 150,
+          "elbow": 110,
+          "yaw": 25,
+          "pitch": 18
+        },
+        "rigVersion": "v3",
+        "actual": {
+          "root": 0,
+          "body": 0,
+          "head": 0,
+          "ear.L": 0.0000024148365394514667,
+          "ear.R": 0.0000024148365394514667,
+          "upper_arm.L": 150,
+          "forearm.L": 0,
+          "hand.L": 0,
+          "thigh.L": 0,
+          "shin.L": 0,
+          "foot.L": 0,
+          "upper_arm.R": 150,
+          "forearm.R": 0,
+          "hand.R": 0,
+          "thigh.R": 0,
+          "shin.R": 0,
+          "foot.R": 0,
+          "tail": 0,
+          "carrot_socket": 0
+        },
+        "feet": [
+          [
+            0.26499998569488525,
+            0.12140909064360816,
+            0.03999971134623131
+          ],
+          [
+            -0.26499998569488525,
+            0.12140909064360816,
+            0.03999971134623131
+          ]
+        ],
+        "maximumElbow": 0
+      }
+    },
+    {
+      "name": "Normal slider input interpolates through the game render clock",
+      "result": "PASS"
+    },
+    {
+      "name": "Pause freezes rendering and returning home releases the V3 tools",
+      "result": "PASS"
+    },
+    {
+      "name": "Explicit V2 fallback loads the preserved asset and retains its conservative limits",
+      "result": "PASS"
+    },
+    {
+      "name": "Page content, framework overlay and console checks",
+      "result": "PASS"
+    }
+  ],
+  "poses": [
+    {
+      "name": "rest",
+      "requested": {
+        "name": "rest"
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "left90",
+      "requested": {
+        "name": "left90",
+        "left": 90
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 89.99999999999996,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 75
+    },
+    {
+      "name": "left120",
+      "requested": {
+        "name": "left120",
+        "left": 120
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999997,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "left150",
+      "requested": {
+        "name": "left150",
+        "left": 150
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 150,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 0
+    },
+    {
+      "name": "right120",
+      "requested": {
+        "name": "right120",
+        "right": 120
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999997,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "both120",
+      "requested": {
+        "name": "both120",
+        "left": 120,
+        "right": 120
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999997,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999997,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "forward120",
+      "requested": {
+        "name": "forward120",
+        "left": 120,
+        "right": 120,
+        "plane": 90
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999997,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999997,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "diagonal120",
+      "requested": {
+        "name": "diagonal120",
+        "left": 120,
+        "right": 120,
+        "plane": 45
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999999,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999999,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "raisedElbow45",
+      "requested": {
+        "name": "raisedElbow45",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999999,
+        "forearm.L": 45.00000000000001,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999999,
+        "forearm.R": 45.00000000000001,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "elbow110",
+      "requested": {
+        "name": "elbow110",
+        "elbow": 110
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 109.99999999999997,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 109.99999999999997,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "leftLean",
+      "requested": {
+        "name": "leftLean",
+        "side": 18,
+        "yaw": 18,
+        "roll": -7.2
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 17.999999999999968,
+        "head": 19.37557272356606,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "rightLean",
+      "requested": {
+        "name": "rightLean",
+        "side": -18,
+        "yaw": -18,
+        "roll": 7.2
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 17.999999999999968,
+        "head": 19.37557272356606,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "raisedLean",
+      "requested": {
+        "name": "raisedLean",
+        "left": 120,
+        "right": 120,
+        "side": 18,
+        "yaw": 5,
+        "roll": -5
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 17.999999999999968,
+        "head": 7.069945578430074,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999997,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 119.99999999999997,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "knee50",
+      "requested": {
+        "name": "knee50",
+        "knee": 0.5
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 11.99999999999993,
+        "shin.L": 23.999999999999975,
+        "foot.L": 11.999999999999808,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 11.99999999999993,
+        "shin.R": 23.999999999999975,
+        "foot.R": 11.999999999999808,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140871918295337,
+          0.03999936143816024
+        ],
+        [
+          -0.26499998569488525,
+          0.12140871918295337,
+          0.03999936143816024
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "knee100",
+      "requested": {
+        "name": "knee100",
+        "knee": 1
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 23.999999999999915,
+        "shin.L": 48.00000000000001,
+        "foot.L": 23.999999999999915,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 23.999999999999915,
+        "shin.R": 48.00000000000001,
+        "foot.R": 23.999999999999915,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140829491653113,
+          0.03999922706723141
+        ],
+        [
+          -0.26499998569488525,
+          0.12140829491653113,
+          0.03999922706723141
+        ]
+      ],
+      "maximumElbow": 110
+    },
+    {
+      "name": "combined",
+      "requested": {
+        "name": "combined",
+        "left": 120,
+        "right": 120,
+        "plane": 45,
+        "elbow": 45,
+        "knee": 1,
+        "forward": 10
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 9.999999999999984,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 119.99999999999999,
+        "forearm.L": 45.00000000000001,
+        "hand.L": 0,
+        "thigh.L": 23.999999999999915,
+        "shin.L": 48.00000000000001,
+        "foot.L": 23.999999999999915,
+        "upper_arm.R": 119.99999999999999,
+        "forearm.R": 45.00000000000001,
+        "hand.R": 0,
+        "thigh.R": 23.999999999999915,
+        "shin.R": 48.00000000000001,
+        "foot.R": 23.999999999999915,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140829491653113,
+          0.03999922706723141
+        ],
+        [
+          -0.26499998569488525,
+          0.12140829491653113,
+          0.03999922706723141
+        ]
+      ],
+      "maximumElbow": 45
+    },
+    {
+      "name": "restRecovery",
+      "requested": {
+        "name": "restRecovery"
+      },
+      "rigVersion": "v3",
+      "actual": {
+        "root": 0,
+        "body": 0,
+        "head": 0,
+        "ear.L": 0.0000024148365394514667,
+        "ear.R": 0.0000024148365394514667,
+        "upper_arm.L": 0,
+        "forearm.L": 0,
+        "hand.L": 0,
+        "thigh.L": 0,
+        "shin.L": 0,
+        "foot.L": 0,
+        "upper_arm.R": 0,
+        "forearm.R": 0,
+        "hand.R": 0,
+        "thigh.R": 0,
+        "shin.R": 0,
+        "foot.R": 0,
+        "tail": 0,
+        "carrot_socket": 0
+      },
+      "feet": [
+        [
+          0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ],
+        [
+          -0.26499998569488525,
+          0.12140909064360816,
+          0.03999971134623131
+        ]
+      ],
+      "maximumElbow": 110
+    }
+  ],
+  "errors": [],
+  "threeFps": 60.08766889396003
+}

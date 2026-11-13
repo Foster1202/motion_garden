@@ -3,6 +3,7 @@ import { Rabbit3D } from './Rabbit3D';
 
 export const RABBIT_VIEWPORT = { x: 634, y: 229, width: 520, height: 520 } as const;
 export const CARROT_GRAB_VIEWPORT = { x: 574, y: 119, width: 640, height: 700 } as const;
+export const CARROT_GAME_VIEWPORT = { x: 574, y: 119, width: 820, height: 660 } as const;
 export interface ThreeViewport { x: number; y: number; width: number; height: number }
 export function rabbitWorldToPhaser(x: number, y: number, pixelsPerUnit: number) {
   return { x: 894 + x * pixelsPerUnit, y: 681 - y * pixelsPerUnit };
@@ -28,6 +29,7 @@ export class ThreeOverlay {
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(viewport.width, viewport.height, false);
     this.renderer.setClearColor(0x000000, 0);
+    this.renderer.localClippingEnabled = true;
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = NeutralToneMapping;
     this.renderer.toneMappingExposure = 1;
@@ -51,6 +53,7 @@ export class ThreeOverlay {
     if (this.destroyed || document.hidden) return false;
     this.rabbit.rig.update(deltaSeconds);
     afterPose?.(deltaSeconds);
+    if (this.destroyed) return false;
     this.renderer.render(this.scene, this.camera);
     this.renderedFrames++;
     this.samples++; this.elapsed += deltaSeconds;

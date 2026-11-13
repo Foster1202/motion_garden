@@ -1,4 +1,4 @@
-import { Box3, Group, Matrix4, Object3D, Quaternion, Vector3 } from 'three';
+import { Box3, Group, Matrix4, Mesh, Object3D, Plane, Quaternion, Vector3, type Material } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { disposeModel } from './Rabbit3D';
 
@@ -12,6 +12,8 @@ export class Carrot3D {
   readonly grip: Object3D;
   readonly bounds: Box3;
   private readonly localGrip = new Vector3();
+  private soilPlane?: Plane;
+  private readonly previousClipping = new Map<Material, Plane[] | null>();
   private disposed = false;
 
   constructor(readonly model: Object3D) {
@@ -103,8 +105,37 @@ export class Carrot3D {
     return true;
   }
 
+  get soilClippingHeight(): number | null { return this.soilPlane ? -this.soilPlane.constant : null; }
+
+  /** Keep the planted root below a world-space soil surface inside the shared render. */
+  setSoilClippingHeight(worldY: number | null): boolean {
+    if (this.disposed || (worldY !== null && !Number.isFinite(worldY * worldY))) return false;
+    if (worldY === null) {
+      for (const [material, planes] of this.previousClipping) {
+        material.clippingPlanes = planes;
+        material.needsUpdate = true;
+      }
+      this.previousClipping.clear();
+      this.soilPlane = undefined;
+      return true;
+    }
+    if (this.soilPlane) { this.soilPlane.constant = -worldY; return true; }
+    this.soilPlane = new Plane(new Vector3(0, 1, 0), -worldY);
+    this.model.traverse(object => {
+      if (!(object instanceof Mesh)) return;
+      for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+        if (this.previousClipping.has(material)) continue;
+        this.previousClipping.set(material, material.clippingPlanes);
+        material.clippingPlanes = [...(material.clippingPlanes ?? []), this.soilPlane!];
+        material.needsUpdate = true;
+      }
+    });
+    return true;
+  }
+
   dispose(): void {
     if (this.disposed) return;
+    this.setSoilClippingHeight(null);
     this.disposed = true;
     disposeModel(this.model);
     this.root.removeFromParent();

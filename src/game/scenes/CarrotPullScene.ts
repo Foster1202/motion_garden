@@ -28,6 +28,15 @@ const PROMPTS: Record<RoundState, [string, string]> = {
   NEXT_ROUND: ['下一棵蘿蔔準備好喇。', '準備好先再繼續。'],
   COMPLETE: ['完成啦！', '做得好，休息一下啦。'],
 };
+const GAME_3D_PROMPTS: Record<RoundState, [string, string]> = {
+  READY: ['慢慢屈膝，幫阿兔拔蘿蔔啦！', '舒服地淺屈膝就得，阿兔會幫你捉穩蘿蔔。'],
+  BENDING: ['做得好，保持舒服嘅幅度。', '慢慢嚟，唔使蹲得深。'],
+  GRABBED: ['阿兔捉實蘿蔔喇！慢慢企返起身。', '阿兔會輔助捉穩，你照自己舒服嘅節奏活動。'],
+  RETURNING: ['慢慢企直，蘿蔔就快出嚟喇！', '企穩一陣，唔使急。'],
+  SUCCESS: ['成功拔到一棵蘿蔔！', '阿兔幫你放入籃，稍等一陣。'],
+  NEXT_ROUND: ['準備好再拔下一棵啦！', '慢慢嚟，阿兔陪住你。'],
+  COMPLETE: ['完成啦！你已經拔到五棵蘿蔔！', '做得好，休息一下啦。'],
+};
 
 export class CarrotPullScene extends Phaser.Scene {
   private model!: CarrotRound;
@@ -40,6 +49,9 @@ export class CarrotPullScene extends Phaser.Scene {
   private carrot!: Carrot;
   private basket!: Basket;
   private soil!: Phaser.GameObjects.Image;
+  private soilBack!: Phaser.GameObjects.Image;
+  private gameplayRendering = false;
+  private disposed = false;
   private paused = false;
   private trackingSuspended = false;
   private attached = false;
@@ -49,6 +61,8 @@ export class CarrotPullScene extends Phaser.Scene {
   constructor() { super('CarrotPull'); }
 
   create() {
+    this.disposed = false;
+    this.gameplayRendering = false;
     this.model = new CarrotRound();
     this.audio = new AudioManager();
     this.paused = false;
@@ -62,7 +76,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.carrot.root.setDepth(CARROT_PULL_DEPTHS.plantedCarrot);
     const soilOrigin = CARROT_PULL_LAYERS.soilPatch.origin;
     const soilKey = this.textures.exists(CarrotPullAssetKeys.soilPatch) ? CarrotPullAssetKeys.soilPatch : '__MISSING';
-    this.add.image(SOIL_POSITION.x, SOIL_POSITION.y, soilKey)
+    this.soilBack = this.add.image(SOIL_POSITION.x, SOIL_POSITION.y, soilKey)
       .setOrigin(soilOrigin.x, soilOrigin.y).setScale(SOIL_SCALE).setDepth(CARROT_PULL_DEPTHS.soilBack);
     // Reuse the soil's lower lip to cover the intact root without a carrot mask.
     this.soil = this.add.image(SOIL_POSITION.x, SOIL_POSITION.y, soilKey)
@@ -70,6 +84,7 @@ export class CarrotPullScene extends Phaser.Scene {
     if (soilKey !== '__MISSING') this.soil.setCrop(0, SOIL_FRONT_START_Y, 512, 512 - SOIL_FRONT_START_Y);
     this.rabbit = new RabbitCharacter(this, RABBIT_FOOT_POSITION.x, RABBIT_FOOT_POSITION.y, RABBIT_SCALE, CARROT_PULL_DEPTHS);
     this.rabbit.onFrame = (action, index) => {
+      if (this.rabbit3d?.mode === '3d') return;
       if (action === 'pull' && index >= PULL_CARROT_ATTACH_FRAME && !this.attached) this.attachCarrot();
       if (action === 'celebrate' && index >= CELEBRATE_CARROT_RELEASE_FRAME && this.attached) this.releaseCarrot();
       if (this.attached) this.followHands();
@@ -110,15 +125,33 @@ export class CarrotPullScene extends Phaser.Scene {
       isContinuousPreview: () => this.rabbit3d?.isMocapActive ?? false,
       getMotionHint: () => this.rabbit3d?.motionHint,
     });
-    this.rabbit3d = new Rabbit3DPreview(this, this.rabbit, this.ui.root, preview => {
-      this.ui.root.classList.toggle('rabbit-preview', preview);
-      const grabPreview = preview && DEV_CARROT_GRAB_DEBUG;
-      this.carrot.root.setVisible(!grabPreview);
-      this.soil.setVisible(!grabPreview);
-      this.ui.text('#prompt', preview ? '3D 阿兔 · 開發預覽' : PROMPTS[this.model.state][0]);
-      this.ui.text('#helper', grabPreview ? '用手動骨骼或鏡頭移動雙手，再以開發按鈕測試抓握。' : preview ? '骨骼滑塊與即時同步只供開發測試；完整拔蘿蔔請切回 Sprite。' : PROMPTS[this.model.state][1]);
-    });
+    this.rabbit3d = new Rabbit3DPreview(this, this.rabbit, this.ui.root,
+      preview => this.renderModeChanged(preview), () => this.finishCelebration('3d'));
+    this.rabbit3d.setRoundState(this.model.state, this.model.progress, this.model.score);
+    this.ui.root.dataset.roundState = this.model.state;
     this.audio.playVoice('ready');
+  }
+
+  private renderModeChanged(preview: boolean) {
+    const wasGameplay = this.gameplayRendering;
+    this.gameplayRendering = this.rabbit3d?.isGameplay ?? false;
+    this.ui.root.classList.toggle('rabbit-preview', preview && !this.gameplayRendering);
+    this.ui.root.classList.toggle('carrot-3d-game', this.gameplayRendering);
+    this.ui.root.dataset.carrotRender = !preview ? 'sprite' : this.gameplayRendering ? '3d-game' : '3d-debug';
+    const hideSpriteCarrot = preview && (this.gameplayRendering || DEV_CARROT_GRAB_DEBUG);
+    this.carrot.root.setVisible(!hideSpriteCarrot);
+    this.soil.setVisible(!hideSpriteCarrot);
+    this.soilBack.setVisible(!this.gameplayRendering);
+    if (preview && !this.gameplayRendering) {
+      this.ui.text('#prompt', '3D 阿兔 · 開發預覽');
+      this.ui.text('#helper', DEV_CARROT_GRAB_DEBUG ? '用手動骨骼或鏡頭移動雙手，再以開發按鈕測試抓握。'
+        : '骨骼滑塊與即時同步只供開發測試；完整拔蘿蔔請切回 Sprite。');
+      return;
+    }
+    const prompts = this.gameplayRendering ? GAME_3D_PROMPTS : PROMPTS;
+    this.ui.text('#prompt', prompts[this.model.state][0]);
+    this.ui.text('#helper', prompts[this.model.state][1]);
+    if (wasGameplay && !preview && this.model.state !== 'COMPLETE') this.stateChanged(this.model.state);
   }
 
   private readonly onEscape = (event: KeyboardEvent) => {
@@ -165,12 +198,24 @@ export class CarrotPullScene extends Phaser.Scene {
 
   private stateChanged(previous: RoundState) {
     const state = this.model.state;
+    this.ui.root.dataset.roundState = state;
+    this.rabbit3d?.setRoundState(state, this.model.progress, this.model.score);
     const retry = previous === 'BENDING' && state === 'READY';
-    this.ui.text('#prompt', retry ? '慢慢嚟，準備好再試一次。' : PROMPTS[state][0]);
-    this.ui.text('#helper', PROMPTS[state][1]);
+    const prompts = this.rabbit3d?.isGameplay ? GAME_3D_PROMPTS : PROMPTS;
+    this.ui.text('#prompt', retry ? '慢慢嚟，準備好再試一次。' : prompts[state][0]);
+    this.ui.text('#helper', prompts[state][1]);
     if (!REDUCED_MOTION) this.ui.root.querySelector('#prompt')?.animate([{ opacity: .25, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 320 });
     const activeStep = ['READY', 'BENDING'].includes(state) ? 'bend' : ['GRABBED', 'RETURNING'].includes(state) ? 'stand' : 'collect';
     this.ui.root.querySelectorAll<HTMLElement>('[data-step]').forEach(el => el.classList.toggle('current', el.dataset.step === activeStep));
+    if (this.rabbit3d?.isGameplay) {
+      if (state === 'GRABBED' && previous !== 'RETURNING') this.audio.playVoice('grabbed');
+      if (state === 'SUCCESS') {
+        this.audio.playVoice('success'); this.audio.playSfx('success');
+        this.garden.celebrate(RABBIT_FOOT_POSITION.x, 476, REDUCED_MOTION);
+      }
+      if (state === 'COMPLETE') this.complete();
+      return;
+    }
     if (state === 'BENDING') this.rabbit.playBend();
     if (state === 'GRABBED') {
       if (previous === 'RETURNING') this.rabbit.cancelReturn();
@@ -182,6 +227,7 @@ export class CarrotPullScene extends Phaser.Scene {
       this.successPhase = 'waiting';
       this.ui.text('#prompt', PROMPTS.RETURNING[0]);
       this.rabbit.playPull(() => {
+        if (this.rabbit3d?.mode === '3d' || this.disposed) return;
         this.successPhase = 'pull';
         this.ui.text('#prompt', PROMPTS.SUCCESS[0]);
         this.ui.text('#helper', PROMPTS.SUCCESS[1]);
@@ -189,7 +235,7 @@ export class CarrotPullScene extends Phaser.Scene {
         this.audio.playSfx('success');
         if (this.rabbit.fallback) this.attachCarrot();
       }, () => {
-        if (this.model.state !== 'SUCCESS') return;
+        if (this.model.state !== 'SUCCESS' || this.rabbit3d?.mode === '3d' || this.disposed) return;
         this.successPhase = 'celebrate';
         this.ui.text('#prompt', '好叻呀！');
         this.garden.celebrate(RABBIT_FOOT_POSITION.x, 476, REDUCED_MOTION);
@@ -211,32 +257,43 @@ export class CarrotPullScene extends Phaser.Scene {
     }
   }
 
-  private finishCelebration() {
-    if (this.trackingSuspended || this.paused) return;
+  private finishCelebration(source: 'sprite' | '3d' = 'sprite') {
+    if (this.disposed || this.trackingSuspended || this.paused) return;
+    if (source === 'sprite' && (this.rabbit3d?.mode === '3d' || this.rabbit3d?.gameplaySelected)) return;
+    if ((source === '3d') !== Boolean(this.rabbit3d?.isGameplay)) return;
     const previous = this.model.state;
     if (!this.model.completeCelebration()) return;
     this.ui.text('#score', `分數：${this.model.score}`);
     this.ui.text('#progress-label', `進度：${this.model.score} / ${this.model.target}`);
     this.basket.setScore(this.model.score);
-    this.motion.reset();
+    if (source === 'sprite') this.motion.reset();
     this.stateChanged(previous);
   }
 
   update(_time: number, delta: number) {
     if (!this.model || this.paused) return;
-    if (this.rabbit3d?.mode === '3d') this.rabbit3d.update(delta / 1000);
-    if (this.model.state === 'COMPLETE') return;
     const inputSample = this.motion.sample();
     const inputStatus = this.motion.getStatus?.();
     if (inputStatus?.requestPause) { this.pauseGame(); return; }
-    if (this.rabbit3d?.mode === '3d') return;
-    if (inputStatus && (!inputStatus.ready || inputStatus.suspended)) { this.animateWorld(); return; }
-    if (this.model.state === 'GRABBED') this.ui.text('#helper', inputStatus?.mode === 'camera' ? '慢慢企返起身，唔使急。' : PROMPTS.GRABBED[1]);
+    this.rabbit3d?.setMotionSample(inputSample);
+    this.rabbit3d?.setRoundState(this.model.state, this.model.progress, this.model.score);
+    if (this.rabbit3d?.mode === '3d') this.rabbit3d.update(delta / 1000);
+    if (this.model.state === 'COMPLETE') return;
+    if (this.rabbit3d?.gameplaySelected && !this.rabbit3d.canAdvanceGameRound) { this.renderHoldIndicator(); return; }
+    if (this.rabbit3d?.isDebugPreview) return;
+    if (inputStatus && (!inputStatus.ready || inputStatus.suspended)) {
+      if (this.rabbit3d?.isGameplay) this.renderHoldIndicator();
+      else this.animateWorld();
+      return;
+    }
+    if (!this.rabbit3d?.isGameplay && this.model.state === 'GRABBED') this.ui.text('#helper', inputStatus?.mode === 'camera' ? '慢慢企返起身，唔使急。' : PROMPTS.GRABBED[1]);
     const dt = Math.min(delta, 100);
     const previous = this.model.state;
     this.model.update(dt, inputSample);
     if (previous !== this.model.state) this.stateChanged(previous);
-    this.animateWorld();
+    this.rabbit3d?.setRoundState(this.model.state, this.model.progress, this.model.score);
+    if (this.rabbit3d?.isGameplay) this.renderHoldIndicator();
+    else this.animateWorld();
   }
 
   private setTrackingSuspended(suspended: boolean) {
@@ -279,9 +336,13 @@ export class CarrotPullScene extends Phaser.Scene {
   }
 
   private animateWorld() {
-    const state = this.model.state;
     if (this.attached) this.followHands();
     this.rabbit.updateDebug();
+    this.renderHoldIndicator();
+  }
+
+  private renderHoldIndicator() {
+    const state = this.model.state;
     const holding = state === 'BENDING' || state === 'RETURNING';
     const full = state === 'GRABBED' || state === 'SUCCESS';
     const fill = this.ui.root.querySelector<HTMLElement>('#hold-fill');
@@ -313,6 +374,7 @@ export class CarrotPullScene extends Phaser.Scene {
   }
 
   private cleanup() {
+    this.disposed = true;
     window.removeEventListener('keydown', this.onEscape);
     window.removeEventListener('blur', this.onBlur);
     document.removeEventListener('visibilitychange', this.onVisibility);
@@ -323,6 +385,9 @@ export class CarrotPullScene extends Phaser.Scene {
     this.audio.destroy();
     this.ui.root.classList.remove('carrot-pull-ui');
     this.ui.root.classList.remove('rabbit-preview');
+    this.ui.root.classList.remove('carrot-3d-game');
+    delete this.ui.root.dataset.carrotRender;
+    delete this.ui.root.dataset.roundState;
     this.ui.root.style.removeProperty('z-index');
     this.ui.destroy();
   }

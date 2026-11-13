@@ -1,0 +1,15 @@
+
+> motion-garden-rabbit@0.1.0 build
+> node node_modules/typescript/bin/tsc --noEmit && node node_modules/vite/bin/vite.js build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 89 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                            0.99 kB │ gzip:   0.62 kB
+dist/assets/index-Bp_9fVVX.css            23.58 kB │ gzip:   6.04 kB
+dist/assets/vision_bundle-CL2Y9qB2.js    143.58 kB │ gzip:  43.53 kB
+dist/assets/index-D3DrxlXP.js            825.27 kB │ gzip: 221.05 kB
+dist/assets/phaser-DFK5Ua9d.js         1,208.06 kB │ gzip: 332.17 kB
+✓ built in 3.15s

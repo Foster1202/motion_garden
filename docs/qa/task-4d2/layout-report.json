@@ -1,0 +1,226 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5178/",
+  "browserPlugin": "Browser plugin not available; installed Chrome through Playwright",
+  "input": "Explicit development keyboard simulation for the supported maximum rabbit-scale layout",
+  "humanWebcamQA": "NOT VERIFIED",
+  "checks": [
+    {
+      "name": "Maximum rabbit scale keeps ears, head, score, pause and instructions clear at desktop and narrow viewports",
+      "result": "PASS",
+      "detail": [
+        {
+          "viewport": {
+            "width": 1512,
+            "height": 982
+          },
+          "instruction": {
+            "left": 317.515625,
+            "right": 1194.484375,
+            "top": 91.25,
+            "bottom": 212.734375
+          },
+          "meshes": [
+            {
+              "name": "Rabbit_Ear_L",
+              "left": 864.108308045736,
+              "right": 913.2544267099189,
+              "top": 224.51,
+              "bottom": 360.4427893238179
+            },
+            {
+              "name": "Rabbit_Ear_R",
+              "left": 776.4055732900811,
+              "right": 825.5516919542641,
+              "top": 224.51,
+              "bottom": 360.4427893238179
+            },
+            {
+              "name": "Rabbit_Head",
+              "left": 746.0094123620463,
+              "right": 943.6505876379538,
+              "top": 329.47343303027014,
+              "bottom": 486.2758745544515
+            }
+          ],
+          "score": {
+            "left": 68.03125,
+            "right": 279.703125,
+            "top": 99.765625,
+            "bottom": 212.390625
+          },
+          "pause": {
+            "left": 1279.765625,
+            "right": 1443.96875,
+            "top": 99.765625,
+            "bottom": 180.890625
+          },
+          "headingFits": true,
+          "stepsVisible": false
+        },
+        {
+          "viewport": {
+            "width": 600,
+            "height": 800
+          },
+          "instruction": {
+            "left": 174,
+            "right": 474,
+            "top": 33.5,
+            "bottom": 66.078125
+          },
+          "meshes": [
+            {
+              "name": "Rabbit_Ear_L",
+              "left": 342.90012224037145,
+              "right": 362.40255028171384,
+              "top": 139,
+              "bottom": 192.9415830650071
+            },
+            {
+              "name": "Rabbit_Ear_R",
+              "left": 308.09744971828616,
+              "right": 327.59987775962855,
+              "top": 139,
+              "bottom": 192.9415830650071
+            },
+            {
+              "name": "Rabbit_Head",
+              "left": 296.0354810960501,
+              "right": 374.46451890394985,
+              "top": 180.6521559643929,
+              "bottom": 242.87534704541727
+            }
+          ],
+          "score": {
+            "left": 18,
+            "right": 142.46875,
+            "top": 33.5,
+            "bottom": 97.953125
+          },
+          "pause": {
+            "left": 475.765625,
+            "right": 582,
+            "top": 33.5,
+            "bottom": 97.71875
+          },
+          "headingFits": true,
+          "stepsVisible": false
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    "layout-scale1.5-1512.png",
+    "layout-scale1.5-600.png"
+  ],
+  "rounds": [],
+  "resources": [],
+  "errors": [],
+  "warnings": [],
+  "requests": [
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb"
+  ],
+  "layoutCases": [
+    {
+      "viewport": {
+        "width": 1512,
+        "height": 982
+      },
+      "instruction": {
+        "left": 317.515625,
+        "right": 1194.484375,
+        "top": 91.25,
+        "bottom": 212.734375
+      },
+      "meshes": [
+        {
+          "name": "Rabbit_Ear_L",
+          "left": 864.108308045736,
+          "right": 913.2544267099189,
+          "top": 224.51,
+          "bottom": 360.4427893238179
+        },
+        {
+          "name": "Rabbit_Ear_R",
+          "left": 776.4055732900811,
+          "right": 825.5516919542641,
+          "top": 224.51,
+          "bottom": 360.4427893238179
+        },
+        {
+          "name": "Rabbit_Head",
+          "left": 746.0094123620463,
+          "right": 943.6505876379538,
+          "top": 329.47343303027014,
+          "bottom": 486.2758745544515
+        }
+      ],
+      "score": {
+        "left": 68.03125,
+        "right": 279.703125,
+        "top": 99.765625,
+        "bottom": 212.390625
+      },
+      "pause": {
+        "left": 1279.765625,
+        "right": 1443.96875,
+        "top": 99.765625,
+        "bottom": 180.890625
+      },
+      "headingFits": true,
+      "stepsVisible": false
+    },
+    {
+      "viewport": {
+        "width": 600,
+        "height": 800
+      },
+      "instruction": {
+        "left": 174,
+        "right": 474,
+        "top": 33.5,
+        "bottom": 66.078125
+      },
+      "meshes": [
+        {
+          "name": "Rabbit_Ear_L",
+          "left": 342.90012224037145,
+          "right": 362.40255028171384,
+          "top": 139,
+          "bottom": 192.9415830650071
+        },
+        {
+          "name": "Rabbit_Ear_R",
+          "left": 308.09744971828616,
+          "right": 327.59987775962855,
+          "top": 139,
+          "bottom": 192.9415830650071
+        },
+        {
+          "name": "Rabbit_Head",
+          "left": 296.0354810960501,
+          "right": 374.46451890394985,
+          "top": 180.6521559643929,
+          "bottom": 242.87534704541727
+        }
+      ],
+      "score": {
+        "left": 18,
+        "right": 142.46875,
+        "top": 33.5,
+        "bottom": 97.953125
+      },
+      "pause": {
+        "left": 475.765625,
+        "right": 582,
+        "top": 33.5,
+        "bottom": 97.71875
+      },
+      "headingFits": true,
+      "stepsVisible": false
+    }
+  ]
+}

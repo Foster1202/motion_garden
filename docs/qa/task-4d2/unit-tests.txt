@@ -1,0 +1,1970 @@
+
+> motion-garden-rabbit@0.1.0 test
+> node node_modules/tsx/dist/cli.mjs --test tests/*.test.ts
+
+TAP version 13
+# Subtest: A B C profiles calibrate independently of old absolute standing thresholds
+ok 1 - A B C profiles calibrate independently of old absolute standing thresholds
+  ---
+  duration_ms: 6.120833
+  type: 'test'
+  ...
+# Subtest: standing waits for stable readiness, two seconds and sufficient unique frames
+ok 2 - standing waits for stable readiness, two seconds and sufficient unique frames
+  ---
+  duration_ms: 0.456
+  type: 'test'
+  ...
+# Subtest: uneven frame times still satisfy readiness instead of waiting for an exact 400ms frame
+ok 3 - uneven frame times still satisfy readiness instead of waiting for an exact 400ms frame
+  ---
+  duration_ms: 0.288958
+  type: 'test'
+  ...
+# Subtest: median baselines tolerate minor noise and isolated sampling outliers
+ok 4 - median baselines tolerate minor noise and isolated sampling outliers
+  ---
+  duration_ms: 0.48175
+  type: 'test'
+  ...
+# Subtest: sustained sampling jitter restarts the window with a gentle stability prompt
+ok 5 - sustained sampling jitter restarts the window with a gentle stability prompt
+  ---
+  duration_ms: 0.215
+  type: 'test'
+  ...
+# Subtest: invalid, low confidence, lost, stale and repeated frames never count toward sampling
+ok 6 - invalid, low confidence, lost, stale and repeated frames never count toward sampling
+  ---
+  duration_ms: 0.310125
+  type: 'test'
+  ...
+# Subtest: tracking loss and missing frames clear incomplete sampling and permit reacquisition
+ok 7 - tracking loss and missing frames clear incomplete sampling and permit reacquisition
+  ---
+  duration_ms: 0.292959
+  type: 'test'
+  ...
+# Subtest: returning to standing during bend cancels only the bend window
+ok 8 - returning to standing during bend cancels only the bend window
+  ---
+  duration_ms: 1.799708
+  type: 'test'
+  ...
+# Subtest: stable comfortable 10 and 12 degree ranges are accepted without demanding 145 degrees
+ok 9 - stable comfortable 10 and 12 degree ranges are accepted without demanding 145 degrees
+  ---
+  duration_ms: 0.79525
+  type: 'test'
+  ...
+# Subtest: numerical ten-degree range passes with unchanged thresholds while a materially smaller range fails
+ok 10 - numerical ten-degree range passes with unchanged thresholds while a materially smaller range fails
+  ---
+  duration_ms: 2.244083
+  type: 'test'
+  ...
+# Subtest: small median noise in a stationary leg still permits a stable fused personal range
+ok 11 - small median noise in a stationary leg still permits a stable fused personal range
+  ---
+  duration_ms: 0.399208
+  type: 'test'
+  ...
+# Subtest: insufficient bend range retries step two while retaining standing baseline
+ok 12 - insufficient bend range retries step two while retaining standing baseline
+  ---
+  duration_ms: 0.334917
+  type: 'test'
+  ...
+# Subtest: D asymmetric legs retain separate medians and ranges without a symmetry gate
+ok 13 - D asymmetric legs retain separate medians and ranges without a symmetry gate
+  ---
+  duration_ms: 0.198708
+  type: 'test'
+  ...
+# Subtest: single-leg calibration uses a coherent side even if another leg reappears
+ok 14 - single-leg calibration uses a coherent side even if another leg reappears
+  ---
+  duration_ms: 0.198375
+  type: 'test'
+  ...
+# Subtest: a both-leg cohort never changes fusion during bend if one side disappears
+ok 15 - a both-leg cohort never changes fusion during bend if one side disappears
+  ---
+  duration_ms: 0.311084
+  type: 'test'
+  ...
+# Subtest: timeout is gentle, retry restarts the failed standing step, and restart erases profile
+ok 16 - timeout is gentle, retry restarts the failed standing step, and restart erases profile
+  ---
+  duration_ms: 0.893292
+  type: 'test'
+  ...
+# Subtest: pause excludes elapsed time and clears partial sampling without losing standing baseline
+ok 17 - pause excludes elapsed time and clears partial sampling without losing standing baseline
+  ---
+  duration_ms: 0.262583
+  type: 'test'
+  ...
+# Subtest: destroy clears session profile and prevents further calibration updates
+ok 18 - destroy clears session profile and prevents further calibration updates
+  ---
+  duration_ms: 0.224292
+  type: 'test'
+  ...
+# Subtest: median and IQR resist isolated outliers without mutating samples
+ok 19 - median and IQR resist isolated outliers without mutating samples
+  ---
+  duration_ms: 5.754875
+  type: 'test'
+  ...
+# Subtest: robust stability tolerates mild sway and rejects sustained jitter
+ok 20 - robust stability tolerates mild sway and rejects sustained jitter
+  ---
+  duration_ms: 2.561667
+  type: 'test'
+  ...
+# Subtest: personal interpolation preserves a transition zone for A B C and small comfortable ranges
+ok 21 - personal interpolation preserves a transition zone for A B C and small comfortable ranges
+  ---
+  duration_ms: 0.435292
+  type: 'test'
+  ...
+# Subtest: validation rejects impossible inputs, tiny or excessive ranges and inconsistent thresholds
+ok 22 - validation rejects impossible inputs, tiny or excessive ranges and inconsistent thresholds
+  ---
+  duration_ms: 0.123875
+  type: 'test'
+  ...
+# Subtest: asymmetric side statistics are accepted and malformed side statistics are rejected
+ok 23 - asymmetric side statistics are accepted and malformed side statistics are rejected
+  ---
+  duration_ms: 0.092959
+  type: 'test'
+  ...
+# Subtest: floating-point tolerance accepts the numerical ten-degree boundary without accepting smaller motion
+ok 24 - floating-point tolerance accepts the numerical ten-degree boundary without accepting smaller motion
+  ---
+  duration_ms: 0.145333
+  type: 'test'
+  ...
+# Subtest: a stationary leg may have small baseline noise without becoming a symmetry gate
+ok 25 - a stationary leg may have small baseline noise without becoming a symmetry gate
+  ---
+  duration_ms: 2.860833
+  type: 'test'
+  ...
+# Subtest: Carrot GLB loads actual Task2E geometry with named grip and upright axes
+ok 26 - Carrot GLB loads actual Task2E geometry with named grip and upright axes
+  ---
+  duration_ms: 13.965167
+  type: 'test'
+  ...
+# Subtest: Carrot requires its explicit grip and nonempty finite geometry
+ok 27 - Carrot requires its explicit grip and nonempty finite geometry
+  ---
+  duration_ms: 0.744958
+  type: 'test'
+  ...
+# Subtest: Carrot grip placement includes its nonzero local grip, uniform scale and rotation
+ok 28 - Carrot grip placement includes its nonzero local grip, uniform scale and rotation
+  ---
+  duration_ms: 2.216792
+  type: 'test'
+  ...
+# Subtest: Carrot converts world grip into translated rotated and scaled parent coordinates
+ok 29 - Carrot converts world grip into translated rotated and scaled parent coordinates
+  ---
+  duration_ms: 2.33125
+  type: 'test'
+  ...
+# Subtest: Carrot grip remains exact with nonuniform parent and root scales
+ok 30 - Carrot grip remains exact with nonuniform parent and root scales
+  ---
+  duration_ms: 4.505166
+  type: 'test'
+  ...
+# Subtest: Carrot rejects illegal transform values and singular parents without modifying pose
+ok 31 - Carrot rejects illegal transform values and singular parents without modifying pose
+  ---
+  duration_ms: 6.625333
+  type: 'test'
+  ...
+# Subtest: Carrot GLB fetch checks HTTP failure and abort before parsing
+ok 32 - Carrot GLB fetch checks HTTP failure and abort before parsing
+  ---
+  duration_ms: 73.147084
+  type: 'test'
+  ...
+# Subtest: Carrot async load returns reusable independent asset and rejects malformed GLB
+ok 33 - Carrot async load returns reusable independent asset and rejects malformed GLB
+  ---
+  duration_ms: 14.461
+  type: 'test'
+  ...
+# Subtest: Carrot pending GLB completion after abort disposes its parsed resources
+ok 34 - Carrot pending GLB completion after abort disposes its parsed resources
+  ---
+  duration_ms: 1.590041
+  type: 'test'
+  ...
+# Subtest: Carrot disposal releases shared geometry and material once and detaches the root
+ok 35 - Carrot disposal releases shared geometry and material once and detaches the root
+  ---
+  duration_ms: 0.415166
+  type: 'test'
+  ...
+# Subtest: Grab state detects near target and confirms short continuous attachment
+ok 36 - Grab state detects near target and confirms short continuous attachment
+  ---
+  duration_ms: 11.01925
+  type: 'test'
+  ...
+# Subtest: Distance rule rejects either distant hand with an explicit reason
+ok 37 - Distance rule rejects either distant hand with an explicit reason
+  ---
+  duration_ms: 0.560333
+  type: 'test'
+  ...
+# Subtest: Distance limits scale in model units and bypass requires explicit developer capability
+ok 38 - Distance limits scale in model units and bypass requires explicit developer capability
+  ---
+  duration_ms: 6.710625
+  type: 'test'
+  ...
+# Subtest: Attach transition starts at current grip and interpolates without a first-frame teleport
+ok 39 - Attach transition starts at current grip and interpolates without a first-frame teleport
+  ---
+  duration_ms: 1.11425
+  type: 'test'
+  ...
+# Subtest: Attached carrot tracks both moving hands with exact grip alignment and no extra EMA
+ok 40 - Attached carrot tracks both moving hands with exact grip alignment and no extra EMA
+  ---
+  duration_ms: 0.528458
+  type: 'test'
+  ...
+# Subtest: Attached transform remains exact inside independently transformed carrot parent
+ok 41 - Attached transform remains exact inside independently transformed carrot parent
+  ---
+  duration_ms: 0.734625
+  type: 'test'
+  ...
+# Subtest: Reset restores the initial affine matrix under a rotated nonuniform parent
+ok 42 - Reset restores the initial affine matrix under a rotated nonuniform parent
+  ---
+  duration_ms: 1.724625
+  type: 'test'
+  ...
+# Subtest: Holding orientation has bounded upright tilt and a safe coincident-hand fallback
+ok 43 - Holding orientation has bounded upright tilt and a safe coincident-hand fallback
+  ---
+  duration_ms: 2.320709
+  type: 'test'
+  ...
+# Subtest: Release holds final world grip while rabbit hands continue moving
+ok 44 - Release holds final world grip while rabbit hands continue moving
+  ---
+  duration_ms: 1.835583
+  type: 'test'
+  ...
+# Subtest: Reset restores initial transform and IDLE with no game score integration
+ok 45 - Reset restores initial transform and IDLE with no game score integration
+  ---
+  duration_ms: 1.285375
+  type: 'test'
+  ...
+# Subtest: Tracking loss rejects new grabs and keeps existing attachment through neutral recovery
+ok 46 - Tracking loss rejects new grabs and keeps existing attachment through neutral recovery
+  ---
+  duration_ms: 1.894083
+  type: 'test'
+  ...
+# Subtest: Pause freezes transforms and attach timer, blocks actions and resumes capped timing
+ok 47 - Pause freezes transforms and attach timer, blocks actions and resumes capped timing
+  ---
+  duration_ms: 1.185417
+  type: 'test'
+  ...
+# Subtest: Invalid hand samples and delta values preserve attachment transform and finite quaternion
+ok 48 - Invalid hand samples and delta values preserve attachment transform and finite quaternion
+  ---
+  duration_ms: 0.434458
+  type: 'test'
+  ...
+# Subtest: Invalid carrot transforms suspend attachment math until reset restores valid geometry
+ok 49 - Invalid carrot transforms suspend attachment math until reset restores valid geometry
+  ---
+  duration_ms: 0.374
+  type: 'test'
+  ...
+# Subtest: Controller disposal ends all attachment writes and subsequent actions
+ok 50 - Controller disposal ends all attachment writes and subsequent actions
+  ---
+  duration_ms: 0.398917
+  type: 'test'
+  ...
+# Subtest: Bypass attachment explicitly reports far hands while maintaining exact midpoint alignment
+ok 51 - Bypass attachment explicitly reports far hands while maintaining exact midpoint alignment
+  ---
+  duration_ms: 0.6115
+  type: 'test'
+  ...
+# Subtest: Opt-in extractor preserves inward arm direction on both anatomical sides
+ok 52 - Opt-in extractor preserves inward arm direction on both anatomical sides
+  ---
+  duration_ms: 1.145291
+  type: 'test'
+  ...
+# Subtest: Opt-in extractor retains outward and forward ranges and filters missing arms
+ok 53 - Opt-in extractor retains outward and forward ranges and filters missing arms
+  ---
+  duration_ms: 0.360584
+  type: 'test'
+  ...
+# Subtest: Inward retargeting is opt-in, bounded and uses the existing standing reference
+ok 54 - Inward retargeting is opt-in, bounded and uses the existing standing reference
+  ---
+  duration_ms: 1.667375
+  type: 'test'
+  ...
+# Subtest: Existing target slew carries inward planes only for the enabled preview
+ok 55 - Existing target slew carries inward planes only for the enabled preview
+  ---
+  duration_ms: 1.59825
+  type: 'test'
+  ...
+# Subtest: 3D coordinator starts READY with one reusable planted carrot and clipped root
+ok 56 - 3D coordinator starts READY with one reusable planted carrot and clipped root
+  ---
+  duration_ms: 144.564875
+  type: 'test'
+  ...
+# Subtest: Planted point is measured from actual V3 shallow-knee primary palm
+ok 57 - Planted point is measured from actual V3 shallow-knee primary palm
+  ---
+  duration_ms: 67.465666
+  type: 'test'
+  ...
+# Subtest: Initial reach measurement restores actual neutral rabbit bones before visible play
+ok 58 - Initial reach measurement restores actual neutral rabbit bones before visible play
+  ---
+  duration_ms: 72.404375
+  type: 'test'
+  ...
+# Subtest: Standing never enters a grab or harvest
+ok 59 - Standing never enters a grab or harvest
+  ---
+  duration_ms: 105.496708
+  type: 'test'
+  ...
+# Subtest: Original continuous bend hold governs BENDING progress
+ok 60 - Original continuous bend hold governs BENDING progress
+  ---
+  duration_ms: 43.366542
+  type: 'test'
+  ...
+# Subtest: Incomplete shallow bend and early standing restore READY without attachment
+ok 61 - Incomplete shallow bend and early standing restore READY without attachment
+  ---
+  duration_ms: 43.961167
+  type: 'test'
+  ...
+# Subtest: Neutral classification does not trigger a grab despite a continuous visual knee bend
+ok 62 - Neutral classification does not trigger a grab despite a continuous visual knee bend
+  ---
+  duration_ms: 57.025917
+  type: 'test'
+  ...
+# Subtest: GRABBED starts finite assisted reach with exclusive primary arm ownership
+ok 63 - GRABBED starts finite assisted reach with exclusive primary arm ownership
+  ---
+  duration_ms: 68.230291
+  type: 'test'
+  ...
+# Subtest: Early standing waits for actual assisted attachment before RETURNING
+ok 64 - Early standing waits for actual assisted attachment before RETURNING
+  ---
+  duration_ms: 100.279416
+  type: 'test'
+  ...
+# Subtest: Entering 3D during an existing RETURNING round completes assistance before advancing its hold
+ok 65 - Entering 3D during an existing RETURNING round completes assistance before advancing its hold
+  ---
+  duration_ms: 66.464167
+  type: 'test'
+  ...
+# Subtest: Entering 3D during an existing SUCCESS round attaches and harvests exactly once
+ok 66 - Entering 3D during an existing SUCCESS round attaches and harvests exactly once
+  ---
+  duration_ms: 114.212375
+  type: 'test'
+  ...
+# Subtest: Assisted arm motion starts continuously from the current mocap request
+ok 67 - Assisted arm motion starts continuously from the current mocap request
+  ---
+  duration_ms: 40.247875
+  type: 'test'
+  ...
+# Subtest: Primary hand grabs automatically within the bounded alignment distance
+ok 68 - Primary hand grabs automatically within the bounded alignment distance
+  ---
+  duration_ms: 67.252333
+  type: 'test'
+  ...
+# Subtest: Comfortable shallow bend and small simultaneous body motion retain a reachable automatic grip
+ok 69 - Comfortable shallow bend and small simultaneous body motion retain a reachable automatic grip
+  ---
+  duration_ms: 101.276625
+  type: 'test'
+  ...
+# Subtest: Auxiliary arm remains continuously controlled by mocap during reach and hold
+ok 70 - Auxiliary arm remains continuously controlled by mocap during reach and hold
+  ---
+  duration_ms: 57.531875
+  type: 'test'
+  ...
+# Subtest: Primary hold retains bounded input contribution instead of freezing the whole pose
+ok 71 - Primary hold retains bounded input contribution instead of freezing the whole pose
+  ---
+  duration_ms: 42.000667
+  type: 'test'
+  ...
+# Subtest: Body, head, shallow knees and root keep their independent real-time ownership
+ok 72 - Body, head, shallow knees and root keep their independent real-time ownership
+  ---
+  duration_ms: 43.570375
+  type: 'test'
+  ...
+# Subtest: Stable crouching preserves the grip without starting pull progress
+ok 73 - Stable crouching preserves the grip without starting pull progress
+  ---
+  duration_ms: 59.296083
+  type: 'test'
+  ...
+# Subtest: Continuous calibrated return gradually lifts the carrot before scoring
+ok 74 - Continuous calibrated return gradually lifts the carrot before scoring
+  ---
+  duration_ms: 27.840417
+  type: 'test'
+  ...
+# Subtest: RETURNING interruption returns to GRABBED while visual pull remains monotonic
+ok 75 - RETURNING interruption returns to GRABBED while visual pull remains monotonic
+  ---
+  duration_ms: 43.170875
+  type: 'test'
+  ...
+# Subtest: Visual extraction alone cannot score without original stable-standing classification
+ok 76 - Visual extraction alone cannot score without original stable-standing classification
+  ---
+  duration_ms: 44.733041
+  type: 'test'
+  ...
+# Subtest: SUCCESS begins lift completion and basket ownership after stable standing
+ok 77 - SUCCESS begins lift completion and basket ownership after stable standing
+  ---
+  duration_ms: 39.737042
+  type: 'test'
+  ...
+# Subtest: Harvest arc is continuous and ends at the supplied Three world basket target
+ok 78 - Harvest arc is continuous and ends at the supplied Three world basket target
+  ---
+  duration_ms: 30.441083
+  type: 'test'
+  ...
+# Subtest: Basket transfer reports primary return blending until mocap has recovered arm ownership
+ok 79 - Basket transfer reports primary return blending until mocap has recovered arm ownership
+  ---
+  duration_ms: 28.291166
+  type: 'test'
+  ...
+# Subtest: A harvest notification has no independent score authority
+ok 80 - A harvest notification has no independent score authority
+  ---
+  duration_ms: 29.984208
+  type: 'test'
+  ...
+# Subtest: Duplicate SUCCESS notifications and additional frames deliver one harvest callback
+ok 81 - Duplicate SUCCESS notifications and additional frames deliver one harvest callback
+  ---
+  duration_ms: 46.942167
+  type: 'test'
+  ...
+# Subtest: Next round resets attachment, soil and pull while reusing model resources
+ok 82 - Next round resets attachment, soil and pull while reusing model resources
+  ---
+  duration_ms: 29.30125
+  type: 'test'
+  ...
+# Subtest: Five rounds finish through the original state machine with exactly five callbacks
+ok 83 - Five rounds finish through the original state machine with exactly five callbacks
+  ---
+  duration_ms: 89.561959
+  type: 'test'
+  ...
+# Subtest: COMPLETE produces no sixth carrot or late score
+ok 84 - COMPLETE produces no sixth carrot or late score
+  ---
+  duration_ms: 14.021375
+  type: 'test'
+  ...
+# Subtest: COMPLETE ends active attachment writes and clears the soil plane
+ok 85 - COMPLETE ends active attachment writes and clears the soil plane
+  ---
+  duration_ms: 27.863875
+  type: 'test'
+  ...
+# Subtest: Tracking loss freezes reach clocks, carrot and callback delivery
+ok 86 - Tracking loss freezes reach clocks, carrot and callback delivery
+  ---
+  duration_ms: 20.191875
+  type: 'test'
+  ...
+# Subtest: Reliable tracking recovery continues the same assisted reach
+ok 87 - Reliable tracking recovery continues the same assisted reach
+  ---
+  duration_ms: 21.473125
+  type: 'test'
+  ...
+# Subtest: Pause and resume freeze an in-progress attachment and preserve elapsed time
+ok 88 - Pause and resume freeze an in-progress attachment and preserve elapsed time
+  ---
+  duration_ms: 22.154042
+  type: 'test'
+  ...
+# Subtest: Tracking loss during basket transfer blocks both arc motion and score callback
+ok 89 - Tracking loss during basket transfer blocks both arc motion and score callback
+  ---
+  duration_ms: 30.038708
+  type: 'test'
+  ...
+# Subtest: Unreachable planting gets a finite safe fallback notification without a false grab
+ok 90 - Unreachable planting gets a finite safe fallback notification without a false grab
+  ---
+  duration_ms: 50.8915
+  type: 'test'
+  ...
+# Subtest: Extreme combined motion follows the real bend hold and reaches one bounded fallback
+ok 91 - Extreme combined motion follows the real bend hold and reaches one bounded fallback
+  ---
+  duration_ms: 48.747292
+  type: 'test'
+  ...
+# Subtest: Invalid durations and bend values do not advance coordinator state
+ok 92 - Invalid durations and bend values do not advance coordinator state
+  ---
+  duration_ms: 22.024208
+  type: 'test'
+  ...
+# Subtest: Destroy during SUCCESS cancels all harvest work and leaves assets to their scene owner
+ok 93 - Destroy during SUCCESS cancels all harvest work and leaves assets to their scene owner
+  ---
+  duration_ms: 26.253333
+  type: 'test'
+  ...
+# Subtest: Primary attachment follows only its selected actual hand while default midpoint behavior remains available
+ok 94 - Primary attachment follows only its selected actual hand while default midpoint behavior remains available
+  ---
+  duration_ms: 33.416917
+  type: 'test'
+  ...
+# Subtest: Invalid primary grip configuration leaves the existing carrot transform intact
+ok 95 - Invalid primary grip configuration leaves the existing carrot transform intact
+  ---
+  duration_ms: 14.835167
+  type: 'test'
+  ...
+# Subtest: Alignment is interpolated and quantified below the maximum allowed visual step
+ok 96 - Alignment is interpolated and quantified below the maximum allowed visual step
+  ---
+  duration_ms: 22.494083
+  type: 'test'
+  ...
+# Subtest: Basket target validation and source-object copies prevent invalid or drifting transfers
+ok 97 - Basket target validation and source-object copies prevent invalid or drifting transfers
+  ---
+  duration_ms: 14.928542
+  type: 'test'
+  ...
+# Subtest: Changing the caller basket vector cannot redirect an in-progress harvest
+ok 98 - Changing the caller basket vector cannot redirect an in-progress harvest
+  ---
+  duration_ms: 28.801875
+  type: 'test'
+  ...
+# Subtest: each unique scene asset key resolves to a synchronized PNG matching authored dimensions and hash
+ok 99 - each unique scene asset key resolves to a synchronized PNG matching authored dimensions and hash
+  ---
+  duration_ms: 4.614417
+  type: 'test'
+  ...
+# Subtest: carrot origin preserves the authored leaf-root grip pivot
+ok 100 - carrot origin preserves the authored leaf-root grip pivot
+  ---
+  duration_ms: 0.106791
+  type: 'test'
+  ...
+# Subtest: full scene layers share the authored canvas size and centered origin
+ok 101 - full scene layers share the authored canvas size and centered origin
+  ---
+  duration_ms: 0.1095
+  type: 'test'
+  ...
+# Subtest: preload queues every scene image and removes its error listener after completion
+ok 102 - preload queues every scene image and removes its error listener after completion
+  ---
+  duration_ms: 0.175125
+  type: 'test'
+  ...
+# Subtest: missing images can be reported without throwing or blocking other scene assets
+ok 103 - missing images can be reported without throwing or blocking other scene assets
+  ---
+  duration_ms: 0.088
+  type: 'test'
+  ...
+# Subtest: full scene layers share one centered transform at the design resolution
+ok 104 - full scene layers share one centered transform at the design resolution
+  ---
+  duration_ms: 0.655041
+  type: 'test'
+  ...
+# Subtest: cover transform fills resized viewports without stretching or layer seams
+ok 105 - cover transform fills resized viewports without stretching or layer seams
+  ---
+  duration_ms: 0.280791
+  type: 'test'
+  ...
+# Subtest: requires both full holds then celebration completion before awarding a carrot
+ok 106 - requires both full holds then celebration completion before awarding a carrot
+  ---
+  duration_ms: 0.605125
+  type: 'test'
+  ...
+# Subtest: a premature release discards the bend hold and permits a fresh retry
+ok 107 - a premature release discards the bend hold and permits a fresh retry
+  ---
+  duration_ms: 0.077541
+  type: 'test'
+  ...
+# Subtest: contradictory input cannot advance either hold or earn points
+ok 108 - contradictory input cannot advance either hold or earn points
+  ---
+  duration_ms: 0.134791
+  type: 'test'
+  ...
+# Subtest: a grabbed carrot persists without a deadline
+ok 109 - a grabbed carrot persists without a deadline
+  ---
+  duration_ms: 0.062375
+  type: 'test'
+  ...
+# Subtest: interrupted return requires a new full stand hold but preserves the carrot
+ok 110 - interrupted return requires a new full stand hold but preserves the carrot
+  ---
+  duration_ms: 0.064583
+  type: 'test'
+  ...
+# Subtest: success waits for celebration completion regardless of elapsed time or input
+ok 111 - success waits for celebration completion regardless of elapsed time or input
+  ---
+  duration_ms: 0.081833
+  type: 'test'
+  ...
+# Subtest: premature completion callbacks cannot award a carrot or advance input states
+ok 112 - premature completion callbacks cannot award a carrot or advance input states
+  ---
+  duration_ms: 0.067625
+  type: 'test'
+  ...
+# Subtest: exactly five successful rounds complete the session and reset supports replay
+ok 113 - exactly five successful rounds complete the session and reset supports replay
+  ---
+  duration_ms: 0.174041
+  type: 'test'
+  ...
+# Subtest: invalid delta values never corrupt hold progress
+ok 114 - invalid delta values never corrupt hold progress
+  ---
+  duration_ms: 0.257875
+  type: 'test'
+  ...
+# Subtest: real Carrot GLB soil clipping starts disabled and applies one shared world plane only to its materials
+ok 115 - real Carrot GLB soil clipping starts disabled and applies one shared world plane only to its materials
+  ---
+  duration_ms: 36.152834
+  type: 'test'
+  ...
+# Subtest: true GLB taproot emerges continuously through the fixed soil plane as its final grip rises
+ok 116 - true GLB taproot emerges continuously through the fixed soil plane as its final grip rises
+  ---
+  duration_ms: 9.777792
+  type: 'test'
+  ...
+# Subtest: soil clipping restores existing planes, rejects invalid heights and clears ownership on disposal
+ok 117 - soil clipping restores existing planes, rejects invalid heights and clears ownership on disposal
+  ---
+  duration_ms: 11.434583
+  type: 'test'
+  ...
+# Subtest: raised bed derives placement from the supplied world projection and keeps its front soil layer visible
+ok 118 - raised bed derives placement from the supplied world projection and keeps its front soil layer visible
+  ---
+  duration_ms: 2.441792
+  type: 'test'
+  ...
+# Subtest: raised bed rejects invalid layout before allocating display objects
+ok 119 - raised bed rejects invalid layout before allocating display objects
+  ---
+  duration_ms: 0.248459
+  type: 'test'
+  ...
+# Subtest: post-pose disposal ends the render frame before accessing its released renderer
+ok 120 - post-pose disposal ends the render frame before accessing its released renderer
+  ---
+  duration_ms: 0.113542
+  type: 'test'
+  ...
+# Subtest: manual defaults allow a shallow bend and form valid separated thresholds
+ok 121 - manual defaults allow a shallow bend and form valid separated thresholds
+  ---
+  duration_ms: 0.389542
+  type: 'test'
+  ...
+# Subtest: settings reject nonfinite, missing, excessive and overlapping thresholds
+ok 122 - settings reject nonfinite, missing, excessive and overlapping thresholds
+  ---
+  duration_ms: 0.153041
+  type: 'test'
+  ...
+# Subtest: persist only supported numeric parameters, recover invalid storage, reset defaults
+ok 123 - persist only supported numeric parameters, recover invalid storage, reset defaults
+  ---
+  duration_ms: 0.586125
+  type: 'test'
+  ...
+# Subtest: unavailable browser storage safely returns defaults
+ok 124 - unavailable browser storage safely returns defaults
+  ---
+  duration_ms: 0.070375
+  type: 'test'
+  ...
+# Subtest: samples Arrow keys and W/S and releases each independently
+ok 125 - samples Arrow keys and W/S and releases each independently
+  ---
+  duration_ms: 0.8335
+  type: 'test'
+  ...
+# Subtest: reset and focus loss need a fresh press instead of a repeat
+ok 126 - reset and focus loss need a fresh press instead of a repeat
+  ---
+  duration_ms: 0.165041
+  type: 'test'
+  ...
+# Subtest: destroy removes listeners and clears motion
+ok 127 - destroy removes listeners and clears motion
+  ---
+  duration_ms: 0.234167
+  type: 'test'
+  ...
+# Subtest: manual defaults enter classifier and existing mocap without sampling or calibration interpolation
+ok 128 - manual defaults enter classifier and existing mocap without sampling or calibration interpolation
+  ---
+  duration_ms: 1.479125
+  type: 'test'
+  ...
+# Subtest: pose input is inactive until explicit start and maps only stable fresh poses
+ok 129 - pose input is inactive until explicit start and maps only stable fresh poses
+  ---
+  duration_ms: 2.240375
+  type: 'test'
+  ...
+# Subtest: camera mapping preserves hold durations and freezes progress during loss and reacquisition
+ok 130 - camera mapping preserves hold durations and freezes progress during loss and reacquisition
+  ---
+  duration_ms: 1.539875
+  type: 'test'
+  ...
+# Subtest: camera waits indefinitely without a person, actions or an automatic rest request
+ok 131 - camera waits indefinitely without a person, actions or an automatic rest request
+  ---
+  duration_ms: 0.207292
+  type: 'test'
+  ...
+# Subtest: a person entering the frame is identified and reliable neutral poses recover without an action
+ok 132 - a person entering the frame is identified and reliable neutral poses recover without an action
+  ---
+  duration_ms: 4.957833
+  type: 'test'
+  ...
+# Subtest: transient missing detections suppress input immediately while status changes are debounced
+ok 133 - transient missing detections suppress input immediately while status changes are debounced
+  ---
+  duration_ms: 0.733625
+  type: 'test'
+  ...
+# Subtest: lost tracking cannot finish a return hold or award a carrot while the action clock is frozen
+ok 134 - lost tracking cannot finish a return hold or award a carrot while the action clock is frozen
+  ---
+  duration_ms: 1.326958
+  type: 'test'
+  ...
+# Subtest: pause stops inference and output; resume requires new stable frames
+ok 135 - pause stops inference and output; resume requires new stable frames
+  ---
+  duration_ms: 0.622125
+  type: 'test'
+  ...
+# Subtest: permission failure releases resources and leaves neutral output for keyboard fallback
+ok 136 - permission failure releases resources and leaves neutral output for keyboard fallback
+  ---
+  duration_ms: 0.272792
+  type: 'test'
+  ...
+# Subtest: destroy during pending camera start prevents late model initialization
+ok 137 - destroy during pending camera start prevents late model initialization
+  ---
+  duration_ms: 0.382708
+  type: 'test'
+  ...
+# Subtest: a failed model teardown cannot block camera release or repeat destruction
+ok 138 - a failed model teardown cannot block camera release or repeat destruction
+  ---
+  duration_ms: 0.532375
+  type: 'test'
+  ...
+# Subtest: personal profile maps comfortable standing and bending while fallback defaults remain available
+ok 139 - personal profile maps comfortable standing and bending while fallback defaults remain available
+  ---
+  duration_ms: 2.977584
+  type: 'test'
+  ...
+# Subtest: session profile survives pause, resume and round resets but is cleared by destroy and a new camera
+ok 140 - session profile survives pause, resume and round resets but is cleared by destroy and a new camera
+  ---
+  duration_ms: 1.215708
+  type: 'test'
+  ...
+# Subtest: long tracking loss retains personal calibration and recovers through the neutral band
+ok 141 - long tracking loss retains personal calibration and recovers through the neutral band
+  ---
+  duration_ms: 0.576208
+  type: 'test'
+  ...
+# Subtest: adapter rejects invalid profiles without removing the current valid calibration
+ok 142 - adapter rejects invalid profiles without removing the current valid calibration
+  ---
+  duration_ms: 0.249542
+  type: 'test'
+  ...
+# Subtest: target rate limits are continuous and invariant across normal render frame rates
+ok 143 - target rate limits are continuous and invariant across normal render frame rates
+  ---
+  duration_ms: 1.069583
+  type: 'test'
+  ...
+# Subtest: smoother rejects nonfinite values and clamps every target to rig constraints
+ok 144 - smoother rejects nonfinite values and clamps every target to rig constraints
+  ---
+  duration_ms: 0.513042
+  type: 'test'
+  ...
+# Subtest: disabled and disposed controllers never write bones or create an animation loop
+ok 145 - disabled and disposed controllers never write bones or create an animation loop
+  ---
+  duration_ms: 2.754208
+  type: 'test'
+  ...
+# Subtest: controller waits for a stable natural reference and follows independent continuous arm targets
+ok 146 - controller waits for a stable natural reference and follows independent continuous arm targets
+  ---
+  duration_ms: 1.235167
+  type: 'test'
+  ...
+# Subtest: short tracking loss freezes the target, sustained loss returns gradually, recovery has no snap
+ok 147 - short tracking loss freezes the target, sustained loss returns gradually, recovery has no snap
+  ---
+  duration_ms: 3.042125
+  type: 'test'
+  ...
+# Subtest: short tracking loss holds exactly once when a stored motion gain is above one
+ok 148 - short tracking loss holds exactly once when a stored motion gain is above one
+  ---
+  duration_ms: 9.320166
+  type: 'test'
+  ...
+# Subtest: forward arm, torso and head channels share bounded continuous target smoothing
+ok 149 - forward arm, torso and head channels share bounded continuous target smoothing
+  ---
+  duration_ms: 0.097958
+  type: 'test'
+  ...
+# Subtest: invalid calibration, stale, future, replay, mismatched, low-confidence and jump frames are rejected
+ok 150 - invalid calibration, stale, future, replay, mismatched, low-confidence and jump frames are rejected
+  ---
+  duration_ms: 8.207875
+  type: 'test'
+  ...
+# Subtest: a rejected retargeted pose cannot report active tracking or refresh the reliable pose clock
+ok 151 - a rejected retargeted pose cannot report active tracking or refresh the reliable pose clock
+  ---
+  duration_ms: 4.701
+  type: 'test'
+  ...
+# Subtest: pause blocks inference callbacks and writes; resume preserves reference and rejects old targets
+ok 152 - pause blocks inference callbacks and writes; resume preserves reference and rejects old targets
+  ---
+  duration_ms: 4.8135
+  type: 'test'
+  ...
+# Subtest: reference reset clears stale mapped targets and snapshot objects are isolated
+ok 153 - reference reset clears stale mapped targets and snapshot objects are isolated
+  ---
+  duration_ms: 10.169584
+  type: 'test'
+  ...
+# Subtest: synthetic continuous landmarks drive the real GLB anatomical left arm and normalized bone diagnostics
+ok 154 - synthetic continuous landmarks drive the real GLB anatomical left arm and normalized bone diagnostics
+  ---
+  duration_ms: 139.940583
+  type: 'test'
+  ...
+# Subtest: anatomical left/right IDs remain unchanged by CSS mirror and drive independent rabbit arms
+ok 155 - anatomical left/right IDs remain unchanged by CSS mirror and drive independent rabbit arms
+  ---
+  duration_ms: 12.4585
+  type: 'test'
+  ...
+# Subtest: arms are continuous and aspect-correct across landscape and portrait image geometry
+ok 156 - arms are continuous and aspect-correct across landscape and portrait image geometry
+  ---
+  duration_ms: 0.638291
+  type: 'test'
+  ...
+# Subtest: classifier EMA knee value preserves fixed calibrated leg cohort
+ok 157 - classifier EMA knee value preserves fixed calibrated leg cohort
+  ---
+  duration_ms: 0.108708
+  type: 'test'
+  ...
+# Subtest: elbow flexion is continuous projected 180-minus-inner-angle and rejects collapsed segments
+ok 158 - elbow flexion is continuous projected 180-minus-inner-angle and rejects collapsed segments
+  ---
+  duration_ms: 0.094667
+  type: 'test'
+  ...
+# Subtest: per-arm confidence filtering preserves the other arm and rejects malformed torso or knees
+ok 159 - per-arm confidence filtering preserves the other arm and rejects malformed torso or knees
+  ---
+  duration_ms: 0.165709
+  type: 'test'
+  ...
+# Subtest: signed torso lean uses raw shoulder versus hip center and aspect-correct pixels
+ok 160 - signed torso lean uses raw shoulder versus hip center and aspect-correct pixels
+  ---
+  duration_ms: 0.36225
+  type: 'test'
+  ...
+# Subtest: reference requires 600ms stable relaxed standing and reset clears runtime reference
+ok 161 - reference requires 600ms stable relaxed standing and reset clears runtime reference
+  ---
+  duration_ms: 0.206208
+  type: 'test'
+  ...
+# Subtest: natural reference offsets are subtracted while personal calibration remains untouched
+ok 162 - natural reference offsets are subtracted while personal calibration remains untouched
+  ---
+  duration_ms: 0.106042
+  type: 'test'
+  ...
+# Subtest: bend continuously uses exact calibrated standingAngle/range and clamps comfortable extremes
+ok 163 - bend continuously uses exact calibrated standingAngle/range and clamps comfortable extremes
+  ---
+  duration_ms: 0.332917
+  type: 'test'
+  ...
+# Subtest: relative shoulder-width translation has deadzone, mirrored sign, clamp and return without drift
+ok 164 - relative shoulder-width translation has deadzone, mirrored sign, clamp and return without drift
+  ---
+  duration_ms: 0.377083
+  type: 'test'
+  ...
+# Subtest: joint limits and missing-arm hold never emit invalid values or unsafe range
+ok 165 - joint limits and missing-arm hold never emit invalid values or unsafe range
+  ---
+  duration_ms: 0.18575
+  type: 'test'
+  ...
+# Subtest: calibration changes and large camera scale changes require fresh reference
+ok 166 - calibration changes and large camera scale changes require fresh reference
+  ---
+  duration_ms: 0.157583
+  type: 'test'
+  ...
+# Subtest: short arm occlusion holds, sustained occlusion targets neutral, and fresh tracking restores independently
+ok 167 - short arm occlusion holds, sustained occlusion targets neutral, and fresh tracking restores independently
+  ---
+  duration_ms: 0.126917
+  type: 'test'
+  ...
+# Subtest: reference cannot bridge timestamp reversal, long gaps, unstable center, or crouching
+ok 168 - reference cannot bridge timestamp reversal, long gaps, unstable center, or crouching
+  ---
+  duration_ms: 0.052833
+  type: 'test'
+  ...
+# Subtest: monocular forward reach uses depth when image-plane arm segments collapse
+ok 169 - monocular forward reach uses depth when image-plane arm segments collapse
+  ---
+  duration_ms: 0.187833
+  type: 'test'
+  ...
+# Subtest: optional forward and face cues preserve direction and subtract stable reference offsets
+ok 170 - optional forward and face cues preserve direction and subtract stable reference offsets
+  ---
+  duration_ms: 0.122166
+  type: 'test'
+  ...
+# Subtest: forward torso and mirrored head direction are extracted from bounded image cues
+ok 171 - forward torso and mirrored head direction are extracted from bounded image cues
+  ---
+  duration_ms: 0.082666
+  type: 'test'
+  ...
+# Subtest: combined arm planes, torso and calibrated knees vary continuously without overwriting channels
+ok 172 - combined arm planes, torso and calibrated knees vary continuously without overwriting channels
+  ---
+  duration_ms: 0.265125
+  type: 'test'
+  ...
+# Subtest: short and long scene pauses preserve elapsed tween time on resume
+ok 173 - short and long scene pauses preserve elapsed tween time on resume
+  ---
+  duration_ms: 0.361708
+  type: 'test'
+  ...
+# Subtest: camera activates only on start, requests no audio, reuses startup, and stops every track
+ok 174 - camera activates only on start, requests no audio, reuses startup, and stops every track
+  ---
+  duration_ms: 1.096958
+  type: 'test'
+  ...
+# Subtest: a cancelled pending permission request stops the late stream without attaching or playing it
+ok 175 - a cancelled pending permission request stops the late stream without attaching or playing it
+  ---
+  duration_ms: 0.153791
+  type: 'test'
+  ...
+# Subtest: a second start waits for pending playback and playback failure releases the acquired stream
+ok 176 - a second start waits for pending playback and playback failure releases the acquired stream
+  ---
+  duration_ms: 0.1375
+  type: 'test'
+  ...
+# Subtest: permission, missing camera, busy camera and unsupported context have readable errors
+ok 177 - permission, missing camera, busy camera and unsupported context have readable errors
+  ---
+  duration_ms: 0.555083
+  type: 'test'
+  ...
+# Subtest: external camera disconnect cleans up and reports once; intentional stop removes ended listener
+ok 178 - external camera disconnect cleans up and reports once; intentional stop removes ended listener
+  ---
+  duration_ms: 0.169417
+  type: 'test'
+  ...
+# Subtest: knee geometry clamps angle and rejects zero or invalid limbs
+ok 179 - knee geometry clamps angle and rejects zero or invalid limbs
+  ---
+  duration_ms: 5.842542
+  type: 'test'
+  ...
+# Subtest: angle uses aspect-correct pixels rather than normalized-square coordinates
+ok 180 - angle uses aspect-correct pixels rather than normalized-square coordinates
+  ---
+  duration_ms: 0.155083
+  type: 'test'
+  ...
+# Subtest: requires continuously qualifying frames through debounce before a standing or bending output
+ok 181 - requires continuously qualifying frames through debounce before a standing or bending output
+  ---
+  duration_ms: 3.910208
+  type: 'test'
+  ...
+# Subtest: neutral band immediately removes a formerly confirmed state and resets debounce
+ok 182 - neutral band immediately removes a formerly confirmed state and resets debounce
+  ---
+  duration_ms: 0.55925
+  type: 'test'
+  ...
+# Subtest: opposite candidate must settle again and history does not bridge a long frame gap
+ok 183 - opposite candidate must settle again and history does not bridge a long frame gap
+  ---
+  duration_ms: 0.261791
+  type: 'test'
+  ...
+# Subtest: each leg can fall back independently and both reliable legs are averaged
+ok 184 - each leg can fall back independently and both reliable legs are averaged
+  ---
+  duration_ms: 0.233625
+  type: 'test'
+  ...
+# Subtest: low presence, missing visibility and clipped landmarks are rejected before smoothing
+ok 185 - low presence, missing visibility and clipped landmarks are rejected before smoothing
+  ---
+  duration_ms: 2.144083
+  type: 'test'
+  ...
+# Subtest: official landmarks without optional presence remain valid, but supplied low presence is rejected
+ok 186 - official landmarks without optional presence remain valid, but supplied low presence is rejected
+  ---
+  duration_ms: 0.168667
+  type: 'test'
+  ...
+# Subtest: classifier smooths trusted landmark coordinates before calculating the angle
+ok 187 - classifier smooths trusted landmark coordinates before calculating the angle
+  ---
+  duration_ms: 0.335166
+  type: 'test'
+  ...
+# Subtest: coordinate EMA damps point jitter, returns isolated snapshots and resets without stale history
+ok 188 - coordinate EMA damps point jitter, returns isolated snapshots and resets without stale history
+  ---
+  duration_ms: 2.619875
+  type: 'test'
+  ...
+# Subtest: unknown torso or leaned upper body cannot drive knee output
+ok 189 - unknown torso or leaned upper body cannot drive knee output
+  ---
+  duration_ms: 0.550125
+  type: 'test'
+  ...
+# Subtest: confidence summarizes actual accepted legs and torso
+ok 190 - confidence summarizes actual accepted legs and torso
+  ---
+  duration_ms: 0.276
+  type: 'test'
+  ...
+# Subtest: lost frame clears output and tracks duration without recommending automatic rest
+ok 191 - lost frame clears output and tracks duration without recommending automatic rest
+  ---
+  duration_ms: 0.827292
+  type: 'test'
+  ...
+# Subtest: snapshot expires results without needing another inference frame
+ok 192 - snapshot expires results without needing another inference frame
+  ---
+  duration_ms: 1.009583
+  type: 'test'
+  ...
+# Subtest: old or repeated timestamps cannot extend a confirmed state
+ok 193 - old or repeated timestamps cannot extend a confirmed state
+  ---
+  duration_ms: 0.974708
+  type: 'test'
+  ...
+# Subtest: EMA is deterministic, resettable and starts from the first accepted sample
+ok 194 - EMA is deterministic, resettable and starts from the first accepted sample
+  ---
+  duration_ms: 0.500375
+  type: 'test'
+  ...
+# Subtest: personal thresholds classify limited standing extension without the default 165 degree gate
+ok 195 - personal thresholds classify limited standing extension without the default 165 degree gate
+  ---
+  duration_ms: 1.543542
+  type: 'test'
+  ...
+# Subtest: threshold replacement restarts smoothing and debounce, while ordinary resets retain calibration
+ok 196 - threshold replacement restarts smoothing and debounce, while ordinary resets retain calibration
+  ---
+  duration_ms: 2.448333
+  type: 'test'
+  ...
+# Subtest: calibration profiles are copied on both assignment and retrieval
+ok 197 - calibration profiles are copied on both assignment and retrieval
+  ---
+  duration_ms: 0.317292
+  type: 'test'
+  ...
+# Subtest: invalid calibration is rejected atomically rather than replacing a valid session profile
+ok 198 - invalid calibration is rejected atomically rather than replacing a valid session profile
+  ---
+  duration_ms: 0.509667
+  type: 'test'
+  ...
+# Subtest: asymmetric per-leg ranges remain valid and use the fused personal thresholds
+ok 199 - asymmetric per-leg ranges remain valid and use the fused personal thresholds
+  ---
+  duration_ms: 0.392084
+  type: 'test'
+  ...
+# Subtest: a calibrated single-leg cohort stays fixed when the other leg enters the frame
+ok 200 - a calibrated single-leg cohort stays fixed when the other leg enters the frame
+  ---
+  duration_ms: 0.3345
+  type: 'test'
+  ...
+# Subtest: a two-leg calibration freezes on a missing leg instead of changing the fused angle basis
+ok 201 - a two-leg calibration freezes on a missing leg instead of changing the fused angle basis
+  ---
+  duration_ms: 0.434791
+  type: 'test'
+  ...
+# Subtest: model is lazy, BASE_URL paths are local, and inference uses distinct frames throttled at 25 FPS
+ok 202 - model is lazy, BASE_URL paths are local, and inference uses distinct frames throttled at 25 FPS
+  ---
+  duration_ms: 1.010167
+  type: 'test'
+  ...
+# Subtest: no detected pose still emits a frame and inference failure pauses the loop
+ok 203 - no detected pose still emits a frame and inference failure pauses the loop
+  ---
+  duration_ms: 0.144833
+  type: 'test'
+  ...
+# Subtest: destroy during initialization closes a late model and never schedules frames
+ok 204 - destroy during initialization closes a late model and never schedules frames
+  ---
+  duration_ms: 0.272375
+  type: 'test'
+  ...
+# Subtest: pause during pending start cancels automatic activation while keeping the initialized model reusable
+ok 205 - pause during pending start cancels automatic activation while keeping the initialized model reusable
+  ---
+  duration_ms: 0.174125
+  type: 'test'
+  ...
+# Subtest: failed model initialization yields a typed load error and permits retry
+ok 206 - failed model initialization yields a typed load error and permits retry
+  ---
+  duration_ms: 0.125375
+  type: 'test'
+  ...
+# Subtest: failed model close still cancels inference and makes destroy idempotent
+ok 207 - failed model close still cancels inference and makes destroy idempotent
+  ---
+  duration_ms: 0.185625
+  type: 'test'
+  ...
+# Subtest: real GLB parses with all 19 original bone identities and hybrid bindings
+ok 208 - real GLB parses with all 19 original bone identities and hybrid bindings
+  ---
+  duration_ms: 76.165375
+  type: 'test'
+  ...
+# Subtest: left and right arm controls raise their own hand and deform their own skin independently
+ok 209 - left and right arm controls raise their own hand and deform their own skin independently
+  ---
+  duration_ms: 21.512916
+  type: 'test'
+  ...
+# Subtest: body side lean and forward lean use verified model axes while head carries features
+ok 210 - body side lean and forward lean use verified model axes while head carries features
+  ---
+  duration_ms: 7.33375
+  type: 'test'
+  ...
+# Subtest: continuous shallow FK knee bend lowers body and approximately preserves sole height
+ok 211 - continuous shallow FK knee bend lowers body and approximately preserves sole height
+  ---
+  duration_ms: 29.388166
+  type: 'test'
+  ...
+# Subtest: root offset and all angle controls clamp nonfinite and extreme inputs
+ok 212 - root offset and all angle controls clamp nonfinite and extreme inputs
+  ---
+  duration_ms: 29.354
+  type: 'test'
+  ...
+# Subtest: targets are rest-relative with no accumulating rotation and reset restores exact rest
+ok 213 - targets are rest-relative with no accumulating rotation and reset restores exact rest
+  ---
+  duration_ms: 117.46925
+  type: 'test'
+  ...
+# Subtest: exponential interpolation is smooth and invariant across frame rates
+ok 214 - exponential interpolation is smooth and invariant across frame rates
+  ---
+  duration_ms: 17.678166
+  type: 'test'
+  ...
+# Subtest: incomplete rigs fail explicitly before preview activation
+ok 215 - incomplete rigs fail explicitly before preview activation
+  ---
+  duration_ms: 0.267917
+  type: 'test'
+  ...
+# Subtest: independent bounded leg extension preserves the support foot and counterrotates the raised foot
+ok 216 - independent bounded leg extension preserves the support foot and counterrotates the raised foot
+  ---
+  duration_ms: 5.645417
+  type: 'test'
+  ...
+# Subtest: v2 body lean preserves planted feet during shallow knee bend
+ok 217 - v2 body lean preserves planted feet during shallow knee bend
+  ---
+  duration_ms: 46.346875
+  type: 'test'
+  ...
+# Subtest: bounded shoulder swing reaches head level sideways and forward without translating the joints
+ok 218 - bounded shoulder swing reaches head level sideways and forward without translating the joints
+  ---
+  duration_ms: 8.780792
+  type: 'test'
+  ...
+# Subtest: elbows flex outward and forward with pose-dependent head clearance
+ok 219 - elbows flex outward and forward with pose-dependent head clearance
+  ---
+  duration_ms: 34.86225
+  type: 'test'
+  ...
+# Subtest: combined FK motion preserves segment lengths, planted legs and bounded head roll
+ok 220 - combined FK motion preserves segment lengths, planted legs and bounded head roll
+  ---
+  duration_ms: 5.091875
+  type: 'test'
+  ...
+# Subtest: coordinated FK avoids head penetration beyond sub-pixel shoulder seam contacts
+ok 221 - coordinated FK avoids head penetration beyond sub-pixel shoulder seam contacts
+  ---
+  duration_ms: 91860.553291
+  type: 'test'
+  ...
+# Subtest: head clearance coordinates both setter orders and changes continuously as arms rise
+ok 222 - head clearance coordinates both setter orders and changes continuously as arms rise
+  ---
+  duration_ms: 9.256583
+  type: 'test'
+  ...
+# Subtest: arm IK validates immutable measured rest segments and side
+ok 223 - arm IK validates immutable measured rest segments and side
+  ---
+  duration_ms: 0.685375
+  type: 'test'
+  ...
+# Subtest: arm target forward geometry matches actual V3 bone transforms in all raise planes
+ok 224 - arm target forward geometry matches actual V3 bone transforms in all raise planes
+  ---
+  duration_ms: 97.340542
+  type: 'test'
+  ...
+# Subtest: feasible human-derived targets solve exactly without an extra filter or iteration loop
+ok 225 - feasible human-derived targets solve exactly without an extra filter or iteration loop
+  ---
+  duration_ms: 0.338833
+  type: 'test'
+  ...
+# Subtest: external relative hand targets are solved through the coupled manifold
+ok 226 - external relative hand targets are solved through the coupled manifold
+  ---
+  duration_ms: 1.849375
+  type: 'test'
+  ...
+# Subtest: high raise with deep elbow seeks a closer safe hand point than independent elbow clamping
+ok 227 - high raise with deep elbow seeks a closer safe hand point than independent elbow clamping
+  ---
+  duration_ms: 2.768875
+  type: 'test'
+  ...
+# Subtest: unreachable targets stay on tested joint bounds and approximate the nearest feasible surface
+ok 228 - unreachable targets stay on tested joint bounds and approximate the nearest feasible surface
+  ---
+  duration_ms: 24.593291
+  type: 'test'
+  ...
+# Subtest: left and right arm goals mirror symmetrically and have independent persistent state
+ok 229 - left and right arm goals mirror symmetrically and have independent persistent state
+  ---
+  duration_ms: 4.159375
+  type: 'test'
+  ...
+# Subtest: invalid targets hold the last valid joints and reset returns an exact neutral state
+ok 230 - invalid targets hold the last valid joints and reset returns an exact neutral state
+  ---
+  duration_ms: 0.630625
+  type: 'test'
+  ...
+# Subtest: continuous noisy hand requests retain bounded joint changes across the coupled elbow boundary
+ok 231 - continuous noisy hand requests retain bounded joint changes across the coupled elbow boundary
+  ---
+  duration_ms: 41.000709
+  type: 'test'
+  ...
+# Subtest: inward shoulder planes require explicit opt-in and V2 keeps its original range
+ok 232 - inward shoulder planes require explicit opt-in and V2 keeps its original range
+  ---
+  duration_ms: 83.644166
+  type: 'test'
+  ...
+# Subtest: inward bounds cover shoulder raise, low-raise torso clearance and elbow flexion together
+ok 233 - inward bounds cover shoulder raise, low-raise torso clearance and elbow flexion together
+  ---
+  duration_ms: 0.70275
+  type: 'test'
+  ...
+# Subtest: enabled solver and actual V3 FK/IK agree on feasible inward hand transforms
+ok 234 - enabled solver and actual V3 FK/IK agree on feasible inward hand transforms
+  ---
+  duration_ms: 238.17375
+  type: 'test'
+  ...
+# Subtest: interpolated final V3 joints satisfy inward constraints on every applied frame
+ok 235 - interpolated final V3 joints satisfy inward constraints on every applied frame
+  ---
+  duration_ms: 87.043
+  type: 'test'
+  ...
+# Subtest: representative inward V3 skins remain outside head and distal torso surfaces
+ok 236 - representative inward V3 skins remain outside head and distal torso surfaces
+  ---
+  duration_ms: 1078.100125
+  type: 'test'
+  ...
+# Subtest: invalid inward requests remain finite and reset/disable retain the original control lifecycle
+ok 237 - invalid inward requests remain finite and reset/disable retain the original control lifecycle
+  ---
+  duration_ms: 33.874875
+  type: 'test'
+  ...
+# Subtest: all synchronized animation names resolve to atlas and attachment frames
+ok 238 - all synchronized animation names resolve to atlas and attachment frames
+  ---
+  duration_ms: 2.965709
+  type: 'test'
+  ...
+# Subtest: missing atlas or metadata fails validation before creating the rabbit sprite
+ok 239 - missing atlas or metadata fails validation before creating the rabbit sprite
+  ---
+  duration_ms: 3.804166
+  type: 'test'
+  ...
+# Subtest: nonfinite attachment and incorrect anchor are rejected
+ok 240 - nonfinite attachment and incorrect anchor are rejected
+  ---
+  duration_ms: 1.111041
+  type: 'test'
+  ...
+# Subtest: frame pixels transform around exact foot origin with uniform scale
+ok 241 - frame pixels transform around exact foot origin with uniform scale
+  ---
+  duration_ms: 0.454042
+  type: 'test'
+  ...
+# Subtest: attachment transform supports rotation and sprite flips
+ok 242 - attachment transform supports rotation and sprite flips
+  ---
+  duration_ms: 0.082375
+  type: 'test'
+  ...
+# Subtest: Rabbit hand grip offsets are measured from the real V3 palm skin
+ok 243 - Rabbit hand grip offsets are measured from the real V3 palm skin
+  ---
+  duration_ms: 107.859584
+  type: 'test'
+  ...
+# Subtest: Rabbit tracker reads bone-local palm offsets in actual world coordinates
+ok 244 - Rabbit tracker reads bone-local palm offsets in actual world coordinates
+  ---
+  duration_ms: 57.38675
+  type: 'test'
+  ...
+# Subtest: Rabbit grip midpoint is the exact arithmetic mean for different root scales
+ok 245 - Rabbit grip midpoint is the exact arithmetic mean for different root scales
+  ---
+  duration_ms: 25.05425
+  type: 'test'
+  ...
+# Subtest: Rabbit root translations move both hand grips without using Bone.position as world
+ok 246 - Rabbit root translations move both hand grips without using Bone.position as world
+  ---
+  duration_ms: 12.435084
+  type: 'test'
+  ...
+# Subtest: Rabbit tracking uses the final IK hand transform after the rig commit
+ok 247 - Rabbit tracking uses the final IK hand transform after the rig commit
+  ---
+  duration_ms: 83.899708
+  type: 'test'
+  ...
+# Subtest: Rabbit final grip samples follow simultaneous arms, body lean, knees and high raises
+ok 248 - Rabbit final grip samples follow simultaneous arms, body lean, knees and high raises
+  ---
+  duration_ms: 99.534666
+  type: 'test'
+  ...
+# Subtest: Rabbit tracker invalidates nonfinite bone data and disposed samples
+ok 249 - Rabbit tracker invalidates nonfinite bone data and disposed samples
+  ---
+  duration_ms: 23.4775
+  type: 'test'
+  ...
+# Subtest: Actual Carrot GLB follows final V3 arms, torso, shallow knees and root with quantified accuracy
+ok 250 - Actual Carrot GLB follows final V3 arms, torso, shallow knees and root with quantified accuracy
+  ---
+  duration_ms: 82.064875
+  type: 'test'
+  ...
+# Actual GLB 240-frame midpoint attachment maximum error 0 model units
+# Subtest: Opt-in inward V3 pose genuinely grabs actual carrot within measured palm distances
+ok 251 - Opt-in inward V3 pose genuinely grabs actual carrot within measured palm distances
+  ---
+  duration_ms: 114.618708
+  type: 'test'
+  ...
+# Strict 180-frame attachment maximum error 0, maximum hand distance 0.1690737167629536, limit 0.20880571149673954 model units
+# Target step response, excluding capture/inference/landmark latency {
+#   largeStepDegrees: 120,
+#   legacy: { target90: 0.6, displayed90: 0.6708333333333333 },
+#   responsive: { target90: 0.2, displayed90: 0.30833333333333335 },
+#   smallStepDegrees: 6,
+#   smallResponsive: { target90: 0.03333333333333333, displayed90: 0.18333333333333332 }
+# }
+# Subtest: default and explicit legacy smoothing keep their original continuous rate limit
+ok 252 - default and explicit legacy smoothing keep their original continuous rate limit
+  ---
+  duration_ms: 1.770083
+  type: 'test'
+  ...
+# Subtest: responsive active reaches reduce large-action latency while preserving small-noise behavior
+ok 253 - responsive active reaches reduce large-action latency while preserving small-noise behavior
+  ---
+  duration_ms: 32.336875
+  type: 'test'
+  ...
+# Subtest: responsive two-band integration is invariant to render step partition and reversals
+ok 254 - responsive two-band integration is invariant to render step partition and reversals
+  ---
+  duration_ms: 0.367417
+  type: 'test'
+  ...
+# Subtest: responsive arms do not change body, head, calibrated knee or root rates
+ok 255 - responsive arms do not change body, head, calibrated knee or root rates
+  ---
+  duration_ms: 0.308166
+  type: 'test'
+  ...
+# Subtest: responsive slew holds invalid targets and resets without carrying stale motion
+ok 256 - responsive slew holds invalid targets and resets without carrying stale motion
+  ---
+  duration_ms: 0.11125
+  type: 'test'
+  ...
+# Subtest: actual V3 IK holds contact through tracking loss, neutral return and bounded recovery
+ok 257 - actual V3 IK holds contact through tracking loss, neutral return and bounded recovery
+  ---
+  duration_ms: 239.044958
+  type: 'test'
+  ...
+# Subtest: actual V3 IK pause, resume, reset and disposal preserve final pose ownership
+ok 258 - actual V3 IK pause, resume, reset and disposal preserve final pose ownership
+  ---
+  duration_ms: 31.592042
+  type: 'test'
+  ...
+# Subtest: IK diagnostic snapshots are isolated and distinguish solved from interpolating hand error
+ok 259 - IK diagnostic snapshots are isolated and distinguish solved from interpolating hand error
+  ---
+  duration_ms: 41.566542
+  type: 'test'
+  ...
+# V3 analytic legIK maximum contact error,1000 frames: 5.951015692157682e-7
+# V3 IK leg mesh minarea/maxedge over45 mixed poses: 0.3814060674105221 1.7517052862509987
+# Subtest: analytic two-bone IK reaches a valid target with exact segment lengths and forward pole
+ok 260 - analytic two-bone IK reaches a valid target with exact segment lengths and forward pole
+  ---
+  duration_ms: 0.699416
+  type: 'test'
+  ...
+# Subtest: unreachable two-bone targets are projected without stretch or reverse bend
+ok 261 - unreachable two-bone targets are projected without stretch or reverse bend
+  ---
+  duration_ms: 0.168125
+  type: 'test'
+  ...
+# Subtest: degenerate pole and invalid two-bone input have finite deterministic results
+ok 262 - degenerate pole and invalid two-bone input have finite deterministic results
+  ---
+  duration_ms: 0.1135
+  type: 'test'
+  ...
+# Subtest: independent sole targets preserve their model ground plane and reject illegal input
+ok 263 - independent sole targets preserve their model ground plane and reject illegal input
+  ---
+  duration_ms: 5.364375
+  type: 'test'
+  ...
+# Subtest: V3 standing IK returns exact local Rest Pose
+ok 264 - V3 standing IK returns exact local Rest Pose
+  ---
+  duration_ms: 90.95675
+  type: 'test'
+  ...
+# Subtest: V3 IK shallow bend25/50/75/100 keeps exact sole contacts and non-reversed knees
+ok 265 - V3 IK shallow bend25/50/75/100 keeps exact sole contacts and non-reversed knees
+  ---
+  duration_ms: 86.998917
+  type: 'test'
+  ...
+# Subtest: V3 grounded legs tolerate side/forward body lean and bounded lateral displacement
+ok 266 - V3 grounded legs tolerate side/forward body lean and bounded lateral displacement
+  ---
+  duration_ms: 75.698834
+  type: 'test'
+  ...
+# Subtest: V3 IK solves independent foot targets without moving the opposite anchor
+ok 267 - V3 IK solves independent foot targets without moving the opposite anchor
+  ---
+  duration_ms: 25.56325
+  type: 'test'
+  ...
+# Subtest: V3 IK uses model units under rotated uniformly scaled scene parents
+ok 268 - V3 IK uses model units under rotated uniformly scaled scene parents
+  ---
+  duration_ms: 12.707875
+  type: 'test'
+  ...
+# Subtest: fixed contacts do not accumulate drift through1000 alternating body/root/bend frames
+ok 269 - fixed contacts do not accumulate drift through1000 alternating body/root/bend frames
+  ---
+  duration_ms: 205.971917
+  type: 'test'
+  ...
+# Subtest: V3 planted IK retains finite fixed-index leg mesh area and edge lengths across mixed poses
+ok 270 - V3 planted IK retains finite fixed-index leg mesh area and edge lengths across mixed poses
+  ---
+  duration_ms: 374.669
+  type: 'test'
+  ...
+# IK combined actual mesh metrics {
+#   minArea: 0.05586400122982656,
+#   maxStretch: 1.703209950903421,
+#   maxContactError: 5.92320523263797e-7
+# }
+# Subtest: V3 final pose owner preserves exact standing rest, reset and disposal under IK
+ok 271 - V3 final pose owner preserves exact standing rest, reset and disposal under IK
+  ---
+  duration_ms: 228.994791
+  type: 'test'
+  ...
+# Subtest: simultaneous arms, lean, knee and translation retain skin topology and head clearance
+ok 272 - simultaneous arms, lean, knee and translation retain skin topology and head clearance
+  ---
+  duration_ms: 2174.775959
+  type: 'test'
+  ...
+# Subtest: IK explicit hand targets are finite, independently constrained and smoothly released to FK
+ok 273 - IK explicit hand targets are finite, independently constrained and smoothly released to FK
+  ---
+  duration_ms: 40.689458
+  type: 'test'
+  ...
+# Subtest: IK snapshots retain independent applied contact and hand residual measurements
+ok 274 - IK snapshots retain independent applied contact and hand residual measurements
+  ---
+  duration_ms: 26.141167
+  type: 'test'
+  ...
+# Equal-height rabbit movement comparison {
+#   oldModel: {
+#     handRisePixels: 49.87275891148761,
+#     legReachPixels: 19.132260679190267
+#   },
+#   newModel: {
+#     handRisePixels: 66.47338419195216,
+#     legReachPixels: 26.794116183752976
+#   }
+# }
+# Subtest: new GLB remains 342 logical pixels tall with actual soles at both game ground anchors
+ok 275 - new GLB remains 342 logical pixels tall with actual soles at both game ground anchors
+  ---
+  duration_ms: 90.976042
+  type: 'test'
+  ...
+# Subtest: longer mirrored legs reach unchanged Berry trunks while standing and support feet cannot score
+ok 276 - longer mirrored legs reach unchanged Berry trunks while standing and support feet cannot score
+  ---
+  duration_ms: 20.11175
+  type: 'test'
+  ...
+# Subtest: new proportions improve hand elevation and lateral foot reach at the same screen height
+ok 277 - new proportions improve hand elevation and lateral foot reach at the same screen height
+  ---
+  duration_ms: 31.5875
+  type: 'test'
+  ...
+# Subtest: bounded multi-axis arms and enhanced knee range remain inside the existing preview crop
+ok 278 - bounded multi-axis arms and enhanced knee range remain inside the existing preview crop
+  ---
+  duration_ms: 98.165875
+  type: 'test'
+  ...
+# V3 verified shoulder/elbow/head envelopes [
+#   [ 0, 110, 40 ],
+#   [ 75, 110, 25 ],
+#   [ 82.5, 92.5, 22.5 ],
+#   [ 90, 75, 20 ],
+#   [ 105, 60, 15 ],
+#   [ 120, 45, 10 ],
+#   [ 135, 20, 5 ],
+#   [ 142.5, 10, 2.5 ],
+#   [ 150, 0, 0 ]
+# ]
+# V3 requested and actual shoulder degrees [
+#   { plane: 0, requested: 0, actual: 0 },
+#   { plane: 0, requested: 90, actual: 89.99999999999997 },
+#   { plane: 0, requested: 120, actual: 119.99999999999997 },
+#   { plane: 0, requested: 150, actual: 150.00000000000003 },
+#   { plane: 45, requested: 0, actual: 0 },
+#   { plane: 45, requested: 90, actual: 90.00000000000001 },
+#   { plane: 45, requested: 120, actual: 119.99999999999999 },
+#   { plane: 45, requested: 150, actual: 150.00000000000003 },
+#   { plane: 90, requested: 0, actual: 0 },
+#   { plane: 90, requested: 90, actual: 90 },
+#   { plane: 90, requested: 120, actual: 119.99999999999997 },
+#   { plane: 90, requested: 150, actual: 150.00000000000003 }
+# ]
+# V3 actual linear skin deformation ratios [
+#   {
+#     raise: 0,
+#     elbow: 0,
+#     appliedElbow: 0,
+#     bend: 0,
+#     minimumAreaRatio: 0.9999999905257664,
+#     minimumEdgeRatio: 0.9999999790498739,
+#     maximumEdgeRatio: 1.0000000599626175
+#   },
+#   {
+#     raise: 0,
+#     elbow: 45,
+#     appliedElbow: 45,
+#     bend: 0.25,
+#     minimumAreaRatio: 0.40855429592381165,
+#     minimumEdgeRatio: 0.41564363992649206,
+#     maximumEdgeRatio: 1.4283263903135586
+#   },
+#   {
+#     raise: 0,
+#     elbow: 90,
+#     appliedElbow: 90,
+#     bend: 0.5,
+#     minimumAreaRatio: 0.0930477437801585,
+#     minimumEdgeRatio: 0.13400506607293153,
+#     maximumEdgeRatio: 1.658332134280565
+#   },
+#   {
+#     raise: 0,
+#     elbow: 110,
+#     appliedElbow: 110,
+#     bend: 0.75,
+#     minimumAreaRatio: 0.05586431375227804,
+#     minimumEdgeRatio: 0.16645498665033792,
+#     maximumEdgeRatio: 1.703208942424542
+#   },
+#   {
+#     raise: 120,
+#     elbow: 110,
+#     appliedElbow: 45,
+#     bend: 1,
+#     minimumAreaRatio: 0.13901992202445873,
+#     minimumEdgeRatio: 0.13905954909584964,
+#     maximumEdgeRatio: 1.7024773775388513
+#   }
+# ]
+# Subtest: untagged V2 keeps its physical limits and head-clearance behavior under larger signal targets
+ok 279 - untagged V2 keeps its physical limits and head-clearance behavior under larger signal targets
+  ---
+  duration_ms: 81.890125
+  type: 'test'
+  ...
+# Subtest: versioned metadata accepts narrower verified ranges and rejects unsafe or unknown limits
+ok 280 - versioned metadata accepts narrower verified ranges and rejects unsafe or unknown limits
+  ---
+  duration_ms: 0.885583
+  type: 'test'
+  ...
+# Subtest: preview asset selection preserves an explicit V2 fallback and uses the application base URL
+ok 281 - preview asset selection preserves an explicit V2 fallback and uses the application base URL
+  ---
+  duration_ms: 0.20475
+  type: 'test'
+  ...
+# Subtest: socket targets persist through interpolation and reset safely without moving the arms
+ok 282 - socket targets persist through interpolation and reset safely without moving the arms
+  ---
+  duration_ms: 43.672
+  type: 'test'
+  ...
+# Subtest: socket offsets use model units under a rotated parent frame
+ok 283 - socket offsets use model units under a rotated parent frame
+  ---
+  duration_ms: 12.498083
+  type: 'test'
+  ...
+# Subtest: named V3 loads all original bones, hybrid bindings and normalized linear skin weights
+ok 284 - named V3 loads all original bones, hybrid bindings and normalized linear skin weights
+  ---
+  duration_ms: 13.058208
+  type: 'test'
+  ...
+# Subtest: V3 measured coupled limits interpolate continuously and retain explicit unsupported combinations
+ok 285 - V3 measured coupled limits interpolate continuously and retain explicit unsupported combinations
+  ---
+  duration_ms: 21.897541
+  type: 'test'
+  ...
+# Subtest: V3 reaches actual independent lateral, forward and diagonal angles with a fixed elbow hinge
+ok 286 - V3 reaches actual independent lateral, forward and diagonal angles with a fixed elbow hinge
+  ---
+  duration_ms: 21.13125
+  type: 'test'
+  ...
+# Subtest: V3 knee progression preserves approximate support, mesh scale and exact rest restoration
+ok 287 - V3 knee progression preserves approximate support, mesh scale and exact rest restoration
+  ---
+  duration_ms: 39.873667
+  type: 'test'
+  ...
+# Subtest: V3 linear skinning avoids collapsed faces and excessive edge stretching through joint samples
+ok 288 - V3 linear skinning avoids collapsed faces and excessive edge stretching through joint samples
+  ---
+  duration_ms: 198.942
+  type: 'test'
+  ...
+# Subtest: V3 supported high arm combinations keep distal arms outside head and torso and inside the preview
+ok 289 - V3 supported high arm combinations keep distal arms outside head and torso and inside the preview
+  ---
+  duration_ms: 20243.420667
+  type: 'test'
+  ...
+# Berry foot model measurements {
+#   rest: [ 0.26499998569488525, 0.12140911167154339, 0.03999970724528588 ],
+#   extended: [ 0.5569855719986383, 0.2051346074303214, 0.039999711801923486 ]
+# }
+# Subtest: actual GLB left and right legs extend continuously outward, independently, and reset
+ok 290 - actual GLB left and right legs extend continuously outward, independently, and reset
+  ---
+  duration_ms: 71.928125
+  type: 'test'
+  ...
+# Subtest: foot projection follows root translation, uniform scale, mirroring and camera
+ok 291 - foot projection follows root translation, uniform scale, mirroring and camera
+  ---
+  duration_ms: 17.320375
+  type: 'test'
+  ...
+# Subtest: projection rejects offscreen, behind-camera and invalid positions
+ok 292 - projection rejects offscreen, behind-camera and invalid positions
+  ---
+  duration_ms: 0.325958
+  type: 'test'
+  ...
+# Subtest: trunk collision includes boundaries and rejects hidden, invalid and outside feet
+ok 293 - trunk collision includes boundaries and rejects hidden, invalid and outside feet
+  ---
+  duration_ms: 0.468166
+  type: 'test'
+  ...
+# Subtest: left requires its own foot, matching root proximity and sufficient extension
+ok 294 - left requires its own foot, matching root proximity and sufficient extension
+  ---
+  duration_ms: 0.237292
+  type: 'test'
+  ...
+# Subtest: right requires its own foot, matching root proximity and sufficient extension
+ok 295 - right requires its own foot, matching root proximity and sufficient extension
+  ---
+  duration_ms: 0.079292
+  type: 'test'
+  ...
+# Subtest: held extension scores once even after cooldown; retract and cooldown both required
+ok 296 - held extension scores once even after cooldown; retract and cooldown both required
+  ---
+  duration_ms: 0.101458
+  type: 'test'
+  ...
+# Subtest: tracking loss disarms and requires reliable retraction before another hit
+ok 297 - tracking loss disarms and requires reliable retraction before another hit
+  ---
+  duration_ms: 0.125292
+  type: 'test'
+  ...
+# Subtest: pause freezes clock, transitions, cooldown and scoring
+ok 298 - pause freezes clock, transitions, cooldown and scoring
+  ---
+  duration_ms: 0.33375
+  type: 'test'
+  ...
+# Subtest: three harvests per side complete exactly six and completion is immutable
+ok 299 - three harvests per side complete exactly six and completion is immutable
+  ---
+  duration_ms: 0.1725
+  type: 'test'
+  ...
+# Subtest: invalid deltas and motion amounts never score or poison the clock
+ok 300 - invalid deltas and motion amounts never score or poison the clock
+  ---
+  duration_ms: 0.184791
+  type: 'test'
+  ...
+# Subtest: left and right leg extensions remain continuous and anatomically independent
+ok 301 - left and right leg extensions remain continuous and anatomically independent
+  ---
+  duration_ms: 1.3425
+  type: 'test'
+  ...
+# Subtest: mirroring and camera distance preserve anatomical extension and movement direction
+ok 302 - mirroring and camera distance preserve anatomical extension and movement direction
+  ---
+  duration_ms: 0.477958
+  type: 'test'
+  ...
+# Subtest: whole-body translation produces no extension; translation and extension can coexist
+ok 303 - whole-body translation produces no extension; translation and extension can coexist
+  ---
+  duration_ms: 0.592083
+  type: 'test'
+  ...
+# Subtest: tracking loss immediately suppresses amounts, and long loss acquires a new ephemeral center
+ok 304 - tracking loss immediately suppresses amounts, and long loss acquires a new ephemeral center
+  ---
+  duration_ms: 0.750083
+  type: 'test'
+  ...
+# Subtest: low confidence, invalid coordinates, duplicate timestamps and unstable wide stance are rejected
+ok 305 - low confidence, invalid coordinates, duplicate timestamps and unstable wide stance are rejected
+  ---
+  duration_ms: 0.6365
+  type: 'test'
+  ...
+# Subtest: natural stance has a deadzone and retraction returns amounts to zero
+ok 306 - natural stance has a deadzone and retraction returns amounts to zero
+  ---
+  duration_ms: 0.353417
+  type: 'test'
+  ...
+# Subtest: existing named extractor and retargeter support Berry without any calibration profile
+ok 307 - existing named extractor and retargeter support Berry without any calibration profile
+  ---
+  duration_ms: 0.304167
+  type: 'test'
+  ...
+# Subtest: automatic reference needs only three coherent frames and rejects stale gaps without a wizard
+ok 308 - automatic reference needs only three coherent frames and rejects stale gaps without a wizard
+  ---
+  duration_ms: 0.120792
+  type: 'test'
+  ...
+# Subtest: cross-body ankle and inward knee are not outward leg extensions
+ok 309 - cross-body ankle and inward knee are not outward leg extensions
+  ---
+  duration_ms: 0.53575
+  type: 'test'
+  ...
+1..309
+# tests 309
+# suites 0
+# pass 309
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 93011.033583

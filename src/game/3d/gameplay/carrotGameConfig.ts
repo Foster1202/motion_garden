@@ -1,0 +1,15 @@
+export const CARROT_GAME_CONFIG = {
+  carrotScale: .4,
+  reachSeconds: .45,
+  reachTimeoutSeconds: 3,
+  maximumAlignmentDistance: .12,
+  pullSeconds: .65,
+  transferSeconds: .9,
+  returnArmSeconds: .35,
+  basketArcHeight: .6,
+  soilBelowGrip: .025,
+  reach: { raise: 55, elbow: 0, plane: 140 },
+  lift: { raise: 100, elbow: 0, plane: 130 },
+  sourceRaiseContribution: 3,
+  sourcePlaneContribution: 2,
+} as const;

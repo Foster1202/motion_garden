@@ -1222,6 +1222,20 @@ kbd {
 .carrot-grab-debug input { margin-right:7px; accent-color:var(--green); }
 .carrot-grab-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:240px; overflow:auto; }
 .carrot-grab-debug [role="status"] { font-size:.9em; line-height:1.45; }
+.carrot-game-debug { padding:12px; border:1px solid #a1b08e; border-radius:14px; font-size:clamp(11px,.95cqw,16px); }
+.carrot-game-debug summary { cursor:pointer; font-weight:700; }
+.carrot-game-debug pre { font-size:.85em; white-space:pre-wrap; overflow-wrap:anywhere; max-height:320px; overflow:auto; }
+.carrot-3d-game .game-name, .carrot-3d-game .steps { display:none; }
+.carrot-3d-game .instruction { top:3%; left:21%; right:21%; }
+@media (max-width:700px) {
+  .carrot-3d-game .score-panel { min-width:0; }
+  .carrot-3d-game .score-label { font-size:3.2cqw; }
+  .carrot-3d-game .score-label svg { width:3.6cqw; min-width:20px; }
+  .carrot-3d-game #progress-label { font-size:2.6cqw; }
+  .carrot-3d-game .instruction { top:3%; left:29%; right:21%; padding:.6cqw; }
+  .carrot-3d-game .instruction h1 { font-size:3cqw; line-height:1.3; }
+  .carrot-3d-game .instruction p { display:none; }
+}
 @media (max-width:700px) {
   .rabbit-tools { width:31%; top:37%; max-height:42%; }
   .mocap-debug, .rabbit-ik-debug, .carrot-grab-debug { padding:6px; font-size:11px; }

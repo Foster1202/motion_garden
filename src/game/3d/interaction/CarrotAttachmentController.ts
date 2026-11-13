@@ -8,6 +8,8 @@ export interface CarrotAttachmentOptions {
   initialGripPosition?: Vector3;
   initialQuaternion?: Quaternion;
   allowDistanceBypass?: boolean;
+  handMode?: 'midpoint' | 'left' | 'right';
+  maximumHandDistance?: number;
 }
 
 /** Owns only the carrot; all arm and body transforms remain with the rabbit rig. */
@@ -39,13 +41,15 @@ export class CarrotAttachmentController {
 
   constructor(readonly carrot: Carrot3D, readonly tracker: RabbitHandTracker,
     private readonly options: CarrotAttachmentOptions = {}) {
+    const distance = options.maximumHandDistance ?? tracker.palmRadius * 1.6;
+    if (!Number.isFinite(distance) || distance <= 0) throw new Error('Invalid carrot grip distance');
     if (options.initialGripPosition) carrot.setGripWorld(options.initialGripPosition, options.initialQuaternion ?? new Quaternion());
     this.initialPosition = carrot.root.position.clone();
     this.initialRotation = carrot.root.quaternion.clone();
     this.initialScale = carrot.root.scale.clone();
     this.initialMatrix = carrot.root.matrix.clone();
     this.initialMatrixAutoUpdate = carrot.root.matrixAutoUpdate;
-    this.maxHandDistance = tracker.palmRadius * 1.6;
+    this.maxHandDistance = distance;
   }
 
   setDistanceLimitEnabled(enabled: boolean): boolean {
@@ -66,7 +70,7 @@ export class CarrotAttachmentController {
     }
     if (this.state === 'GRABBING' || this.state === 'ATTACHED') {
       this.holdingRotation(this.hands, this.targetRotation);
-      const target = this.hands.gripMidpoint;
+      const target = this.attachmentTarget(this.hands);
       if (this.state === 'GRABBING') {
         this.transitionElapsed = Math.min(this.transitionSeconds, this.transitionElapsed + Math.min(deltaSeconds, .05));
         const progress = this.transitionElapsed / this.transitionSeconds;
@@ -129,9 +133,10 @@ export class CarrotAttachmentController {
     return {
       state: this.state, reason: this.reason, eligible: this.eligible,
       contactSatisfied: this.contactSatisfied,
+      handMode: this.options.handMode ?? 'midpoint',
       leftHandPosition: this.hands?.leftGripPosition.toArray(), rightHandPosition: this.hands?.rightGripPosition.toArray(),
       gripMidpoint: this.hands?.gripMidpoint.toArray(), carrotGripPosition: this.carrot.gripWorld().toArray(),
-      leftDistance: this.leftDistance, rightDistance: this.rightDistance, grabDistance: Math.max(this.leftDistance, this.rightDistance),
+      leftDistance: this.leftDistance, rightDistance: this.rightDistance, grabDistance: this.requiredDistance(),
       maxHandDistance: this.maxHandDistance * (this.hands?.scale ?? 1), handSpan: this.hands?.span,
       attachmentError: this.attachmentError, transitionElapsed: this.transitionElapsed, reliable: this.hands?.reliable ?? false,
       distanceLimitEnabled: this.distanceLimitEnabled, distanceBypassAllowed: !!this.options.allowDistanceBypass,
@@ -158,7 +163,7 @@ export class CarrotAttachmentController {
     this.updateGripDistances();
     if (!this.hands.reliable) { this.reason = '雙手追蹤未可靠，請稍候或使用手動骨骼測試'; return; }
     const distance = this.maxHandDistance * this.hands.scale;
-    if (this.distanceLimitEnabled && Math.max(this.leftDistance, this.rightDistance) > distance) {
+    if (this.distanceLimitEnabled && this.requiredDistance() > distance) {
       this.reason = `雙手距離過遠，左 ${this.leftDistance.toFixed(3)}、右 ${this.rightDistance.toFixed(3)}，上限 ${distance.toFixed(3)} 模型單位`;
       return;
     }
@@ -172,10 +177,26 @@ export class CarrotAttachmentController {
     this.leftDistance = this.hands.leftGripPosition.distanceTo(grip);
     this.rightDistance = this.hands.rightGripPosition.distanceTo(grip);
     this.contactSatisfied = Number.isFinite(this.leftDistance) && Number.isFinite(this.rightDistance)
-      && Math.max(this.leftDistance, this.rightDistance) <= this.maxHandDistance * this.hands.scale;
+      && this.requiredDistance() <= this.maxHandDistance * this.hands.scale;
+  }
+
+  private requiredDistance(): number {
+    if (this.options.handMode === 'left') return this.leftDistance;
+    if (this.options.handMode === 'right') return this.rightDistance;
+    return Math.max(this.leftDistance, this.rightDistance);
+  }
+
+  private attachmentTarget(hands: HandGripSample): Vector3 {
+    if (this.options.handMode === 'left') return hands.leftGripPosition;
+    if (this.options.handMode === 'right') return hands.rightGripPosition;
+    return hands.gripMidpoint;
   }
 
   private holdingRotation(hands: HandGripSample, target: Quaternion): void {
+    if (this.options.handMode === 'left' || this.options.handMode === 'right') {
+      target.copy(this.options.initialQuaternion ?? new Quaternion());
+      return;
+    }
     const line = hands.leftGripPosition.clone().sub(hands.rightGripPosition);
     if (line.lengthSq() < 1e-12) return;
     const roll = MathUtils.clamp(Math.atan2(line.y, Math.abs(line.x) + 1e-8), -Math.PI / 7.2, Math.PI / 7.2);

@@ -1,0 +1,192 @@
+{
+  "browser": "157.0.8103.78",
+  "browserPlugin": "Browser plugin not available; Playwright with installed Google Chrome",
+  "url": "http://127.0.0.1:5178/",
+  "checks": [
+    {
+      "name": "Page identity, nonblank, no framework overlay, GLB load, 19 bones, single rabbit",
+      "result": "PASS",
+      "detail": "ready"
+    },
+    {
+      "name": "Real pointer drag changes bone before mouse release",
+      "result": "PASS"
+    },
+    {
+      "name": "Left arm responds before pointer release, interpolates, right remains independent",
+      "result": "PASS"
+    },
+    {
+      "name": "Both arms, head, forward lean and both side lean directions",
+      "result": "PASS"
+    },
+    {
+      "name": "Continuous shallow knee and root movement both directions plus bounded height",
+      "result": "PASS"
+    },
+    {
+      "name": "Reset to rest",
+      "result": "PASS"
+    },
+    {
+      "name": "Pause freezes Three frames, resume keeps hidden sprite paused",
+      "result": "PASS"
+    },
+    {
+      "name": "FIT alignment, uniform scale, native depth across five viewports",
+      "result": "PASS"
+    },
+    {
+      "name": "Sprite fallback full five-carrot keyboard game, attachment and celebration",
+      "result": "PASS"
+    },
+    {
+      "name": "Scene shutdown removes debug UI, dynamic textures and extra canvases",
+      "result": "PASS",
+      "detail": {
+        "textures": [],
+        "canvases": 1
+      }
+    },
+    {
+      "name": "Actual GLB HTTP failure returns to playable sprite",
+      "result": "PASS",
+      "detail": "fallback: Rabbit GLB HTTP 404"
+    },
+    {
+      "name": "Actual WebGL context loss returns to sprite",
+      "result": "PASS"
+    },
+    {
+      "name": "Repeated 3D/sprite switching and shutdown while 3D active",
+      "result": "PASS"
+    },
+    {
+      "name": "Shutdown during pending GLB fetch cannot attach late model",
+      "result": "PASS"
+    },
+    {
+      "name": "Console health, excluding deliberate GLB 404",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "viewports": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "logicalWidth": 1600,
+        "logicalHeight": 900
+      },
+      "footCSS": {
+        "x": 1072.8,
+        "y": 817.2
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "x": 0,
+        "y": 45,
+        "width": 1440,
+        "height": 810,
+        "logicalWidth": 1600,
+        "logicalHeight": 900
+      },
+      "footCSS": {
+        "x": 804.6,
+        "y": 657.9
+      }
+    },
+    {
+      "width": 1512,
+      "height": 982,
+      "geometry": {
+        "x": 0,
+        "y": 65.75,
+        "width": 1512,
+        "height": 850.5,
+        "logicalWidth": 1600,
+        "logicalHeight": 900
+      },
+      "footCSS": {
+        "x": 844.83,
+        "y": 709.295
+      }
+    },
+    {
+      "width": 900,
+      "height": 700,
+      "geometry": {
+        "x": 0,
+        "y": 96.875,
+        "width": 900,
+        "height": 506.25,
+        "logicalWidth": 1600,
+        "logicalHeight": 900
+      },
+      "footCSS": {
+        "x": 502.875,
+        "y": 479.9375
+      }
+    },
+    {
+      "width": 600,
+      "height": 800,
+      "geometry": {
+        "x": 0,
+        "y": 76,
+        "width": 600,
+        "height": 337.5,
+        "logicalWidth": 1600,
+        "logicalHeight": 900
+      },
+      "footCSS": {
+        "x": 335.25,
+        "y": 331.375
+      }
+    }
+  ],
+  "fps": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "fps": 60.0021640124726
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "fps": 51.31798399273654
+    },
+    {
+      "width": 1512,
+      "height": 982,
+      "fps": 53.11666978153313
+    },
+    {
+      "width": 900,
+      "height": 700,
+      "fps": 53.11666978153312
+    },
+    {
+      "width": 600,
+      "height": 800,
+      "fps": 60.002164012472626
+    }
+  ],
+  "disposedRenderer": {
+    "geometries": 0,
+    "textures": 1,
+    "programs": 0,
+    "children": 0,
+    "canvasConnected": false,
+    "contextLost": true
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,2656 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5178/",
+  "browserPlugin": "Browser plugin not available; installed Chrome through Playwright",
+  "input": "Virtual camera with deterministic Landmarker output through the existing PoseEstimator scheduler, calibration, classifier, mocap and CarrotRound.",
+  "humanWebcamQA": "NOT VERIFIED",
+  "checks": [
+    {
+      "name": "Camera input selects the complete 3D game with ordinary player controls",
+      "result": "PASS"
+    },
+    {
+      "name": "Empty camera waits without progress or a blocking rest dialog",
+      "result": "PASS"
+    },
+    {
+      "name": "Existing personal comfortable calibration and standing reference enable READY",
+      "result": "PASS",
+      "detail": {
+        "standingAngle": 170.00000000000003,
+        "bendingAngle": 150.00001083350654,
+        "range": 19.999989166493492,
+        "standingThreshold": 166.00000216670134,
+        "bendingThreshold": 157.00000704177927,
+        "timestamp": 9726.19999999553,
+        "leftStanding": 170.00000000000003,
+        "rightStanding": 170.00000000000003,
+        "leftBending": 150.00001083350654,
+        "rightBending": 150.00001083350656,
+        "leftRange": 19.999989166493492,
+        "rightRange": 19.999989166493464,
+        "standingIqr": 0,
+        "bendingIqr": 0.0008899221015212788,
+        "reliableSide": "both"
+      }
+    },
+    {
+      "name": "Actual carrot materials clip planted roots below the raised soil surface",
+      "result": "PASS",
+      "detail": {
+        "soilRow": 464.57732464847743,
+        "orangePixels": 64,
+        "orangeBelowSoil": 0,
+        "localClipping": true,
+        "materials": [
+          {
+            "name": "Garden_Leaf_Sage",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Leaf_Green",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Leaf_Light",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Leaf_Sage",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Leaf_Green",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Carrot_Crease",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Carrot_Crease",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          },
+          {
+            "name": "Garden_Carrot_Orange",
+            "planes": [
+              {
+                "normal": [
+                  0,
+                  1,
+                  0
+                ],
+                "constant": -1.1129268699554702
+              }
+            ]
+          }
+        ],
+        "gameplay": {
+          "roundState": "READY",
+          "phase": "PLANTED",
+          "pullProgress": 0,
+          "reachElapsed": 0,
+          "transferElapsed": 0,
+          "transferProgress": 0,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilOcclusion": true,
+          "primaryHand": "left",
+          "primaryDistance": 0.7487830115237945,
+          "supportDistance": 1.1896326775775625,
+          "attachment": {
+            "state": "IDLE",
+            "reason": "雙手距離過遠，左 0.749、右 1.190，上限 0.120 模型單位",
+            "eligible": false,
+            "contactSatisfied": false,
+            "handMode": "left",
+            "leftHandPosition": [
+              0.7873892626922743,
+              0.8110672034618689,
+              0.06944085571196014
+            ],
+            "rightHandPosition": [
+              -0.7873892688436435,
+              0.8110672499592771,
+              0.06944086070018132
+            ],
+            "gripMidpoint": [
+              -3.0756845958990198e-9,
+              0.811067226710573,
+              0.06944085820607074
+            ],
+            "carrotGripPosition": [
+              0.271323845585311,
+              1.13792686995547,
+              0.5024711572297068
+            ],
+            "leftDistance": 0.7487830115237945,
+            "rightDistance": 1.1896326775775625,
+            "grabDistance": 0.7487830115237945,
+            "maxHandDistance": 0.12,
+            "handSpan": 1.5747785315359184,
+            "attachmentError": 0,
+            "transitionElapsed": 0,
+            "reliable": true,
+            "distanceLimitEnabled": true,
+            "distanceBypassAllowed": false,
+            "owner": "Carrot world transform",
+            "paused": false,
+            "disposed": false
+          },
+          "attachmentError": 0,
+          "reachBlocked": false,
+          "owner": "Mocap",
+          "primaryArmTarget": {
+            "raise": 0,
+            "elbow": 0,
+            "plane": 0
+          },
+          "maximumVisualStep": 0,
+          "maximumAttachStep": 0,
+          "originalTargetDistance": 1.181530980863728,
+          "originalShoulderDistance": 1.792283134833555,
+          "plantedShoulderDistance": 0.831712263536087,
+          "alignmentUsed": false,
+          "maximumArmReach": 0.7522504100809745,
+          "extractionHeight": 0,
+          "maximumPalmReach": 0.8639824516705595,
+          "plantedWristDistance": 0.7522504530880351,
+          "harvestCallbacks": 0,
+          "trackingReliable": true,
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.10000000149011612,
+          "environment": {
+            "kind": "raised-garden-bed",
+            "visible": true,
+            "destroyed": false,
+            "plantedGrip": [
+              0.271323845585311,
+              1.13792686995547,
+              0.5024711572297068
+            ],
+            "soilWorldY": 1.1129268699554702,
+            "soilScreenPosition": {
+              "x": 917.750971997506,
+              "y": 583.5773246484774
+            },
+            "pixelsPerUnit": 87.53735576122858,
+            "soilFrontVisible": true,
+            "soilBackDepth": 30,
+            "soilFrontDepth": 42.1,
+            "woodDepth": 42
+          }
+        },
+        "soilSpriteVisible": false,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        },
+        "dataRenderMode": "3d-game"
+      }
+    },
+    {
+      "name": "Continuous arm and torso motion remain live while standing and subthreshold bend does not grab",
+      "result": "PASS"
+    },
+    {
+      "name": "The real game render clock and shared inference scheduler remain live",
+      "result": "PASS",
+      "detail": {
+        "elapsedMs": 3546.656667000001,
+        "observedRenderFps": 60.05656030420605,
+        "observedInferenceFps": 19.73689775255598,
+        "threeFps": {
+          "samples": 60,
+          "mean": 60.00230176235095,
+          "p95": 60.004524931388275,
+          "maximum": 60.004524931388275
+        },
+        "mediaPipeFps": {
+          "samples": 60,
+          "mean": 20.00083777472818,
+          "p95": 20.006951934170882,
+          "maximum": 20.00803958130757
+        },
+        "ikMs": {
+          "samples": 60,
+          "mean": 0.1433333322405815,
+          "p95": 0.20000000298023224,
+          "maximum": 0.30000000447034836
+        },
+        "gameplayMs": {
+          "samples": 60,
+          "mean": 0.03500000014901161,
+          "p95": 0.10000000149011612,
+          "maximum": 0.19999999552965164
+        },
+        "inferenceKind": "Synthetic model output through the existing real camera and PoseEstimator scheduler",
+        "viewport": {
+          "x": 574,
+          "y": 119,
+          "width": 820,
+          "height": 660
+        }
+      }
+    },
+    {
+      "name": "Responsive FIT layout preserves the 3D game and player controls at 600 by 800",
+      "result": "PASS"
+    },
+    {
+      "name": "Standing before the existing bend hold completes cancels the attempt and preserves the planted carrot",
+      "result": "PASS"
+    },
+    {
+      "name": "Tracking loss freezes bend hold without a modal and reliable recovery resumes",
+      "result": "PASS"
+    },
+    {
+      "name": "Pause preserves assisted reach and resumes its original state",
+      "result": "PASS"
+    },
+    {
+      "name": "Comfortable calibrated bend automatically reaches and attaches through bounded existing IK without placement or grab buttons",
+      "result": "PASS",
+      "detail": {
+        "roundState": "GRABBED",
+        "phase": "ATTACHED",
+        "pullProgress": 0,
+        "reachElapsed": 0.4666399999999997,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.224297569442646,
+        "attachment": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.3068489876072635,
+            1.105261315610294,
+            0.5053974024123755
+          ],
+          "rightHandPosition": [
+            -0.7873892688436435,
+            0.7713615246537954,
+            0.0694408607001813
+          ],
+          "gripMidpoint": [
+            -0.24027014061819,
+            0.9383114201320446,
+            0.2874191315562784
+          ],
+          "carrotGripPosition": [
+            0.3068489876072635,
+            1.105261315610294,
+            0.5053974024123755
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.224297569442646,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.224297569442646,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap body/legs/support arm + bounded primary hold",
+        "primaryArmTarget": {
+          "raise": 52.25,
+          "elbow": 0,
+          "plane": 138
+        },
+        "maximumVisualStep": 0.006221114458131052,
+        "maximumAttachStep": 0.006221114458131052,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.10663113362394358,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.03266555434517615,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 0,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    },
+    {
+      "name": "Continuous comfortable return exposes the root while a renewed bend retains the same carrot and previous extraction",
+      "result": "PASS",
+      "detail": {
+        "partialPull": {
+          "roundState": "GRABBED",
+          "phase": "ATTACHED",
+          "pullProgress": 0.14613846153846177,
+          "reachElapsed": 0.4666399999999997,
+          "transferElapsed": 0,
+          "transferProgress": 0,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilOcclusion": true,
+          "primaryHand": "left",
+          "primaryDistance": 0,
+          "supportDistance": 1.0878196185036515,
+          "attachment": {
+            "state": "ATTACHED",
+            "reason": "蘿蔔跟隨最終手部姿態",
+            "eligible": true,
+            "contactSatisfied": true,
+            "handMode": "left",
+            "leftHandPosition": [
+              0.2923795692053924,
+              1.1646885748246074,
+              0.5328005500434139
+            ],
+            "rightHandPosition": [
+              -0.7074581277639519,
+              0.7920366767480354,
+              0.3211247012075215
+            ],
+            "gripMidpoint": [
+              -0.20753927927927976,
+              0.9783626257863214,
+              0.4269626256254677
+            ],
+            "carrotGripPosition": [
+              0.2923795692053924,
+              1.1646885748246074,
+              0.5328005500434139
+            ],
+            "leftDistance": 0,
+            "rightDistance": 1.0878196185036515,
+            "grabDistance": 0,
+            "maxHandDistance": 0.12,
+            "handSpan": 1.0878196185036515,
+            "attachmentError": 0,
+            "transitionElapsed": 0.2,
+            "reliable": true,
+            "distanceLimitEnabled": true,
+            "distanceBypassAllowed": false,
+            "owner": "Rabbit final-bone hand attachment",
+            "paused": false,
+            "disposed": false
+          },
+          "attachmentError": 0,
+          "reachBlocked": false,
+          "owner": "Mocap body/legs/support arm + bounded primary hold",
+          "primaryArmTarget": {
+            "raise": 59.02623076923077,
+            "elbow": 0,
+            "plane": 136.53861538461538
+          },
+          "maximumVisualStep": 0.026913303486804308,
+          "maximumAttachStep": 0.006221114458131052,
+          "originalTargetDistance": 1.181530980863728,
+          "originalShoulderDistance": 1.792283134833555,
+          "plantedShoulderDistance": 0.831712263536087,
+          "contactDistanceAtGrab": 0.10663113362394358,
+          "alignmentUsed": true,
+          "maximumArmReach": 0.7522504100809745,
+          "extractionHeight": 0.026761704869137315,
+          "maximumPalmReach": 0.8639824516705595,
+          "plantedWristDistance": 0.7522504530880351,
+          "harvestCallbacks": 0,
+          "trackingReliable": true,
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.09999999403953552,
+          "environment": {
+            "kind": "raised-garden-bed",
+            "visible": true,
+            "destroyed": false,
+            "plantedGrip": [
+              0.271323845585311,
+              1.13792686995547,
+              0.5024711572297068
+            ],
+            "soilWorldY": 1.1129268699554702,
+            "soilScreenPosition": {
+              "x": 917.750971997506,
+              "y": 583.5773246484774
+            },
+            "pixelsPerUnit": 87.53735576122858,
+            "soilFrontVisible": true,
+            "soilBackDepth": 30,
+            "soilFrontDepth": 42.1,
+            "woodDepth": 42
+          }
+        },
+        "afterRebend": {
+          "roundState": "GRABBED",
+          "phase": "ATTACHED",
+          "pullProgress": 0.48177361708871685,
+          "reachElapsed": 0.4666399999999997,
+          "transferElapsed": 0,
+          "transferProgress": 0,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilOcclusion": true,
+          "primaryHand": "left",
+          "primaryDistance": 0,
+          "supportDistance": 1.6474616129482071,
+          "attachment": {
+            "state": "ATTACHED",
+            "reason": "蘿蔔跟隨最終手部姿態",
+            "eligible": true,
+            "contactSatisfied": true,
+            "handMode": "left",
+            "leftHandPosition": [
+              0.24044928290345943,
+              1.4086644528867183,
+              0.6409662560442065
+            ],
+            "rightHandPosition": [
+              -1.1850011337891342,
+              0.8123388055685057,
+              0.06946245199795649
+            ],
+            "gripMidpoint": [
+              -0.47227592544283736,
+              1.110501629227612,
+              0.35521435402108154
+            ],
+            "carrotGripPosition": [
+              0.24044928290345943,
+              1.4086644528867183,
+              0.6409662560442065
+            ],
+            "leftDistance": 0,
+            "rightDistance": 1.6474616129482071,
+            "grabDistance": 0,
+            "maxHandDistance": 0.12,
+            "handSpan": 1.6474616129482071,
+            "attachmentError": 0,
+            "transitionElapsed": 0.2,
+            "reliable": true,
+            "distanceLimitEnabled": true,
+            "distanceBypassAllowed": false,
+            "owner": "Rabbit final-bone hand attachment",
+            "paused": false,
+            "disposed": false
+          },
+          "attachmentError": 0,
+          "reachBlocked": false,
+          "owner": "Mocap body/legs/support arm + bounded primary hold",
+          "primaryArmTarget": {
+            "raise": 74.12981276899227,
+            "elbow": 0,
+            "plane": 133.18226382911286
+          },
+          "maximumVisualStep": 0.031975272280386956,
+          "maximumAttachStep": 0.006221114458131052,
+          "originalTargetDistance": 1.181530980863728,
+          "originalShoulderDistance": 1.792283134833555,
+          "plantedShoulderDistance": 0.831712263536087,
+          "contactDistanceAtGrab": 0.10663113362394358,
+          "alignmentUsed": true,
+          "maximumArmReach": 0.7522504100809745,
+          "extractionHeight": 0.27073758293124817,
+          "maximumPalmReach": 0.8639824516705595,
+          "plantedWristDistance": 0.7522504530880351,
+          "harvestCallbacks": 0,
+          "trackingReliable": true,
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.4000000059604645,
+          "environment": {
+            "kind": "raised-garden-bed",
+            "visible": true,
+            "destroyed": false,
+            "plantedGrip": [
+              0.271323845585311,
+              1.13792686995547,
+              0.5024711572297068
+            ],
+            "soilWorldY": 1.1129268699554702,
+            "soilScreenPosition": {
+              "x": 917.750971997506,
+              "y": 583.5773246484774
+            },
+            "pixelsPerUnit": 87.53735576122858,
+            "soilFrontVisible": true,
+            "soilBackDepth": 30,
+            "soilFrontDepth": 42.1,
+            "woodDepth": 42
+          }
+        }
+      }
+    },
+    {
+      "name": "Renewed bending during RETURNING returns to GRABBED without duplicate attachment or score",
+      "result": "PASS"
+    },
+    {
+      "name": "Tracking loss freezes return hold and pull progress without a modal and reliable recovery resumes",
+      "result": "PASS"
+    },
+    {
+      "name": "Stable standing reaches SUCCESS and reveals more actual 3D root before scoring",
+      "result": "PASS",
+      "detail": {
+        "plantedOrangePixels": 64,
+        "extractedOrangePixels": 503
+      }
+    },
+    {
+      "name": "Pause preserves basket transfer and resumes its original state",
+      "result": "PASS"
+    },
+    {
+      "name": "Tracking loss freezes basket transfer and scoring callback without a modal and reliable recovery resumes",
+      "result": "PASS"
+    },
+    {
+      "name": "First basket arrival calls the original celebration scoring path once and preserves calibration",
+      "result": "PASS"
+    },
+    {
+      "name": "Explicit recalibration preserves score and reuses the existing camera, model and 3D resources",
+      "result": "PASS"
+    },
+    {
+      "name": "A continuous camera-driven full-round GIF records actual rendering",
+      "result": "PASS",
+      "detail": {
+        "frames": 45,
+        "seconds": 4.5,
+        "observedPullSeconds": 0.7,
+        "states": [
+          "READY",
+          "BENDING",
+          "GRABBED",
+          "RETURNING",
+          "SUCCESS"
+        ],
+        "phases": [
+          "PLANTED",
+          "REACHING",
+          "ALIGNING",
+          "ATTACHED",
+          "TRANSFERRING"
+        ],
+        "kind": "Actual Phaser postrender frames during a calibrated synthetic-camera round, observational state caption",
+        "path": "full-round.gif"
+      }
+    },
+    {
+      "name": "Pause preserves continuous pull and resumes its original state",
+      "result": "PASS"
+    },
+    {
+      "name": "Five camera-driven rounds finish at 5/5 with no sixth carrot, one stream and one load per GLB",
+      "result": "PASS",
+      "detail": {
+        "state": "COMPLETE",
+        "score": 5,
+        "stats": {
+          "models": 1,
+          "inferences": 977,
+          "closed": 0,
+          "streams": 1
+        },
+        "rabbitLoads": [
+          "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb"
+        ],
+        "carrotLoads": [
+          "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb"
+        ],
+        "completeFrames": 2319
+      }
+    },
+    {
+      "name": "Restart clears completed 3D resources, ends camera input and begins a fresh keyboard Sprite round",
+      "result": "PASS",
+      "detail": {
+        "destroyed": true,
+        "textureExists": false
+      }
+    },
+    {
+      "name": "A real WebGL failure during transfer returns to Sprite and the cancelled 3D callback cannot award a second score",
+      "result": "PASS"
+    },
+    {
+      "name": "Failed Carrot GLB loading disposes partial resources and retains the playable Sprite fallback",
+      "result": "PASS"
+    },
+    {
+      "name": "Home during pending Carrot loading rejects late work and leaves no texture, duplicate canvas or game controls",
+      "result": "PASS",
+      "detail": {
+        "textures": [],
+        "controls": 0,
+        "canvases": 1
+      }
+    },
+    {
+      "name": "Console health after deliberate asset and WebGL failure checks",
+      "result": "PASS"
+    },
+    {
+      "name": "Maximum rabbit scale keeps ears, head, score, pause and instructions clear at desktop and narrow viewports",
+      "result": "PASS",
+      "detail": [
+        {
+          "viewport": {
+            "width": 1512,
+            "height": 982
+          },
+          "instruction": {
+            "left": 317.515625,
+            "right": 1194.484375,
+            "top": 91.25,
+            "bottom": 212.734375
+          },
+          "meshes": [
+            {
+              "name": "Rabbit_Ear_L",
+              "left": 864.108308045736,
+              "right": 913.2544267099189,
+              "top": 224.51,
+              "bottom": 360.4427893238179
+            },
+            {
+              "name": "Rabbit_Ear_R",
+              "left": 776.4055732900811,
+              "right": 825.5516919542641,
+              "top": 224.51,
+              "bottom": 360.4427893238179
+            },
+            {
+              "name": "Rabbit_Head",
+              "left": 746.0094123620463,
+              "right": 943.6505876379538,
+              "top": 329.47343303027014,
+              "bottom": 486.2758745544515
+            }
+          ],
+          "score": {
+            "left": 68.03125,
+            "right": 279.703125,
+            "top": 99.765625,
+            "bottom": 212.390625
+          },
+          "pause": {
+            "left": 1279.765625,
+            "right": 1443.96875,
+            "top": 99.765625,
+            "bottom": 180.890625
+          },
+          "headingFits": true,
+          "stepsVisible": false
+        },
+        {
+          "viewport": {
+            "width": 600,
+            "height": 800
+          },
+          "instruction": {
+            "left": 174,
+            "right": 474,
+            "top": 33.5,
+            "bottom": 66.078125
+          },
+          "meshes": [
+            {
+              "name": "Rabbit_Ear_L",
+              "left": 342.90012224037145,
+              "right": 362.40255028171384,
+              "top": 139,
+              "bottom": 192.9415830650071
+            },
+            {
+              "name": "Rabbit_Ear_R",
+              "left": 308.09744971828616,
+              "right": 327.59987775962855,
+              "top": 139,
+              "bottom": 192.9415830650071
+            },
+            {
+              "name": "Rabbit_Head",
+              "left": 296.0354810960501,
+              "right": 374.46451890394985,
+              "top": 180.6521559643929,
+              "bottom": 242.87534704541727
+            }
+          ],
+          "score": {
+            "left": 18,
+            "right": 142.46875,
+            "top": 33.5,
+            "bottom": 97.953125
+          },
+          "pause": {
+            "left": 475.765625,
+            "right": 582,
+            "top": 33.5,
+            "bottom": 97.71875
+          },
+          "headingFits": true,
+          "stepsVisible": false
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    "waiting-for-person.png",
+    "01-ready.png",
+    "responsive-600.png",
+    "02-bending.png",
+    "03-grabbed.png",
+    "partial-pull.png",
+    "04-returning.png",
+    "05-success.png",
+    "06-basket-transfer.png",
+    "06-basket-arrival.png",
+    "06-basket-harvested.png",
+    "07-complete.png",
+    "layout-scale1.5-1512.png",
+    "layout-scale1.5-600.png"
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "state": "READY",
+      "score": 1,
+      "gameplay": {
+        "roundState": "READY",
+        "phase": "PLANTED",
+        "pullProgress": 0,
+        "reachElapsed": 0,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0.6620755640837758,
+        "supportDistance": 1.189633827069063,
+        "attachment": {
+          "state": "IDLE",
+          "reason": "蘿蔔已重設",
+          "eligible": false,
+          "contactSatisfied": false,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.2971132377987188,
+            1.7702691194091165,
+            0.6969505632397401
+          ],
+          "rightHandPosition": [
+            -0.7873892688096015,
+            0.8110630396940904,
+            0.06944088071076625
+          ],
+          "gripMidpoint": [
+            -0.24513801550544134,
+            1.2906660795516034,
+            0.3831957219752532
+          ],
+          "carrotGripPosition": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "leftDistance": 0.6620755640837758,
+          "rightDistance": 1.189633827069063,
+          "grabDistance": 0.6620755640837758,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.5779703393503985,
+          "attachmentError": 0,
+          "transitionElapsed": 0,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Carrot world transform",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap",
+        "primaryArmTarget": {
+          "raise": 0,
+          "elbow": 0,
+          "plane": 0
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.006221114458131052,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "alignmentUsed": false,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": 0,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 1,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.8000000044703484,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    },
+    {
+      "round": 2,
+      "state": "READY",
+      "score": 2,
+      "grab": {
+        "roundState": "GRABBED",
+        "phase": "ATTACHED",
+        "pullProgress": 0,
+        "reachElapsed": 0.46664999999999834,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.4797003327836407,
+        "attachment": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.2801333687921295,
+            1.1368093353064808,
+            0.5104894080859126
+          ],
+          "rightHandPosition": [
+            -1.0801964393046422,
+            0.7566882174078416,
+            0.06944085773016559
+          ],
+          "gripMidpoint": [
+            -0.40003153525625634,
+            0.9467487763571611,
+            0.2899651329080391
+          ],
+          "carrotGripPosition": [
+            0.2801333687921295,
+            1.1368093353064808,
+            0.5104894080859126
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.4797003327836407,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.4797003327836407,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap body/legs/support arm + bounded primary hold",
+        "primaryArmTarget": {
+          "raise": 53.2,
+          "elbow": 0,
+          "plane": 138
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.006221114458131052,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.08209274519184108,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.0011175346489893379,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 1,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      },
+      "gameplay": {
+        "roundState": "READY",
+        "phase": "PLANTED",
+        "pullProgress": 0,
+        "reachElapsed": 0,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0.9187331112793881,
+        "supportDistance": 1.4596883558734748,
+        "attachment": {
+          "state": "IDLE",
+          "reason": "雙手距離過遠，左 0.919、右 1.460，上限 0.120 模型單位",
+          "eligible": false,
+          "contactSatisfied": false,
+          "handMode": "left",
+          "leftHandPosition": [
+            1.0559061454307956,
+            0.9353747972444454,
+            0.06948870681082198
+          ],
+          "rightHandPosition": [
+            -1.0801964393041377,
+            0.7965066331614238,
+            0.06944086070018164
+          ],
+          "gripMidpoint": [
+            -0.012145146936671014,
+            0.8659407152029346,
+            0.0694647837555018
+          ],
+          "carrotGripPosition": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "leftDistance": 0.9187331112793881,
+          "rightDistance": 1.4596883558734748,
+          "grabDistance": 0.9187331112793881,
+          "maxHandDistance": 0.12,
+          "handSpan": 2.140611740086535,
+          "attachmentError": 0,
+          "transitionElapsed": 0,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Carrot world transform",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap",
+        "primaryArmTarget": {
+          "raise": 19.000000000000014,
+          "elbow": 0,
+          "plane": 0
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.006221114458131052,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "alignmentUsed": false,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": 0,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 2,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    },
+    {
+      "round": 3,
+      "state": "READY",
+      "score": 3,
+      "grab": {
+        "roundState": "GRABBED",
+        "phase": "ATTACHED",
+        "pullProgress": 0,
+        "reachElapsed": 0.48331999999999953,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.569986447690642,
+        "attachment": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.3199843788777716,
+            1.090381376530699,
+            0.508371789159706
+          ],
+          "rightHandPosition": [
+            -1.1822706735907629,
+            0.9661765456481785,
+            0.069440856949995
+          ],
+          "gripMidpoint": [
+            -0.4311431473564956,
+            1.0282789610894387,
+            0.28890632305485053
+          ],
+          "carrotGripPosition": [
+            0.3199843788777716,
+            1.090381376530699,
+            0.508371789159706
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.569986447690642,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.569986447690642,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap body/legs/support arm + bounded primary hold",
+        "primaryArmTarget": {
+          "raise": 52.800000000000004,
+          "elbow": 1.7075472925031878e-8,
+          "plane": 138
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.008508382911890402,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.10567806037729764,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.04754549342477099,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 2,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      },
+      "gameplay": {
+        "roundState": "READY",
+        "phase": "PLANTED",
+        "pullProgress": 0,
+        "reachElapsed": 0,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0.652382779820838,
+        "supportDistance": 1.522451873520662,
+        "attachment": {
+          "state": "IDLE",
+          "reason": "蘿蔔已重設",
+          "eligible": false,
+          "contactSatisfied": false,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.35935081311478245,
+            1.7547097348382668,
+            0.6959483961527885
+          ],
+          "rightHandPosition": [
+            -1.1822706735922182,
+            1.005989375458615,
+            0.06944092901288405
+          ],
+          "gripMidpoint": [
+            -0.41145993023871785,
+            1.3803495551484408,
+            0.38269466258283624
+          ],
+          "carrotGripPosition": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "leftDistance": 0.652382779820838,
+          "rightDistance": 1.522451873520662,
+          "grabDistance": 0.652382779820838,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.824743979633405,
+          "attachmentError": 0,
+          "transitionElapsed": 0,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Carrot world transform",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap",
+        "primaryArmTarget": {
+          "raise": 11.000000000000094,
+          "elbow": 8.537736462515939e-7,
+          "plane": 0
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.008508382911890402,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "alignmentUsed": false,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": 0,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 3,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.5,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    },
+    {
+      "round": 4,
+      "state": "READY",
+      "score": 4,
+      "grab": {
+        "roundState": "GRABBED",
+        "phase": "ATTACHED",
+        "pullProgress": 0,
+        "reachElapsed": 0.4666200000000002,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.48112218030067,
+        "attachment": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.2816360163637984,
+            1.136180971750226,
+            0.5111653453521048
+          ],
+          "rightHandPosition": [
+            -1.0801964393064585,
+            0.756688217233716,
+            0.06944085550441668
+          ],
+          "gripMidpoint": [
+            -0.39928021147133,
+            0.946434594491971,
+            0.29030310042826074
+          ],
+          "carrotGripPosition": [
+            0.2816360163637984,
+            1.136180971750226,
+            0.5111653453521048
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.48112218030067,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.48112218030067,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap body/legs/support arm + bounded primary hold",
+        "primaryArmTarget": {
+          "raise": 53.2,
+          "elbow": 0,
+          "plane": 138
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.008508382911890402,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.08213946893873711,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.0017458982052440675,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 3,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.20000000298023224,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      },
+      "gameplay": {
+        "roundState": "READY",
+        "phase": "PLANTED",
+        "pullProgress": 0,
+        "reachElapsed": 0,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0.6914925260914802,
+        "supportDistance": 1.4597026606272445,
+        "attachment": {
+          "state": "IDLE",
+          "reason": "蘿蔔已重設",
+          "eligible": false,
+          "contactSatisfied": false,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.2349495837264196,
+            1.8010226177590616,
+            0.6951959764912461
+          ],
+          "rightHandPosition": [
+            -1.0801964393041377,
+            0.7964452650797017,
+            0.06944103067259336
+          ],
+          "gripMidpoint": [
+            -0.42262342778885903,
+            1.2987339414193817,
+            0.3823185035819197
+          ],
+          "carrotGripPosition": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "leftDistance": 0.6914925260914802,
+          "rightDistance": 1.4597026606272445,
+          "grabDistance": 0.6914925260914802,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.7692806367633902,
+          "attachmentError": 0,
+          "transitionElapsed": 0,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Carrot world transform",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap",
+        "primaryArmTarget": {
+          "raise": 19.000000000000014,
+          "elbow": 0,
+          "plane": 0
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.008508382911890402,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "alignmentUsed": false,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": 0,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 4,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.6000000014901161,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    },
+    {
+      "round": 5,
+      "state": "COMPLETE",
+      "score": 5,
+      "grab": {
+        "roundState": "GRABBED",
+        "phase": "ATTACHED",
+        "pullProgress": 0,
+        "reachElapsed": 0.48331000000000046,
+        "transferElapsed": 0,
+        "transferProgress": 0,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": true,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.569687368787314,
+        "attachment": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.3197119994591402,
+            1.0904995672082904,
+            0.5082007828750946
+          ],
+          "rightHandPosition": [
+            -1.1822706735910653,
+            0.9661765457092585,
+            0.06944085773065717
+          ],
+          "gripMidpoint": [
+            -0.43127933706596255,
+            1.0283380564587745,
+            0.2888208203028759
+          ],
+          "carrotGripPosition": [
+            0.3197119994591402,
+            1.0904995672082904,
+            0.5082007828750946
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.569687368787314,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.569687368787314,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap body/legs/support arm + bounded primary hold",
+        "primaryArmTarget": {
+          "raise": 52.800000000000004,
+          "elbow": 1.7075472925031878e-8,
+          "plane": 138
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.00850846654597328,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.10569127183314443,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.047427302747179656,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 4,
+        "trackingReliable": true,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      },
+      "gameplay": {
+        "roundState": "COMPLETE",
+        "phase": "COMPLETE",
+        "pullProgress": 1,
+        "reachElapsed": 0.48331000000000046,
+        "transferElapsed": 0.9,
+        "transferProgress": 1,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilOcclusion": false,
+        "primaryHand": "left",
+        "primaryDistance": 0,
+        "supportDistance": 1.8242603731011493,
+        "attachment": {
+          "state": "RELEASING",
+          "reason": "已放開，蘿蔔保留最後位置",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "left",
+          "leftHandPosition": [
+            0.35910955816051426,
+            1.753974450374202,
+            0.6959557117202166
+          ],
+          "rightHandPosition": [
+            -1.1822706735922182,
+            1.0059422313037285,
+            0.06944099580243326
+          ],
+          "gripMidpoint": [
+            -0.41158055771585195,
+            1.3799583408389653,
+            0.38269835376132494
+          ],
+          "carrotGripPosition": [
+            4.009716731190807,
+            0.49693070600227945,
+            1
+          ],
+          "leftDistance": 0,
+          "rightDistance": 1.8242603731011493,
+          "grabDistance": 0,
+          "maxHandDistance": 0.12,
+          "handSpan": 1.8242603731011493,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": false,
+          "owner": "Carrot world transform",
+          "paused": true,
+          "disposed": false
+        },
+        "attachmentError": 0,
+        "reachBlocked": false,
+        "owner": "Mocap",
+        "primaryArmTarget": {
+          "raise": 11.000000000000094,
+          "elbow": 8.537736462515939e-7,
+          "plane": 0
+        },
+        "maximumVisualStep": 0.2752480131473095,
+        "maximumAttachStep": 0.00850846654597328,
+        "originalTargetDistance": 1.181530980863728,
+        "originalShoulderDistance": 1.792283134833555,
+        "plantedShoulderDistance": 0.831712263536087,
+        "contactDistanceAtGrab": 0.10569127183314443,
+        "alignmentUsed": true,
+        "maximumArmReach": 0.7522504100809745,
+        "extractionHeight": -0.6409961639531907,
+        "maximumPalmReach": 0.8639824516705595,
+        "plantedWristDistance": 0.7522504530880351,
+        "harvestCallbacks": 5,
+        "trackingReliable": false,
+        "paused": false,
+        "disposed": false,
+        "updateMs": 3.399999998509884,
+        "environment": {
+          "kind": "raised-garden-bed",
+          "visible": true,
+          "destroyed": false,
+          "plantedGrip": [
+            0.271323845585311,
+            1.13792686995547,
+            0.5024711572297068
+          ],
+          "soilWorldY": 1.1129268699554702,
+          "soilScreenPosition": {
+            "x": 917.750971997506,
+            "y": 583.5773246484774
+          },
+          "pixelsPerUnit": 87.53735576122858,
+          "soilFrontVisible": true,
+          "soilBackDepth": 30,
+          "soilFrontDepth": 42.1,
+          "woodDepth": 42
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "stats": {
+        "models": 1,
+        "inferences": 205,
+        "closed": 0,
+        "streams": 1
+      },
+      "carrotModels": 1,
+      "spriteRabbitVisible": false,
+      "spriteCarrotVisible": false,
+      "phaserCarrotAlpha": 1,
+      "soilVisible": false,
+      "textures": [
+        "rabbit-three-a687891e-00fb-4a57-931a-78a16ca488c6"
+      ],
+      "geometries": 31,
+      "gpuTextures": 2,
+      "canvasCount": 1
+    },
+    {
+      "stats": {
+        "models": 1,
+        "inferences": 512,
+        "closed": 0,
+        "streams": 1
+      },
+      "carrotModels": 1,
+      "spriteRabbitVisible": false,
+      "spriteCarrotVisible": false,
+      "phaserCarrotAlpha": 1,
+      "soilVisible": false,
+      "textures": [
+        "rabbit-three-a687891e-00fb-4a57-931a-78a16ca488c6"
+      ],
+      "geometries": 31,
+      "gpuTextures": 2,
+      "canvasCount": 1
+    },
+    {
+      "stats": {
+        "models": 1,
+        "inferences": 715,
+        "closed": 0,
+        "streams": 1
+      },
+      "carrotModels": 1,
+      "spriteRabbitVisible": false,
+      "spriteCarrotVisible": false,
+      "phaserCarrotAlpha": 1,
+      "soilVisible": false,
+      "textures": [
+        "rabbit-three-a687891e-00fb-4a57-931a-78a16ca488c6"
+      ],
+      "geometries": 31,
+      "gpuTextures": 2,
+      "canvasCount": 1
+    },
+    {
+      "stats": {
+        "models": 1,
+        "inferences": 830,
+        "closed": 0,
+        "streams": 1
+      },
+      "carrotModels": 1,
+      "spriteRabbitVisible": false,
+      "spriteCarrotVisible": false,
+      "phaserCarrotAlpha": 1,
+      "soilVisible": false,
+      "textures": [
+        "rabbit-three-a687891e-00fb-4a57-931a-78a16ca488c6"
+      ],
+      "geometries": 31,
+      "gpuTextures": 2,
+      "canvasCount": 1
+    },
+    {
+      "stats": {
+        "models": 1,
+        "inferences": 903,
+        "closed": 0,
+        "streams": 1
+      },
+      "carrotModels": 1,
+      "spriteRabbitVisible": false,
+      "spriteCarrotVisible": false,
+      "phaserCarrotAlpha": 1,
+      "soilVisible": false,
+      "textures": [
+        "rabbit-three-a687891e-00fb-4a57-931a-78a16ca488c6"
+      ],
+      "geometries": 31,
+      "gpuTextures": 2,
+      "canvasCount": 1
+    }
+  ],
+  "errors": [],
+  "expectedDiagnostics": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb"
+    }
+  ],
+  "warnings": [
+    "Rabbit 3D preview fell back to sprite: WebGL context lost",
+    "Rabbit 3D preview fell back to sprite: Failed to fetch"
+  ],
+  "requests": [
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb",
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb",
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb",
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb",
+    "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb"
+  ],
+  "calibration": {
+    "standingAngle": 170.00000000000003,
+    "bendingAngle": 150.00001083350654,
+    "range": 19.999989166493492,
+    "standingThreshold": 166.00000216670134,
+    "bendingThreshold": 157.00000704177927,
+    "timestamp": 9726.19999999553,
+    "leftStanding": 170.00000000000003,
+    "rightStanding": 170.00000000000003,
+    "leftBending": 150.00001083350654,
+    "rightBending": 150.00001083350656,
+    "leftRange": 19.999989166493492,
+    "rightRange": 19.999989166493464,
+    "standingIqr": 0,
+    "bendingIqr": 0.0008899221015212788,
+    "reliableSide": "both"
+  },
+  "plantedVisual": {
+    "soilRow": 464.57732464847743,
+    "orangePixels": 64,
+    "orangeBelowSoil": 0,
+    "localClipping": true,
+    "materials": [
+      {
+        "name": "Garden_Leaf_Sage",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Leaf_Green",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Leaf_Light",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Leaf_Sage",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Leaf_Green",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Carrot_Crease",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Carrot_Crease",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      },
+      {
+        "name": "Garden_Carrot_Orange",
+        "planes": [
+          {
+            "normal": [
+              0,
+              1,
+              0
+            ],
+            "constant": -1.1129268699554702
+          }
+        ]
+      }
+    ],
+    "gameplay": {
+      "roundState": "READY",
+      "phase": "PLANTED",
+      "pullProgress": 0,
+      "reachElapsed": 0,
+      "transferElapsed": 0,
+      "transferProgress": 0,
+      "plantedGrip": [
+        0.271323845585311,
+        1.13792686995547,
+        0.5024711572297068
+      ],
+      "soilWorldY": 1.1129268699554702,
+      "soilOcclusion": true,
+      "primaryHand": "left",
+      "primaryDistance": 0.7487830115237945,
+      "supportDistance": 1.1896326775775625,
+      "attachment": {
+        "state": "IDLE",
+        "reason": "雙手距離過遠，左 0.749、右 1.190，上限 0.120 模型單位",
+        "eligible": false,
+        "contactSatisfied": false,
+        "handMode": "left",
+        "leftHandPosition": [
+          0.7873892626922743,
+          0.8110672034618689,
+          0.06944085571196014
+        ],
+        "rightHandPosition": [
+          -0.7873892688436435,
+          0.8110672499592771,
+          0.06944086070018132
+        ],
+        "gripMidpoint": [
+          -3.0756845958990198e-9,
+          0.811067226710573,
+          0.06944085820607074
+        ],
+        "carrotGripPosition": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "leftDistance": 0.7487830115237945,
+        "rightDistance": 1.1896326775775625,
+        "grabDistance": 0.7487830115237945,
+        "maxHandDistance": 0.12,
+        "handSpan": 1.5747785315359184,
+        "attachmentError": 0,
+        "transitionElapsed": 0,
+        "reliable": true,
+        "distanceLimitEnabled": true,
+        "distanceBypassAllowed": false,
+        "owner": "Carrot world transform",
+        "paused": false,
+        "disposed": false
+      },
+      "attachmentError": 0,
+      "reachBlocked": false,
+      "owner": "Mocap",
+      "primaryArmTarget": {
+        "raise": 0,
+        "elbow": 0,
+        "plane": 0
+      },
+      "maximumVisualStep": 0,
+      "maximumAttachStep": 0,
+      "originalTargetDistance": 1.181530980863728,
+      "originalShoulderDistance": 1.792283134833555,
+      "plantedShoulderDistance": 0.831712263536087,
+      "alignmentUsed": false,
+      "maximumArmReach": 0.7522504100809745,
+      "extractionHeight": 0,
+      "maximumPalmReach": 0.8639824516705595,
+      "plantedWristDistance": 0.7522504530880351,
+      "harvestCallbacks": 0,
+      "trackingReliable": true,
+      "paused": false,
+      "disposed": false,
+      "updateMs": 0.10000000149011612,
+      "environment": {
+        "kind": "raised-garden-bed",
+        "visible": true,
+        "destroyed": false,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilScreenPosition": {
+          "x": 917.750971997506,
+          "y": 583.5773246484774
+        },
+        "pixelsPerUnit": 87.53735576122858,
+        "soilFrontVisible": true,
+        "soilBackDepth": 30,
+        "soilFrontDepth": 42.1,
+        "woodDepth": 42
+      }
+    },
+    "soilSpriteVisible": false,
+    "environment": {
+      "kind": "raised-garden-bed",
+      "visible": true,
+      "destroyed": false,
+      "plantedGrip": [
+        0.271323845585311,
+        1.13792686995547,
+        0.5024711572297068
+      ],
+      "soilWorldY": 1.1129268699554702,
+      "soilScreenPosition": {
+        "x": 917.750971997506,
+        "y": 583.5773246484774
+      },
+      "pixelsPerUnit": 87.53735576122858,
+      "soilFrontVisible": true,
+      "soilBackDepth": 30,
+      "soilFrontDepth": 42.1,
+      "woodDepth": 42
+    },
+    "dataRenderMode": "3d-game"
+  },
+  "performance": {
+    "elapsedMs": 3546.656667000001,
+    "observedRenderFps": 60.05656030420605,
+    "observedInferenceFps": 19.73689775255598,
+    "threeFps": {
+      "samples": 60,
+      "mean": 60.00230176235095,
+      "p95": 60.004524931388275,
+      "maximum": 60.004524931388275
+    },
+    "mediaPipeFps": {
+      "samples": 60,
+      "mean": 20.00083777472818,
+      "p95": 20.006951934170882,
+      "maximum": 20.00803958130757
+    },
+    "ikMs": {
+      "samples": 60,
+      "mean": 0.1433333322405815,
+      "p95": 0.20000000298023224,
+      "maximum": 0.30000000447034836
+    },
+    "gameplayMs": {
+      "samples": 60,
+      "mean": 0.03500000014901161,
+      "p95": 0.10000000149011612,
+      "maximum": 0.19999999552965164
+    },
+    "inferenceKind": "Synthetic model output through the existing real camera and PoseEstimator scheduler",
+    "viewport": {
+      "x": 574,
+      "y": 119,
+      "width": 820,
+      "height": 660
+    }
+  },
+  "firstGrab": {
+    "roundState": "GRABBED",
+    "phase": "ATTACHED",
+    "pullProgress": 0,
+    "reachElapsed": 0.4666399999999997,
+    "transferElapsed": 0,
+    "transferProgress": 0,
+    "plantedGrip": [
+      0.271323845585311,
+      1.13792686995547,
+      0.5024711572297068
+    ],
+    "soilWorldY": 1.1129268699554702,
+    "soilOcclusion": true,
+    "primaryHand": "left",
+    "primaryDistance": 0,
+    "supportDistance": 1.224297569442646,
+    "attachment": {
+      "state": "ATTACHED",
+      "reason": "蘿蔔跟隨最終手部姿態",
+      "eligible": true,
+      "contactSatisfied": true,
+      "handMode": "left",
+      "leftHandPosition": [
+        0.3068489876072635,
+        1.105261315610294,
+        0.5053974024123755
+      ],
+      "rightHandPosition": [
+        -0.7873892688436435,
+        0.7713615246537954,
+        0.0694408607001813
+      ],
+      "gripMidpoint": [
+        -0.24027014061819,
+        0.9383114201320446,
+        0.2874191315562784
+      ],
+      "carrotGripPosition": [
+        0.3068489876072635,
+        1.105261315610294,
+        0.5053974024123755
+      ],
+      "leftDistance": 0,
+      "rightDistance": 1.224297569442646,
+      "grabDistance": 0,
+      "maxHandDistance": 0.12,
+      "handSpan": 1.224297569442646,
+      "attachmentError": 0,
+      "transitionElapsed": 0.2,
+      "reliable": true,
+      "distanceLimitEnabled": true,
+      "distanceBypassAllowed": false,
+      "owner": "Rabbit final-bone hand attachment",
+      "paused": false,
+      "disposed": false
+    },
+    "attachmentError": 0,
+    "reachBlocked": false,
+    "owner": "Mocap body/legs/support arm + bounded primary hold",
+    "primaryArmTarget": {
+      "raise": 52.25,
+      "elbow": 0,
+      "plane": 138
+    },
+    "maximumVisualStep": 0.006221114458131052,
+    "maximumAttachStep": 0.006221114458131052,
+    "originalTargetDistance": 1.181530980863728,
+    "originalShoulderDistance": 1.792283134833555,
+    "plantedShoulderDistance": 0.831712263536087,
+    "contactDistanceAtGrab": 0.10663113362394358,
+    "alignmentUsed": true,
+    "maximumArmReach": 0.7522504100809745,
+    "extractionHeight": -0.03266555434517615,
+    "maximumPalmReach": 0.8639824516705595,
+    "plantedWristDistance": 0.7522504530880351,
+    "harvestCallbacks": 0,
+    "trackingReliable": true,
+    "paused": false,
+    "disposed": false,
+    "updateMs": 0,
+    "environment": {
+      "kind": "raised-garden-bed",
+      "visible": true,
+      "destroyed": false,
+      "plantedGrip": [
+        0.271323845585311,
+        1.13792686995547,
+        0.5024711572297068
+      ],
+      "soilWorldY": 1.1129268699554702,
+      "soilScreenPosition": {
+        "x": 917.750971997506,
+        "y": 583.5773246484774
+      },
+      "pixelsPerUnit": 87.53735576122858,
+      "soilFrontVisible": true,
+      "soilBackDepth": 30,
+      "soilFrontDepth": 42.1,
+      "woodDepth": 42
+    }
+  },
+  "assistedGrabActiveSeconds": 0.6666399999999997,
+  "extractedVisual": {
+    "soilRow": 464.57732464847743,
+    "orangePixels": 503,
+    "orangeBelowSoil": 0,
+    "localClipping": true,
+    "materials": [
+      {
+        "name": "Garden_Leaf_Sage",
+        "planes": []
+      },
+      {
+        "name": "Garden_Leaf_Green",
+        "planes": []
+      },
+      {
+        "name": "Garden_Leaf_Light",
+        "planes": []
+      },
+      {
+        "name": "Garden_Leaf_Sage",
+        "planes": []
+      },
+      {
+        "name": "Garden_Leaf_Green",
+        "planes": []
+      },
+      {
+        "name": "Garden_Carrot_Crease",
+        "planes": []
+      },
+      {
+        "name": "Garden_Carrot_Crease",
+        "planes": []
+      },
+      {
+        "name": "Garden_Carrot_Orange",
+        "planes": []
+      }
+    ],
+    "gameplay": {
+      "roundState": "SUCCESS",
+      "phase": "TRANSFERRING",
+      "pullProgress": 1,
+      "reachElapsed": 0.4666399999999997,
+      "transferElapsed": 0.4166499999999992,
+      "transferProgress": 0.46294444444444355,
+      "plantedGrip": [
+        0.271323845585311,
+        1.13792686995547,
+        0.5024711572297068
+      ],
+      "soilWorldY": 1.1129268699554702,
+      "soilOcclusion": false,
+      "primaryHand": "left",
+      "primaryDistance": 0,
+      "supportDistance": 1.5779703393503985,
+      "attachment": {
+        "state": "RELEASING",
+        "reason": "已放開，蘿蔔保留最後位置",
+        "eligible": true,
+        "contactSatisfied": true,
+        "handMode": "left",
+        "leftHandPosition": [
+          0.2971132377987188,
+          1.7702691194091165,
+          0.6969505632397401
+        ],
+        "rightHandPosition": [
+          -0.7873892688096015,
+          0.8110630396940904,
+          0.06944088071076625
+        ],
+        "gripMidpoint": [
+          -0.24513801550544134,
+          1.2906660795516034,
+          0.3831957219752532
+        ],
+        "carrotGripPosition": [
+          1.9474339127263707,
+          1.7951555800520502,
+          0.8316616229854942
+        ],
+        "leftDistance": 0,
+        "rightDistance": 1.5779703393503985,
+        "grabDistance": 0,
+        "maxHandDistance": 0.12,
+        "handSpan": 1.5779703393503985,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": true,
+        "distanceBypassAllowed": false,
+        "owner": "Carrot world transform",
+        "paused": false,
+        "disposed": false
+      },
+      "attachmentError": 0,
+      "reachBlocked": false,
+      "owner": "Mocap",
+      "primaryArmTarget": {
+        "raise": 0,
+        "elbow": 0,
+        "plane": 0
+      },
+      "maximumVisualStep": 0.10533144874637983,
+      "maximumAttachStep": 0.006221114458131052,
+      "originalTargetDistance": 1.181530980863728,
+      "originalShoulderDistance": 1.792283134833555,
+      "plantedShoulderDistance": 0.831712263536087,
+      "contactDistanceAtGrab": 0.10663113362394358,
+      "alignmentUsed": true,
+      "maximumArmReach": 0.7522504100809745,
+      "extractionHeight": 0.6572287100965801,
+      "maximumPalmReach": 0.8639824516705595,
+      "plantedWristDistance": 0.7522504530880351,
+      "harvestCallbacks": 0,
+      "trackingReliable": true,
+      "paused": false,
+      "disposed": false,
+      "updateMs": 0,
+      "environment": {
+        "kind": "raised-garden-bed",
+        "visible": true,
+        "destroyed": false,
+        "plantedGrip": [
+          0.271323845585311,
+          1.13792686995547,
+          0.5024711572297068
+        ],
+        "soilWorldY": 1.1129268699554702,
+        "soilScreenPosition": {
+          "x": 917.750971997506,
+          "y": 583.5773246484774
+        },
+        "pixelsPerUnit": 87.53735576122858,
+        "soilFrontVisible": true,
+        "soilBackDepth": 30,
+        "soilFrontDepth": 42.1,
+        "woodDepth": 42
+      }
+    },
+    "soilSpriteVisible": false,
+    "environment": {
+      "kind": "raised-garden-bed",
+      "visible": true,
+      "destroyed": false,
+      "plantedGrip": [
+        0.271323845585311,
+        1.13792686995547,
+        0.5024711572297068
+      ],
+      "soilWorldY": 1.1129268699554702,
+      "soilScreenPosition": {
+        "x": 917.750971997506,
+        "y": 583.5773246484774
+      },
+      "pixelsPerUnit": 87.53735576122858,
+      "soilFrontVisible": true,
+      "soilBackDepth": 30,
+      "soilFrontDepth": 42.1,
+      "woodDepth": 42
+    },
+    "dataRenderMode": "3d-game"
+  },
+  "recalibration": {
+    "standingAngle": 170.00000000000003,
+    "bendingAngle": 150.00001083350654,
+    "range": 19.999989166493492,
+    "standingThreshold": 166.00000216670134,
+    "bendingThreshold": 157.00000704177927,
+    "timestamp": 33524.89999999851,
+    "leftStanding": 170.00000000000003,
+    "rightStanding": 170.00000000000003,
+    "leftBending": 150.00001083350654,
+    "rightBending": 150.00001083350656,
+    "leftRange": 19.999989166493492,
+    "rightRange": 19.999989166493464,
+    "standingIqr": 0,
+    "bendingIqr": 0.0008899221015212788,
+    "reliableSide": "both"
+  },
+  "visualSequence": {
+    "frames": 45,
+    "seconds": 4.5,
+    "observedPullSeconds": 0.7,
+    "states": [
+      "READY",
+      "BENDING",
+      "GRABBED",
+      "RETURNING",
+      "SUCCESS"
+    ],
+    "phases": [
+      "PLANTED",
+      "REACHING",
+      "ALIGNING",
+      "ATTACHED",
+      "TRANSFERRING"
+    ],
+    "kind": "Actual Phaser postrender frames during a calibrated synthetic-camera round, observational state caption",
+    "path": "full-round.gif"
+  },
+  "complete": {
+    "state": "COMPLETE",
+    "score": 5,
+    "stats": {
+      "models": 1,
+      "inferences": 977,
+      "closed": 0,
+      "streams": 1
+    },
+    "rabbitLoads": [
+      "http://127.0.0.1:5178/assets/rabbit3d/rabbit_realtime_v3.glb"
+    ],
+    "carrotLoads": [
+      "http://127.0.0.1:5178/assets/carrot3d/carrot_realtime.glb"
+    ],
+    "completeFrames": 2319
+  },
+  "layoutCases": [
+    {
+      "viewport": {
+        "width": 1512,
+        "height": 982
+      },
+      "instruction": {
+        "left": 317.515625,
+        "right": 1194.484375,
+        "top": 91.25,
+        "bottom": 212.734375
+      },
+      "meshes": [
+        {
+          "name": "Rabbit_Ear_L",
+          "left": 864.108308045736,
+          "right": 913.2544267099189,
+          "top": 224.51,
+          "bottom": 360.4427893238179
+        },
+        {
+          "name": "Rabbit_Ear_R",
+          "left": 776.4055732900811,
+          "right": 825.5516919542641,
+          "top": 224.51,
+          "bottom": 360.4427893238179
+        },
+        {
+          "name": "Rabbit_Head",
+          "left": 746.0094123620463,
+          "right": 943.6505876379538,
+          "top": 329.47343303027014,
+          "bottom": 486.2758745544515
+        }
+      ],
+      "score": {
+        "left": 68.03125,
+        "right": 279.703125,
+        "top": 99.765625,
+        "bottom": 212.390625
+      },
+      "pause": {
+        "left": 1279.765625,
+        "right": 1443.96875,
+        "top": 99.765625,
+        "bottom": 180.890625
+      },
+      "headingFits": true,
+      "stepsVisible": false
+    },
+    {
+      "viewport": {
+        "width": 600,
+        "height": 800
+      },
+      "instruction": {
+        "left": 174,
+        "right": 474,
+        "top": 33.5,
+        "bottom": 66.078125
+      },
+      "meshes": [
+        {
+          "name": "Rabbit_Ear_L",
+          "left": 342.90012224037145,
+          "right": 362.40255028171384,
+          "top": 139,
+          "bottom": 192.9415830650071
+        },
+        {
+          "name": "Rabbit_Ear_R",
+          "left": 308.09744971828616,
+          "right": 327.59987775962855,
+          "top": 139,
+          "bottom": 192.9415830650071
+        },
+        {
+          "name": "Rabbit_Head",
+          "left": 296.0354810960501,
+          "right": 374.46451890394985,
+          "top": 180.6521559643929,
+          "bottom": 242.87534704541727
+        }
+      ],
+      "score": {
+        "left": 18,
+        "right": 142.46875,
+        "top": 33.5,
+        "bottom": 97.953125
+      },
+      "pause": {
+        "left": 475.765625,
+        "right": 582,
+        "top": 33.5,
+        "bottom": 97.71875
+      },
+      "headingFits": true,
+      "stepsVisible": false
+    }
+  ]
+}

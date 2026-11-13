@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "input": "Real MediaPipe WASM/model with virtual webcam test pattern; no human present and no human accuracy/latency claim",
+  "errors": [],
+  "warnings": [
+    "W1113 05:50:29.671000 2196592 gl_context.cc:1119] OpenGL error checking is disabled",
+    "W1113 05:50:29.753999 2196592 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.",
+    "W1113 05:50:29.766000 2196592 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors."
+  ],
+  "engineDiagnostics": [
+    "INFO: Created TensorFlow Lite XNNPACK delegate for CPU."
+  ],
+  "frameCount": 121,
+  "lastFrame": {
+    "timestampMs": 7051.2,
+    "poseFps": 20.003325814073925,
+    "inferenceMs": 15.299999997019768,
+    "averageInferenceMs": 16.18347107458952,
+    "landmarks": 0
+  },
+  "threeFps": 60.002754224784134,
+  "waitedWithoutAutomaticRest": true,
+  "cameraTracks": [
+    "ended"
+  ]
+}

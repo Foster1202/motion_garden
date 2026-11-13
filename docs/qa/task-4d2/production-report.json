@@ -1,0 +1,114 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5179/",
+  "browserPlugin": "Browser plugin not available; installed Chrome through Playwright",
+  "input": "Built production player with virtual camera. Only the dynamically loaded MediaPipe module is replaced by deterministic inference output; the camera, existing scheduler, calibration, classifier and game execute normally.",
+  "humanWebcamQA": "NOT VERIFIED",
+  "checks": [
+    {
+      "name": "Built camera player enters real 3D gameplay and all developer query flags retain player-only controls",
+      "result": "PASS"
+    },
+    {
+      "name": "Production camera uses the automatic comfortable calibration and standing reference",
+      "result": "PASS"
+    },
+    {
+      "name": "Built production player completes five calibrated camera rounds and stops at 5/5 with one stream and one model load",
+      "result": "PASS",
+      "detail": {
+        "renderMode": "3d-game",
+        "state": "COMPLETE",
+        "score": "分數：5",
+        "progress": "進度：5 / 5",
+        "status": "休息緊，準備好先再繼續。"
+      }
+    },
+    {
+      "name": "Production home ends camera tracks and closes the single inference model",
+      "result": "PASS"
+    },
+    {
+      "name": "Production keyboard keeps the Sprite game even when simulation and debug queries are present",
+      "result": "PASS"
+    },
+    {
+      "name": "Production page and console errors remain clear",
+      "result": "PASS"
+    },
+    {
+      "name": "Production model failure shows a visible Hong Kong Chinese fallback notice and the Sprite game remains playable",
+      "result": "PASS"
+    }
+  ],
+  "screenshots": [
+    "production-ready.png",
+    "production-complete.png",
+    "production-fallback.png"
+  ],
+  "rounds": [
+    {
+      "production": true,
+      "round": 1,
+      "renderMode": "3d-game",
+      "state": "READY",
+      "score": "分數：1",
+      "progress": "進度：1 / 5",
+      "status": "即時動作同步中，按照自己舒適幅度活動。"
+    },
+    {
+      "production": true,
+      "round": 2,
+      "renderMode": "3d-game",
+      "state": "READY",
+      "score": "分數：2",
+      "progress": "進度：2 / 5",
+      "status": "即時動作同步中，按照自己舒適幅度活動。"
+    },
+    {
+      "production": true,
+      "round": 3,
+      "renderMode": "3d-game",
+      "state": "READY",
+      "score": "分數：3",
+      "progress": "進度：3 / 5",
+      "status": "即時動作同步中，按照自己舒適幅度活動。"
+    },
+    {
+      "production": true,
+      "round": 4,
+      "renderMode": "3d-game",
+      "state": "READY",
+      "score": "分數：4",
+      "progress": "進度：4 / 5",
+      "status": "即時動作同步中，按照自己舒適幅度活動。"
+    },
+    {
+      "production": true,
+      "round": 5,
+      "renderMode": "3d-game",
+      "state": "COMPLETE",
+      "score": "分數：5",
+      "progress": "進度：5 / 5",
+      "status": "休息緊，準備好先再繼續。"
+    }
+  ],
+  "resources": [],
+  "errors": [],
+  "expectedDiagnostics": [
+    {
+      "message": "Failed to load resource: net::ERR_FAILED",
+      "url": "http://127.0.0.1:5179/assets/carrot3d/carrot_realtime.glb"
+    }
+  ],
+  "warnings": [
+    "Rabbit 3D preview fell back to sprite: Failed to fetch"
+  ],
+  "requests": [
+    "http://127.0.0.1:5179/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5179/assets/carrot3d/carrot_realtime.glb",
+    "http://127.0.0.1:5179/assets/rabbit3d/rabbit_realtime_v3.glb",
+    "http://127.0.0.1:5179/assets/carrot3d/carrot_realtime.glb"
+  ]
+}

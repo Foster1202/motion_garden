@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "input": "Virtual webcam and synthetic MediaPipe landmarks; real scheduler, extractor, retargeter, rig, projection and round. NOT human webcam validation.",
+  "checks": [
+    "Camera starts without calibration; pause during delayed initialization retains camera and resumes",
+    "Synthetic left extension drives actual left bone and projected contact; held extension cannot repeat",
+    "Synthetic right extension uses same independent right-foot geometric scoring",
+    "Tracking loss suppresses scoring; recovery acquires reference; pause freezes inference, rules and time",
+    "Returning home closes webcam, model and preview",
+    "Leaving during pending initialization closes late model and tracks without stale UI",
+    "Camera can reopen; ended track offers keyboard fallback; keyboard remains playable; all resources released"
+  ],
+  "errors": [],
+  "performance": {
+    "threeFps": 60.00275422478412,
+    "kind": "Synthetic landmarks, actual GLB renderer"
+  },
+  "resources": {
+    "models": 3,
+    "closed": 3,
+    "tracks": [
+      "ended",
+      "ended",
+      "ended"
+    ],
+    "textures": []
+  }
+}

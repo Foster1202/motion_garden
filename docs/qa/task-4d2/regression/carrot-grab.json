@@ -1,0 +1,2028 @@
+{
+  "status": "PASS",
+  "browser": "157.0.8103.78",
+  "url": "http://127.0.0.1:5178/",
+  "browserPlugin": "Browser plugin not available; installed Chrome through Playwright",
+  "input": "Existing manual sliders and developer grab controls. Strict-contact fixture and explicit distance-bypass stress poses use actual bones and renderer. Human webcam NOT tested.",
+  "flow": "Start game, Carrot Pull, keyboard input, manual arm controls, grab, live motion, release and reset",
+  "checks": [
+    {
+      "name": "Page identity, meaningful grab interface and no framework error overlay",
+      "result": "PASS"
+    },
+    {
+      "name": "One 3D carrot shares the rabbit scene and texture, duplicate Sprite carrot hidden, initial crop contains geometry",
+      "result": "PASS",
+      "detail": {
+        "gripNodes": 1,
+        "spriteCarrotVisible": false,
+        "spriteRabbitVisible": false,
+        "canvasCount": 1,
+        "dynamicTextures": [
+          "rabbit-three-0f564eed-6eee-4ad6-9df0-cf8913b61c94"
+        ],
+        "geometryCount": 31,
+        "textureCount": 2,
+        "logicalBounds": {
+          "left": 812.4037613696232,
+          "right": 975.5962386303768,
+          "top": 339,
+          "bottom": 725.7568367944392
+        },
+        "viewport": {
+          "x": 574,
+          "y": 119,
+          "width": 640,
+          "height": 700
+        }
+      }
+    },
+    {
+      "name": "Strict distance gate rejects remote grab with a visible reason",
+      "result": "PASS",
+      "detail": {
+        "state": "IDLE",
+        "reason": "雙手距離過遠，左 1.182、右 1.182，上限 0.209 模型單位",
+        "eligible": false,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.7873892626922743,
+          0.8110672034618689,
+          0.06944085571196014
+        ],
+        "rightHandPosition": [
+          -0.7873892688436435,
+          0.8110672499592771,
+          0.06944086070018132
+        ],
+        "gripMidpoint": [
+          -3.0756845958990198e-9,
+          0.811067226710573,
+          0.06944085820607074
+        ],
+        "carrotGripPosition": [
+          0,
+          0.14850802708114097,
+          0.65
+        ],
+        "leftDistance": 1.1815309700663175,
+        "rightDistance": 1.1815309977886967,
+        "grabDistance": 1.1815309977886967,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.5747785315359184,
+        "attachmentError": 0,
+        "transitionElapsed": 0,
+        "reliable": true,
+        "distanceLimitEnabled": true,
+        "distanceBypassAllowed": true,
+        "owner": "Carrot world transform",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      }
+    },
+    {
+      "name": "Visible manual sliders drive both actual hand positions and explicit placement fixture",
+      "result": "PASS",
+      "detail": {
+        "handSpan": 0.3254150500372058,
+        "maximumHandDistance": 0.20880571149673954,
+        "eligible": true,
+        "interpretation": "Fixture explicitly places carrot at current hand midpoint. Eligibility and screenshots determine whether this pose gives actual two-hand contact."
+      }
+    },
+    {
+      "name": "Distance-limited two-hand grasp and contact remain through raise, both leans, shallow knee and small lateral movement",
+      "result": "PASS",
+      "detail": {
+        "fixture": "Explicit development placement at final hand midpoint",
+        "initial": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.16269162513851274,
+            1.625057806639041,
+            0.5830861804989302
+          ],
+          "rightHandPosition": [
+            -0.16269166423984716,
+            1.6250578038791508,
+            0.5830861542653716
+          ],
+          "gripMidpoint": [
+            -1.9550667210155304e-8,
+            1.6250578052590958,
+            0.5830861673821509
+          ],
+          "carrotGripPosition": [
+            -1.9550667210155304e-8,
+            1.6250578052590958,
+            0.5830861673821509
+          ],
+          "leftDistance": 0.16269164468918051,
+          "rightDistance": 0.16269164468918051,
+          "grabDistance": 0.16269164468918051,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32538328937836103,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.09999999403953552,
+          "modelCount": 1
+        },
+        "poses": [
+          {
+            "requested": {
+              "name": "raise",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.1640723930001134,
+                1.6963707700999182,
+                0.582119356492154
+              ],
+              "rightHandPosition": [
+                -0.16407243175770775,
+                1.6963707632478695,
+                0.5821193304992847
+              ],
+              "gripMidpoint": [
+                -1.9378797178060125e-8,
+                1.6963707666738939,
+                0.5821193434957193
+              ],
+              "carrotGripPosition": [
+                -1.9378797178060125e-8,
+                1.6963707666738939,
+                0.5821193434957193
+              ],
+              "leftDistance": 0.16407241237891113,
+              "rightDistance": 0.16407241237891113,
+              "grabDistance": 0.16407241237891113,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.32814482475782225,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0.10000000149011612,
+              "modelCount": 1
+            }
+          },
+          {
+            "requested": {
+              "name": "lean-left",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145,
+              "side": -12
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.3608862807251662,
+                1.6412078627516862,
+                0.5821191130313083
+              ],
+              "rightHandPosition": [
+                0.03990993005291865,
+                1.7094256368746283,
+                0.5821190870384693
+              ],
+              "gripMidpoint": [
+                0.20039810538904243,
+                1.6753167498131574,
+                0.5821191000348888
+              ],
+              "carrotGripPosition": [
+                0.20039810538904243,
+                1.6753167498131574,
+                0.5821191000348888
+              ],
+              "leftDistance": 0.16407276007701818,
+              "rightDistance": 0.16407276007701815,
+              "grabDistance": 0.16407276007701818,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.3281455201540363,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0.10000000149011612,
+              "modelCount": 1
+            }
+          },
+          {
+            "requested": {
+              "name": "lean-right",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145,
+              "side": 12
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                -0.03989661755251034,
+                1.7094261808354465,
+                0.5821191130313083
+              ],
+              "rightHandPosition": [
+                -0.3608738976048104,
+                1.6412127797518639,
+                0.5821190870384693
+              ],
+              "gripMidpoint": [
+                -0.20038525757866038,
+                1.675319480293655,
+                0.5821191000348888
+              ],
+              "carrotGripPosition": [
+                -0.20038525757866038,
+                1.675319480293655,
+                0.5821191000348888
+              ],
+              "leftDistance": 0.16407276007701818,
+              "rightDistance": 0.16407276007701815,
+              "grabDistance": 0.16407276007701818,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.32814552015403636,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0,
+              "modelCount": 1
+            }
+          },
+          {
+            "requested": {
+              "name": "shallow-knee",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145,
+              "knee": 0.65
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.1640548780707478,
+                1.6566743957224626,
+                0.5821192417801072
+              ],
+              "rightHandPosition": [
+                -0.1640906420268225,
+                1.6566683082398805,
+                0.5821192157872682
+              ],
+              "gripMidpoint": [
+                -0.000017881978037342927,
+                1.6566713519811715,
+                0.5821192287836877
+              ],
+              "carrotGripPosition": [
+                -0.000017881978037342927,
+                1.6566713519811715,
+                0.5821192287836877
+              ],
+              "leftDistance": 0.16407276007701815,
+              "rightDistance": 0.16407276007701815,
+              "grabDistance": 0.16407276007701815,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.3281455201540363,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0.10000000149011612,
+              "modelCount": 1
+            }
+          },
+          {
+            "requested": {
+              "name": "translate-left",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145,
+              "root": -0.1,
+              "knee": 0.35
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.06408391197004007,
+                1.675855467418791,
+                0.5821191404560296
+              ],
+              "rightHandPosition": [
+                -0.2640616081839951,
+                1.675855460566382,
+                0.5821191144631906
+              ],
+              "gripMidpoint": [
+                -0.09998884810697752,
+                1.6758554639925864,
+                0.5821191274596101
+              ],
+              "carrotGripPosition": [
+                -0.09998884810697752,
+                1.6758554639925864,
+                0.5821191274596101
+              ],
+              "leftDistance": 0.16407276007701815,
+              "rightDistance": 0.16407276007701815,
+              "grabDistance": 0.16407276007701815,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.3281455201540363,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0,
+              "modelCount": 1
+            }
+          },
+          {
+            "requested": {
+              "name": "translate-right",
+              "left": 90,
+              "right": 90,
+              "elbow": 10,
+              "plane": 145,
+              "root": 0.1,
+              "knee": 0.35
+            },
+            "grab": {
+              "state": "ATTACHED",
+              "reason": "蘿蔔跟隨最終手部姿態",
+              "eligible": true,
+              "contactSatisfied": true,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.26405504873441454,
+                1.6758578266392623,
+                0.5821191130316199
+              ],
+              "rightHandPosition": [
+                -0.06409047141962061,
+                1.6758578197868532,
+                0.5821190870387809
+              ],
+              "gripMidpoint": [
+                0.09998228865739697,
+                1.6758578232130579,
+                0.5821191000352004
+              ],
+              "carrotGripPosition": [
+                0.09998228865739697,
+                1.6758578232130579,
+                0.5821191000352004
+              ],
+              "leftDistance": 0.16407276007701813,
+              "rightDistance": 0.16407276007701815,
+              "grabDistance": 0.16407276007701815,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 0.32814552015403625,
+              "attachmentError": 0,
+              "transitionElapsed": 0.2,
+              "reliable": true,
+              "distanceLimitEnabled": true,
+              "distanceBypassAllowed": true,
+              "owner": "Rabbit final-bone hand attachment",
+              "paused": false,
+              "disposed": false,
+              "updateMs": 0,
+              "modelCount": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Continuous scene-clock samples confirm same-frame grip alignment during combined pose changes",
+      "result": "PASS",
+      "detail": {
+        "frames": 81,
+        "maximumError": 0,
+        "contactFraction": 1,
+        "sampling": "Phaser postupdate, after final hand sampling and attachment, during ordinary slider-driven pose interpolation"
+      }
+    },
+    {
+      "name": "Forty-five live rendered frames record continuous strict grasp while arms, body, knee and root move",
+      "result": "PASS",
+      "detail": {
+        "frames": 45,
+        "seconds": 4.5,
+        "path": "strict-continuous.gif",
+        "input": "Scripted arm/body targets, existing final-bone IK and live Phaser attachment clock",
+        "maximumError": 0,
+        "contactFraction": 1
+      }
+    },
+    {
+      "name": "Explicit DEV distance bypass exercises short attach transition then strict final-bone following",
+      "result": "PASS",
+      "detail": {
+        "initialPosition": [
+          0,
+          0.14850802708114097,
+          0.65
+        ],
+        "observedTransition": {
+          "state": "GRABBING",
+          "reason": "開發附著跟隨中，雙手仍未接觸握點",
+          "eligible": true,
+          "contactSatisfied": false,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.16269157518796107,
+            1.6250578057231964,
+            0.5830861805001598
+          ],
+          "rightHandPosition": [
+            -0.16269171419039885,
+            1.6250578029633058,
+            0.5830861542666012
+          ],
+          "gripMidpoint": [
+            -6.950121889115479e-8,
+            1.625057804343251,
+            0.5830861673833805
+          ],
+          "carrotGripPosition": [
+            -1.3664392035504884e-9,
+            0.17753795682675388,
+            0.6486844304948038
+          ],
+          "leftDistance": 1.4581102127182621,
+          "rightDistance": 1.4581102263631829,
+          "grabDistance": 1.4581102263631829,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32538328937836103,
+          "attachmentError": 1.4490054661999807,
+          "transitionElapsed": 0.016659999999999855,
+          "reliable": true,
+          "distanceLimitEnabled": false,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0,
+          "modelCount": 1
+        },
+        "final": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.16269162513851276,
+            1.625057806639041,
+            0.5830861804989302
+          ],
+          "rightHandPosition": [
+            -0.16269166423984716,
+            1.6250578038791506,
+            0.5830861542653716
+          ],
+          "gripMidpoint": [
+            -1.9550667196277516e-8,
+            1.6250578052590958,
+            0.5830861673821509
+          ],
+          "carrotGripPosition": [
+            -1.9550667196277516e-8,
+            1.6250578052590958,
+            0.5830861673821509
+          ],
+          "leftDistance": 0.16269164468918051,
+          "rightDistance": 0.16269164468918051,
+          "grabDistance": 0.16269164468918051,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32538328937836103,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": false,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0,
+          "modelCount": 1
+        },
+        "distanceBypass": true
+      }
+    },
+    {
+      "name": "Raised arms, both leans, shallow knees, lateral movement and asymmetric hands retain finite sub0.01 grip error and crop coverage",
+      "result": "PASS",
+      "detail": {
+        "poses": 8,
+        "maximumAttachmentError": 0
+      }
+    },
+    {
+      "name": "Grip helper control is visible and switchable",
+      "result": "PASS"
+    },
+    {
+      "name": "Pause freezes rabbit, attachment transform and transition timer, disables grab controls, resume preserves attachment",
+      "result": "PASS"
+    },
+    {
+      "name": "Injected loss at attachment reliability boundary preserves attached carrot during actual neutral motion, denies new grab and recovers",
+      "result": "PASS",
+      "detail": {
+        "scope": "Reliability gate injection and final-bone movement. Existing separate mocap suite verifies camera-pipeline loss. No human input."
+      }
+    },
+    {
+      "name": "Release holds final world position through later body motion and reset restores initial planted grip without scoring",
+      "result": "PASS"
+    },
+    {
+      "name": "Same-tick rejected pose or suspended camera blocks grab before the next render",
+      "result": "PASS",
+      "detail": {
+        "cases": [
+          {
+            "condition": {
+              "lastRejection": "synthetic-pose-rejected",
+              "suspended": false
+            },
+            "grab": {
+              "state": "IDLE",
+              "reason": "雙手追蹤未可靠，請稍候或使用手動骨骼測試",
+              "eligible": false,
+              "contactSatisfied": false,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.8324162109654342,
+                2.241397248724654,
+                0.5998381757990122
+              ],
+              "rightHandPosition": [
+                -1.4064211698267974,
+                1.6409480564943555,
+                0.6450153878249003
+              ],
+              "gripMidpoint": [
+                -0.28700247943068163,
+                1.9411726526095046,
+                0.6224267818119562
+              ],
+              "carrotGripPosition": [
+                0,
+                0.14850802708114097,
+                0.65
+              ],
+              "leftDistance": 2.252913280833688,
+              "rightDistance": 2.0507127040837365,
+              "grabDistance": 2.252913280833688,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 2.318398807489572,
+              "attachmentError": 0,
+              "transitionElapsed": 0,
+              "reliable": false,
+              "distanceLimitEnabled": false,
+              "distanceBypassAllowed": true,
+              "owner": "Carrot world transform",
+              "paused": false,
+              "disposed": false
+            }
+          },
+          {
+            "condition": {
+              "suspended": true
+            },
+            "grab": {
+              "state": "IDLE",
+              "reason": "雙手追蹤未可靠，請稍候或使用手動骨骼測試",
+              "eligible": false,
+              "contactSatisfied": false,
+              "handMode": "midpoint",
+              "leftHandPosition": [
+                0.8324162109654342,
+                2.241397248724654,
+                0.5998381757990122
+              ],
+              "rightHandPosition": [
+                -1.4064211698267974,
+                1.6409480564943555,
+                0.6450153878249003
+              ],
+              "gripMidpoint": [
+                -0.28700247943068163,
+                1.9411726526095046,
+                0.6224267818119562
+              ],
+              "carrotGripPosition": [
+                0,
+                0.14850802708114097,
+                0.65
+              ],
+              "leftDistance": 2.252913280833688,
+              "rightDistance": 2.0507127040837365,
+              "grabDistance": 2.252913280833688,
+              "maxHandDistance": 0.20880571149673954,
+              "handSpan": 2.318398807489572,
+              "attachmentError": 0,
+              "transitionElapsed": 0,
+              "reliable": false,
+              "distanceLimitEnabled": false,
+              "distanceBypassAllowed": true,
+              "owner": "Carrot world transform",
+              "paused": false,
+              "disposed": false
+            }
+          }
+        ],
+        "scope": "Synthetic camera status and snapshot at the preview reliability boundary, normal DOM button handler. No human camera data."
+      }
+    },
+    {
+      "name": "A paused in-progress attach retains its exact interpolation time and resumes to the same state",
+      "result": "PASS"
+    },
+    {
+      "name": "Maximum-scale FK comparison retains both extreme lean/root corners inside the crop",
+      "result": "PASS",
+      "detail": [
+        {
+          "side": -18,
+          "root": 0.45,
+          "logicalBounds": {
+            "left": 786.8646687104352,
+            "right": 1199.5895756621749,
+            "top": 185.85460620117652,
+            "bottom": 681.000253618612
+          },
+          "viewport": {
+            "x": 574,
+            "y": 119,
+            "width": 640,
+            "height": 700
+          }
+        },
+        {
+          "side": 18,
+          "root": -0.45,
+          "logicalBounds": {
+            "left": 588.418690976809,
+            "right": 1001.1465910142966,
+            "top": 185.85695710858937,
+            "bottom": 681.0000036512166
+          },
+          "viewport": {
+            "x": 574,
+            "y": 119,
+            "width": 640,
+            "height": 700
+          }
+        }
+      ]
+    },
+    {
+      "name": "Minimum and maximum supported rabbit scales preserve Phaser anchor, attachment accuracy and raised-pose crop",
+      "result": "PASS",
+      "detail": [
+        {
+          "scale": 0.5,
+          "pixelsPerUnit": 43.76867788061427,
+          "grab": {
+            "state": "ATTACHED",
+            "reason": "開發附著跟隨中，雙手仍未接觸握點",
+            "eligible": true,
+            "contactSatisfied": false,
+            "handMode": "midpoint",
+            "leftHandPosition": [
+              0.9044495306831405,
+              2.534463766105731,
+              0.06944099459747857
+            ],
+            "rightHandPosition": [
+              -1.3849747422008114,
+              2.047887556260095,
+              0.06944099958569976
+            ],
+            "gripMidpoint": [
+              -0.24026260575883546,
+              2.291175661182913,
+              0.06944099709158916
+            ],
+            "carrotGripPosition": [
+              -0.24026260575883546,
+              2.291175661182913,
+              0.06944099709158916
+            ],
+            "leftDistance": 1.1702798713617564,
+            "rightDistance": 1.1702798713617564,
+            "grabDistance": 1.1702798713617564,
+            "maxHandDistance": 0.20880571149673954,
+            "handSpan": 2.3405597427235127,
+            "attachmentError": 0,
+            "transitionElapsed": 0.2,
+            "reliable": true,
+            "distanceLimitEnabled": false,
+            "distanceBypassAllowed": true,
+            "owner": "Rabbit final-bone hand attachment",
+            "paused": false,
+            "disposed": false,
+            "updateMs": 0.10000000149011612,
+            "modelCount": 1
+          },
+          "logicalBounds": {
+            "left": 833.3408708832894,
+            "right": 933.941655206364,
+            "top": 510.77903606313066,
+            "bottom": 681.0000197598653
+          }
+        },
+        {
+          "scale": 1.5,
+          "pixelsPerUnit": 131.30603364184282,
+          "grab": {
+            "state": "ATTACHED",
+            "reason": "開發附著跟隨中，雙手仍未接觸握點",
+            "eligible": true,
+            "contactSatisfied": false,
+            "handMode": "midpoint",
+            "leftHandPosition": [
+              0.9044495912010466,
+              2.534463746572077,
+              0.06944099463638054
+            ],
+            "rightHandPosition": [
+              -1.384974777202409,
+              2.0478875321028878,
+              0.06944099962460173
+            ],
+            "gripMidpoint": [
+              -0.2402625930006812,
+              2.2911756393374825,
+              0.06944099713049114
+            ],
+            "carrotGripPosition": [
+              -0.2402625930006812,
+              2.2911756393374825,
+              0.06944099713049114
+            ],
+            "leftDistance": 1.1702799185586679,
+            "rightDistance": 1.1702799185586679,
+            "grabDistance": 1.1702799185586679,
+            "maxHandDistance": 0.20880571149673954,
+            "handSpan": 2.3405598371173357,
+            "attachmentError": 0,
+            "transitionElapsed": 0.2,
+            "reliable": true,
+            "distanceLimitEnabled": false,
+            "distanceBypassAllowed": true,
+            "owner": "Rabbit final-bone hand attachment",
+            "paused": false,
+            "disposed": false,
+            "updateMs": 0,
+            "modelCount": 1
+          },
+          "logicalBounds": {
+            "left": 712.01894833294,
+            "right": 1013.8299990220636,
+            "top": 170.3368390847723,
+            "bottom": 681.0000592788402
+          }
+        }
+      ]
+    },
+    {
+      "name": "Narrow viewport preserves render and accessible scrolling controls",
+      "result": "PASS"
+    },
+    {
+      "name": "Repeated Sprite switching and home teardown remove prototype UI and textures without duplicate models",
+      "result": "PASS",
+      "detail": {
+        "dynamicTextures": [],
+        "panels": 0,
+        "canvases": 1
+      }
+    },
+    {
+      "name": "Carrot GLB failure restores playable Sprite and one visible original carrot",
+      "result": "PASS",
+      "detail": "fallback: Carrot GLB HTTP 404"
+    },
+    {
+      "name": "Shutdown during delayed carrot fetch cannot attach late model or debug listeners",
+      "result": "PASS"
+    },
+    {
+      "name": "Ordinary development preview keeps existing carrot and excludes prototype controls",
+      "result": "PASS"
+    },
+    {
+      "name": "Console health after explicit expected 404 exclusion",
+      "result": "PASS"
+    }
+  ],
+  "poses": [
+    {
+      "requested": {
+        "name": "both-raised",
+        "left": 90,
+        "right": 90,
+        "elbow": 25,
+        "plane": 90
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.7873490893476806,
+          1.868802185618987,
+          0.7950848901577013
+        ],
+        "rightHandPosition": [
+          -0.7873490955012086,
+          1.8688021704918603,
+          0.7950848459080158
+        ],
+        "gripMidpoint": [
+          -3.0767640102347116e-9,
+          1.8688021780554236,
+          0.7950848680328586
+        ],
+        "carrotGripPosition": [
+          -3.0767640102347116e-9,
+          1.8688021780554236,
+          0.7950848680328586
+        ],
+        "leftDistance": 0.787349092424445,
+        "rightDistance": 0.787349092424445,
+        "grabDistance": 0.787349092424445,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.57469818484889,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 812.4068325392467,
+        "right": 975.5931674607533,
+        "top": 339,
+        "bottom": 681
+      }
+    },
+    {
+      "requested": {
+        "name": "lean-left",
+        "left": 80,
+        "right": 80,
+        "elbow": 45,
+        "plane": 75,
+        "side": -16
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          1.1615655862913912,
+          1.5696982150889107,
+          0.736906667425977
+        ],
+        "rightHandPosition": [
+          -0.541433431146044,
+          2.0579797688918915,
+          0.7369066248022621
+        ],
+        "gripMidpoint": [
+          0.31006607757267357,
+          1.813838991990401,
+          0.7369066461141196
+        ],
+        "carrotGripPosition": [
+          0.31006607757267357,
+          1.813838991990401,
+          0.7369066461141196
+        ],
+        "leftDistance": 0.8858081803044501,
+        "rightDistance": 0.8858081803044501,
+        "grabDistance": 0.8858081803044501,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.7716163606089002,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 828.0408077026777,
+        "right": 1012.9383062731789,
+        "top": 338.79505449408185,
+        "bottom": 681
+      }
+    },
+    {
+      "requested": {
+        "name": "lean-right",
+        "left": 80,
+        "right": 80,
+        "elbow": 45,
+        "plane": 75,
+        "side": 16
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.5414709623282663,
+          2.057969708232216,
+          0.7368994175463618
+        ],
+        "rightHandPosition": [
+          -1.1615507161205727,
+          1.5697271381446083,
+          0.736899374922896
+        ],
+        "gripMidpoint": [
+          -0.3100398768961532,
+          1.813848423188412,
+          0.7368993962346289
+        ],
+        "carrotGripPosition": [
+          -0.3100398768961532,
+          1.813848423188412,
+          0.7368993962346289
+        ],
+        "leftDistance": 0.8858137000115283,
+        "rightDistance": 0.8858137000115281,
+        "grabDistance": 0.8858137000115283,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.7716274000230563,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 775.0677542050585,
+        "right": 959.9623213976147,
+        "top": 338.79416273560946,
+        "bottom": 681
+      }
+    },
+    {
+      "requested": {
+        "name": "shallow-knee",
+        "left": 70,
+        "right": 70,
+        "elbow": 45,
+        "plane": 90,
+        "knee": 0.65
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.7873751007172838,
+          1.6966441097074223,
+          0.7716987618075564
+        ],
+        "rightHandPosition": [
+          -0.7874247079842277,
+          1.696605191208864,
+          0.7716987175585166
+        ],
+        "gripMidpoint": [
+          -0.00002480363347195924,
+          1.6966246504581433,
+          0.7716987396830365
+        ],
+        "carrotGripPosition": [
+          -0.00002480363347195924,
+          1.6966246504581433,
+          0.7716987396830365
+        ],
+        "leftDistance": 0.7873999045912072,
+        "rightDistance": 0.7873999045912072,
+        "grabDistance": 0.7873999045912072,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.5747998091824145,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 812.4010185505367,
+        "right": 975.5952819719424,
+        "top": 342.47475837862044,
+        "bottom": 681.0000466345358
+      }
+    },
+    {
+      "requested": {
+        "name": "translate-left",
+        "left": 80,
+        "right": 80,
+        "elbow": 25,
+        "plane": 90,
+        "knee": 0.5,
+        "root": -0.1
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.6874006171774452,
+          1.6988394803472358,
+          0.822859548349832
+        ],
+        "rightHandPosition": [
+          -0.8873782870459244,
+          1.6988428510527778,
+          0.8228582236117178
+        ],
+        "gripMidpoint": [
+          -0.0999888349342396,
+          1.6988411657000069,
+          0.8228588859807748
+        ],
+        "carrotGripPosition": [
+          -0.0999888349342396,
+          1.6988411657000069,
+          0.8228588859807748
+        ],
+        "leftDistance": 0.7873894521137671,
+        "rightDistance": 0.7873894521137671,
+        "grabDistance": 0.7873894521137671,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.5747789042275342,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 803.6509985269416,
+        "right": 966.8434855802783,
+        "top": 341.87415257699314,
+        "bottom": 681.000030157916
+      }
+    },
+    {
+      "requested": {
+        "name": "translate-right",
+        "left": 80,
+        "right": 80,
+        "elbow": 25,
+        "plane": 90,
+        "knee": 0.5,
+        "root": 0.1
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.8873670939825152,
+          1.6988405485287086,
+          0.8228630102716299
+        ],
+        "rightHandPosition": [
+          -0.6874118101920184,
+          1.698840541312562,
+          0.8228629640675333
+        ],
+        "gripMidpoint": [
+          0.09997764189524844,
+          1.6988405449206354,
+          0.8228629871695816
+        ],
+        "carrotGripPosition": [
+          0.09997764189524844,
+          1.6988405449206354,
+          0.8228629871695816
+        ],
+        "leftDistance": 0.7873894520872672,
+        "rightDistance": 0.7873894520872672,
+        "grabDistance": 0.7873894520872672,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 1.5747789041745344,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 821.1555351500627,
+        "right": 984.3480222019174,
+        "top": 341.87401221449306,
+        "bottom": 681.0000301585102
+      }
+    },
+    {
+      "requested": {
+        "name": "high-raise",
+        "left": 150,
+        "right": 150,
+        "plane": 0
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          1.1702259944527942,
+          2.369136366600662,
+          0.06948976468807261
+        ],
+        "rightHandPosition": [
+          -1.1702082839240766,
+          2.36913632941299,
+          0.06948976967167031
+        ],
+        "gripMidpoint": [
+          0.000008855264358786918,
+          2.369136348006826,
+          0.06948976717987146
+        ],
+        "carrotGripPosition": [
+          0.000008855264358786918,
+          2.369136348006826,
+          0.06948976717987146
+        ],
+        "leftDistance": 1.1702171391884357,
+        "rightDistance": 1.1702171391884357,
+        "grabDistance": 1.1702171391884357,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 2.3404342783768715,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 791.8066372605842,
+        "right": 996.1949079606809,
+        "top": 339.0002540928104,
+        "bottom": 681.0000023639186
+      }
+    },
+    {
+      "requested": {
+        "name": "asymmetric-arms",
+        "left": 110,
+        "right": 65,
+        "elbow": 30,
+        "plane": 65,
+        "side": -10,
+        "knee": 0.4
+      },
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          1.1745888087019336,
+          1.9157661825418002,
+          0.6271761644823698
+        ],
+        "rightHandPosition": [
+          -0.8584895956945591,
+          1.6846205701705659,
+          0.7728283632155148
+        ],
+        "gripMidpoint": [
+          0.15804960650368727,
+          1.800193376356183,
+          0.7000022638489423
+        ],
+        "carrotGripPosition": [
+          0.15804960650368727,
+          1.800193376356183,
+          0.7000022638489423
+        ],
+        "leftDistance": 1.025676685844236,
+        "rightDistance": 1.025676685844236,
+        "grabDistance": 1.025676685844236,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 2.051353371688472,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 807.3945612945809,
+        "right": 1008.2646350217801,
+        "top": 338.5029507600917,
+        "bottom": 681.0000314000063
+      }
+    }
+  ],
+  "screenshots": [
+    "01-initial.png",
+    "01-initial-three.png",
+    "02-hands-near-fixture.png",
+    "02-hands-near-fixture-three.png",
+    "strict-01-two-hand-grasp.png",
+    "strict-01-two-hand-grasp-three.png",
+    "strict-raise.png",
+    "strict-raise-three.png",
+    "strict-lean-left.png",
+    "strict-lean-left-three.png",
+    "strict-lean-right.png",
+    "strict-lean-right-three.png",
+    "strict-shallow-knee.png",
+    "strict-shallow-knee-three.png",
+    "strict-translate-left.png",
+    "strict-translate-left-three.png",
+    "strict-translate-right.png",
+    "strict-translate-right-three.png",
+    "03-attach-transition.png",
+    "03-attach-transition-three.png",
+    "04-attached.png",
+    "04-attached-three.png",
+    "pose-both-raised.png",
+    "pose-both-raised-three.png",
+    "pose-lean-left.png",
+    "pose-lean-left-three.png",
+    "pose-lean-right.png",
+    "pose-lean-right-three.png",
+    "pose-shallow-knee.png",
+    "pose-shallow-knee-three.png",
+    "pose-translate-left.png",
+    "pose-translate-left-three.png",
+    "pose-translate-right.png",
+    "pose-translate-right-three.png",
+    "pose-high-raise.png",
+    "pose-high-raise-three.png",
+    "pose-asymmetric-arms.png",
+    "pose-asymmetric-arms-three.png",
+    "05-grip-points.png",
+    "05-grip-points-three.png",
+    "06-released.png",
+    "06-released-three.png",
+    "07-reset.png",
+    "07-reset-three.png",
+    "scale-0.5.png",
+    "scale-0.5-three.png",
+    "scale-1.5.png",
+    "scale-1.5-three.png",
+    "scale-1.5-fk-corner.png",
+    "scale-1.5-fk-corner-three.png",
+    "08-small-viewport.png",
+    "08-small-viewport-three.png"
+  ],
+  "performance": {
+    "status": "NOT_RUN",
+    "reason": "QA_SKIP_PERFORMANCE=1, measured in separate idle-browser run"
+  },
+  "errors": [],
+  "warnings": [
+    "Rabbit 3D preview fell back to sprite: Carrot GLB HTTP 404"
+  ],
+  "contact": {
+    "handSpan": 0.3254150500372058,
+    "maximumHandDistance": 0.20880571149673954,
+    "eligible": true,
+    "interpretation": "Fixture explicitly places carrot at current hand midpoint. Eligibility and screenshots determine whether this pose gives actual two-hand contact."
+  },
+  "strictContact": {
+    "fixture": "Explicit development placement at final hand midpoint",
+    "initial": {
+      "state": "ATTACHED",
+      "reason": "蘿蔔跟隨最終手部姿態",
+      "eligible": true,
+      "contactSatisfied": true,
+      "handMode": "midpoint",
+      "leftHandPosition": [
+        0.16269162513851274,
+        1.625057806639041,
+        0.5830861804989302
+      ],
+      "rightHandPosition": [
+        -0.16269166423984716,
+        1.6250578038791508,
+        0.5830861542653716
+      ],
+      "gripMidpoint": [
+        -1.9550667210155304e-8,
+        1.6250578052590958,
+        0.5830861673821509
+      ],
+      "carrotGripPosition": [
+        -1.9550667210155304e-8,
+        1.6250578052590958,
+        0.5830861673821509
+      ],
+      "leftDistance": 0.16269164468918051,
+      "rightDistance": 0.16269164468918051,
+      "grabDistance": 0.16269164468918051,
+      "maxHandDistance": 0.20880571149673954,
+      "handSpan": 0.32538328937836103,
+      "attachmentError": 0,
+      "transitionElapsed": 0.2,
+      "reliable": true,
+      "distanceLimitEnabled": true,
+      "distanceBypassAllowed": true,
+      "owner": "Rabbit final-bone hand attachment",
+      "paused": false,
+      "disposed": false,
+      "updateMs": 0.09999999403953552,
+      "modelCount": 1
+    },
+    "poses": [
+      {
+        "requested": {
+          "name": "raise",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.1640723930001134,
+            1.6963707700999182,
+            0.582119356492154
+          ],
+          "rightHandPosition": [
+            -0.16407243175770775,
+            1.6963707632478695,
+            0.5821193304992847
+          ],
+          "gripMidpoint": [
+            -1.9378797178060125e-8,
+            1.6963707666738939,
+            0.5821193434957193
+          ],
+          "carrotGripPosition": [
+            -1.9378797178060125e-8,
+            1.6963707666738939,
+            0.5821193434957193
+          ],
+          "leftDistance": 0.16407241237891113,
+          "rightDistance": 0.16407241237891113,
+          "grabDistance": 0.16407241237891113,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32814482475782225,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.10000000149011612,
+          "modelCount": 1
+        }
+      },
+      {
+        "requested": {
+          "name": "lean-left",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145,
+          "side": -12
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.3608862807251662,
+            1.6412078627516862,
+            0.5821191130313083
+          ],
+          "rightHandPosition": [
+            0.03990993005291865,
+            1.7094256368746283,
+            0.5821190870384693
+          ],
+          "gripMidpoint": [
+            0.20039810538904243,
+            1.6753167498131574,
+            0.5821191000348888
+          ],
+          "carrotGripPosition": [
+            0.20039810538904243,
+            1.6753167498131574,
+            0.5821191000348888
+          ],
+          "leftDistance": 0.16407276007701818,
+          "rightDistance": 0.16407276007701815,
+          "grabDistance": 0.16407276007701818,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.3281455201540363,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.10000000149011612,
+          "modelCount": 1
+        }
+      },
+      {
+        "requested": {
+          "name": "lean-right",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145,
+          "side": 12
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            -0.03989661755251034,
+            1.7094261808354465,
+            0.5821191130313083
+          ],
+          "rightHandPosition": [
+            -0.3608738976048104,
+            1.6412127797518639,
+            0.5821190870384693
+          ],
+          "gripMidpoint": [
+            -0.20038525757866038,
+            1.675319480293655,
+            0.5821191000348888
+          ],
+          "carrotGripPosition": [
+            -0.20038525757866038,
+            1.675319480293655,
+            0.5821191000348888
+          ],
+          "leftDistance": 0.16407276007701818,
+          "rightDistance": 0.16407276007701815,
+          "grabDistance": 0.16407276007701818,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32814552015403636,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0,
+          "modelCount": 1
+        }
+      },
+      {
+        "requested": {
+          "name": "shallow-knee",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145,
+          "knee": 0.65
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.1640548780707478,
+            1.6566743957224626,
+            0.5821192417801072
+          ],
+          "rightHandPosition": [
+            -0.1640906420268225,
+            1.6566683082398805,
+            0.5821192157872682
+          ],
+          "gripMidpoint": [
+            -0.000017881978037342927,
+            1.6566713519811715,
+            0.5821192287836877
+          ],
+          "carrotGripPosition": [
+            -0.000017881978037342927,
+            1.6566713519811715,
+            0.5821192287836877
+          ],
+          "leftDistance": 0.16407276007701815,
+          "rightDistance": 0.16407276007701815,
+          "grabDistance": 0.16407276007701815,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.3281455201540363,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0.10000000149011612,
+          "modelCount": 1
+        }
+      },
+      {
+        "requested": {
+          "name": "translate-left",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145,
+          "root": -0.1,
+          "knee": 0.35
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.06408391197004007,
+            1.675855467418791,
+            0.5821191404560296
+          ],
+          "rightHandPosition": [
+            -0.2640616081839951,
+            1.675855460566382,
+            0.5821191144631906
+          ],
+          "gripMidpoint": [
+            -0.09998884810697752,
+            1.6758554639925864,
+            0.5821191274596101
+          ],
+          "carrotGripPosition": [
+            -0.09998884810697752,
+            1.6758554639925864,
+            0.5821191274596101
+          ],
+          "leftDistance": 0.16407276007701815,
+          "rightDistance": 0.16407276007701815,
+          "grabDistance": 0.16407276007701815,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.3281455201540363,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0,
+          "modelCount": 1
+        }
+      },
+      {
+        "requested": {
+          "name": "translate-right",
+          "left": 90,
+          "right": 90,
+          "elbow": 10,
+          "plane": 145,
+          "root": 0.1,
+          "knee": 0.35
+        },
+        "grab": {
+          "state": "ATTACHED",
+          "reason": "蘿蔔跟隨最終手部姿態",
+          "eligible": true,
+          "contactSatisfied": true,
+          "handMode": "midpoint",
+          "leftHandPosition": [
+            0.26405504873441454,
+            1.6758578266392623,
+            0.5821191130316199
+          ],
+          "rightHandPosition": [
+            -0.06409047141962061,
+            1.6758578197868532,
+            0.5821190870387809
+          ],
+          "gripMidpoint": [
+            0.09998228865739697,
+            1.6758578232130579,
+            0.5821191000352004
+          ],
+          "carrotGripPosition": [
+            0.09998228865739697,
+            1.6758578232130579,
+            0.5821191000352004
+          ],
+          "leftDistance": 0.16407276007701813,
+          "rightDistance": 0.16407276007701815,
+          "grabDistance": 0.16407276007701815,
+          "maxHandDistance": 0.20880571149673954,
+          "handSpan": 0.32814552015403625,
+          "attachmentError": 0,
+          "transitionElapsed": 0.2,
+          "reliable": true,
+          "distanceLimitEnabled": true,
+          "distanceBypassAllowed": true,
+          "owner": "Rabbit final-bone hand attachment",
+          "paused": false,
+          "disposed": false,
+          "updateMs": 0,
+          "modelCount": 1
+        }
+      }
+    ]
+  },
+  "continuous": {
+    "frames": 81,
+    "maximumError": 0,
+    "contactFraction": 1,
+    "sampling": "Phaser postupdate, after final hand sampling and attachment, during ordinary slider-driven pose interpolation"
+  },
+  "visualSequence": {
+    "frames": 45,
+    "seconds": 4.5,
+    "path": "strict-continuous.gif",
+    "input": "Scripted arm/body targets, existing final-bone IK and live Phaser attachment clock",
+    "maximumError": 0,
+    "contactFraction": 1
+  },
+  "attach": {
+    "initialPosition": [
+      0,
+      0.14850802708114097,
+      0.65
+    ],
+    "observedTransition": {
+      "state": "GRABBING",
+      "reason": "開發附著跟隨中，雙手仍未接觸握點",
+      "eligible": true,
+      "contactSatisfied": false,
+      "handMode": "midpoint",
+      "leftHandPosition": [
+        0.16269157518796107,
+        1.6250578057231964,
+        0.5830861805001598
+      ],
+      "rightHandPosition": [
+        -0.16269171419039885,
+        1.6250578029633058,
+        0.5830861542666012
+      ],
+      "gripMidpoint": [
+        -6.950121889115479e-8,
+        1.625057804343251,
+        0.5830861673833805
+      ],
+      "carrotGripPosition": [
+        -1.3664392035504884e-9,
+        0.17753795682675388,
+        0.6486844304948038
+      ],
+      "leftDistance": 1.4581102127182621,
+      "rightDistance": 1.4581102263631829,
+      "grabDistance": 1.4581102263631829,
+      "maxHandDistance": 0.20880571149673954,
+      "handSpan": 0.32538328937836103,
+      "attachmentError": 1.4490054661999807,
+      "transitionElapsed": 0.016659999999999855,
+      "reliable": true,
+      "distanceLimitEnabled": false,
+      "distanceBypassAllowed": true,
+      "owner": "Rabbit final-bone hand attachment",
+      "paused": false,
+      "disposed": false,
+      "updateMs": 0,
+      "modelCount": 1
+    },
+    "final": {
+      "state": "ATTACHED",
+      "reason": "蘿蔔跟隨最終手部姿態",
+      "eligible": true,
+      "contactSatisfied": true,
+      "handMode": "midpoint",
+      "leftHandPosition": [
+        0.16269162513851276,
+        1.625057806639041,
+        0.5830861804989302
+      ],
+      "rightHandPosition": [
+        -0.16269166423984716,
+        1.6250578038791506,
+        0.5830861542653716
+      ],
+      "gripMidpoint": [
+        -1.9550667196277516e-8,
+        1.6250578052590958,
+        0.5830861673821509
+      ],
+      "carrotGripPosition": [
+        -1.9550667196277516e-8,
+        1.6250578052590958,
+        0.5830861673821509
+      ],
+      "leftDistance": 0.16269164468918051,
+      "rightDistance": 0.16269164468918051,
+      "grabDistance": 0.16269164468918051,
+      "maxHandDistance": 0.20880571149673954,
+      "handSpan": 0.32538328937836103,
+      "attachmentError": 0,
+      "transitionElapsed": 0.2,
+      "reliable": true,
+      "distanceLimitEnabled": false,
+      "distanceBypassAllowed": true,
+      "owner": "Rabbit final-bone hand attachment",
+      "paused": false,
+      "disposed": false,
+      "updateMs": 0,
+      "modelCount": 1
+    },
+    "distanceBypass": true
+  },
+  "scales": [
+    {
+      "scale": 0.5,
+      "pixelsPerUnit": 43.76867788061427,
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.9044495306831405,
+          2.534463766105731,
+          0.06944099459747857
+        ],
+        "rightHandPosition": [
+          -1.3849747422008114,
+          2.047887556260095,
+          0.06944099958569976
+        ],
+        "gripMidpoint": [
+          -0.24026260575883546,
+          2.291175661182913,
+          0.06944099709158916
+        ],
+        "carrotGripPosition": [
+          -0.24026260575883546,
+          2.291175661182913,
+          0.06944099709158916
+        ],
+        "leftDistance": 1.1702798713617564,
+        "rightDistance": 1.1702798713617564,
+        "grabDistance": 1.1702798713617564,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 2.3405597427235127,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0.10000000149011612,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 833.3408708832894,
+        "right": 933.941655206364,
+        "top": 510.77903606313066,
+        "bottom": 681.0000197598653
+      }
+    },
+    {
+      "scale": 1.5,
+      "pixelsPerUnit": 131.30603364184282,
+      "grab": {
+        "state": "ATTACHED",
+        "reason": "開發附著跟隨中，雙手仍未接觸握點",
+        "eligible": true,
+        "contactSatisfied": false,
+        "handMode": "midpoint",
+        "leftHandPosition": [
+          0.9044495912010466,
+          2.534463746572077,
+          0.06944099463638054
+        ],
+        "rightHandPosition": [
+          -1.384974777202409,
+          2.0478875321028878,
+          0.06944099962460173
+        ],
+        "gripMidpoint": [
+          -0.2402625930006812,
+          2.2911756393374825,
+          0.06944099713049114
+        ],
+        "carrotGripPosition": [
+          -0.2402625930006812,
+          2.2911756393374825,
+          0.06944099713049114
+        ],
+        "leftDistance": 1.1702799185586679,
+        "rightDistance": 1.1702799185586679,
+        "grabDistance": 1.1702799185586679,
+        "maxHandDistance": 0.20880571149673954,
+        "handSpan": 2.3405598371173357,
+        "attachmentError": 0,
+        "transitionElapsed": 0.2,
+        "reliable": true,
+        "distanceLimitEnabled": false,
+        "distanceBypassAllowed": true,
+        "owner": "Rabbit final-bone hand attachment",
+        "paused": false,
+        "disposed": false,
+        "updateMs": 0,
+        "modelCount": 1
+      },
+      "logicalBounds": {
+        "left": 712.01894833294,
+        "right": 1013.8299990220636,
+        "top": 170.3368390847723,
+        "bottom": 681.0000592788402
+      }
+    }
+  ],
+  "fkCrop": [
+    {
+      "side": -18,
+      "root": 0.45,
+      "logicalBounds": {
+        "left": 786.8646687104352,
+        "right": 1199.5895756621749,
+        "top": 185.85460620117652,
+        "bottom": 681.000253618612
+      },
+      "viewport": {
+        "x": 574,
+        "y": 119,
+        "width": 640,
+        "height": 700
+      }
+    },
+    {
+      "side": 18,
+      "root": -0.45,
+      "logicalBounds": {
+        "left": 588.418690976809,
+        "right": 1001.1465910142966,
+        "top": 185.85695710858937,
+        "bottom": 681.0000036512166
+      },
+      "viewport": {
+        "x": 574,
+        "y": 119,
+        "width": 640,
+        "height": 700
+      }
+    }
+  ]
+}
