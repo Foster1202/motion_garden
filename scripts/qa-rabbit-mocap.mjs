@@ -22,6 +22,20 @@ page.on('console', message => {
 const check = (name, detail) => report.checks.push({ name, result: 'PASS', detail });
 const snapshot = () => page.evaluate(async () =>
   (await import('/src/main.ts')).game.scene.getScene('CarrotPull').getDebugSnapshot());
+const assertPreviewLayout = async () => {
+  const layout = await page.evaluate(() => {
+    const bounds = selector => document.querySelector(selector).getBoundingClientRect();
+    const preview = bounds('.pose-preview');
+    const overlap = other => Math.max(0, Math.min(preview.right, other.right) - Math.max(preview.left, other.left))
+      * Math.max(0, Math.min(preview.bottom, other.bottom) - Math.max(preview.top, other.top));
+    return { tools: overlap(bounds('.rabbit-tools')), controls: overlap(bounds('.motion-controls')),
+      status: overlap(bounds('.person-status')), previewRight: preview.right, center: innerWidth / 2 };
+  });
+  assert.equal(layout.tools, 0, JSON.stringify(layout));
+  assert.equal(layout.controls, 0, JSON.stringify(layout));
+  assert.equal(layout.status, 0, JSON.stringify(layout));
+  assert.ok(layout.previewRight > layout.center);
+};
 const wait = async (predicate, timeout = 15000) => {
   const end = Date.now() + timeout;
   while (Date.now() < end) {
@@ -173,15 +187,15 @@ try {
     return {
       sourceOpacity: getComputedStyle(document.querySelector('.pose-video')).opacity,
       keptAlpha: context.getImageData(40, 90, 1, 1).data[3],
-      removedAlpha: context.getImageData(280, 90, 1, 1).data[3],
+      backgroundAlpha: context.getImageData(280, 90, 1, 1).data[3],
       label: document.querySelector('.pose-preview-label').textContent,
     };
   });
   assert.equal(personPreview.sourceOpacity, '0');
   assert.ok(personPreview.keptAlpha > 0);
-  assert.equal(personPreview.removedAlpha, 0);
-  assert.match(personPreview.label, /背景已移除/);
-  check('Camera preview hides the raw video and draws only segmentation-mask pixels by default', personPreview);
+  assert.equal(personPreview.backgroundAlpha, 255);
+  assert.match(personPreview.label, /本機處理/);
+  check('Camera preview keeps the original image with both preview enhancements disabled by default', personPreview);
   await page.screenshot({ path: `${output}/standing.png` });
   const rest = await snapshot();
 
@@ -299,13 +313,7 @@ try {
     await page.setViewportSize(viewport);
     await page.waitForTimeout(250);
     assert.equal((await snapshot()).rabbit3d.status, 'ready');
-    const overlap = await page.evaluate(() => {
-      const a = document.querySelector('.rabbit-tools').getBoundingClientRect();
-      const b = document.querySelector('.pose-preview').getBoundingClientRect();
-      return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left))
-        * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
-    });
-    assert.equal(overlap, 0);
+    await assertPreviewLayout();
     await page.screenshot({ path: `${output}/resize-${viewport.width}.png` });
   }
   check('Desktop and narrow layouts keep preview and scrollable developer panel separate');
@@ -401,6 +409,15 @@ try {
   assert.equal(await page.locator('.rabbit-3d-debug').count(), 0);
   assert.ok(Math.abs((await calibrationProfile()).standingAngle - 155) < 1);
   await page.screenshot({ path: `${output}/automatic-without-mocap-debug.png` });
+  for (const viewport of [{ width: 1512, height: 982 }, { width: 600, height: 800 }]) {
+    await page.setViewportSize(viewport);
+    await page.waitForTimeout(200);
+    await assertPreviewLayout();
+    await page.screenshot({ path: `${output}/preview-layout-${viewport.width}.png` });
+  }
+  await page.setViewportSize({ width: 1512, height: 982 });
+  check('Preview stays on the right without overlapping controls, status or IK tools when mocap telemetry is hidden');
+
   await fixture({ lost: true });
   await wait(s => s.input.suspended);
   await page.locator('[data-action=pause]').click();

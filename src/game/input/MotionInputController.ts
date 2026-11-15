@@ -73,6 +73,10 @@ export class MotionInputController implements MotionInput {
       ready: Boolean(this.active), suspended: !this.active, requestPause: false,
       message: this.active ? '鍵盤測試模式' : this.loading ? '正在準備鏡頭…' : '揀一個輸入模式，準備好先開始。',
     };
+    if (status.mode === 'camera' && (status.cameraStatus !== 'running'
+      || status.lastFrameTimestampMs === undefined || performance.now() - status.lastFrameTimestampMs > 250)) {
+      this.preview?.clear();
+    }
     if (status.mode === 'camera' && (!status.ready || status.suspended)) {
       const calibration = this.calibration?.pause(performance.now());
       if (calibration && calibration.state !== 'FAILED') this.calibrationPanel?.render({
@@ -96,11 +100,13 @@ export class MotionInputController implements MotionInput {
   pause() {
     this.paused = true;
     this.active?.pause?.();
+    this.preview?.clear();
     this.active?.reset();
     this.calibration?.pause(performance.now());
   }
   resume() {
     this.paused = false;
+    this.preview?.clear();
     this.active?.reset();
     this.active?.resume?.();
     this.calibration?.resume(performance.now());

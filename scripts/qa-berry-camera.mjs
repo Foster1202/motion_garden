@@ -85,13 +85,13 @@ try {
     return {
       sourceOpacity: getComputedStyle(document.querySelector('.berry-camera-source')).opacity,
       keptAlpha: context.getImageData(40, 90, 1, 1).data[3],
-      removedAlpha: context.getImageData(280, 90, 1, 1).data[3],
+      backgroundAlpha: context.getImageData(280, 90, 1, 1).data[3],
     };
   });
   assert.equal(personPreview.sourceOpacity, '0');
   assert.ok(personPreview.keptAlpha > 0);
-  assert.equal(personPreview.removedAlpha, 0);
-  check('Berry camera hides the raw video and draws only segmentation-mask pixels by default');
+  assert.equal(personPreview.backgroundAlpha, 255);
+  check('Berry camera keeps the original image with both preview enhancements disabled by default');
   check('Camera starts without calibration; pause during delayed initialization retains camera and resumes');
 
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
@@ -115,6 +115,7 @@ try {
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
   await page.locator('[data-action=pause]').click();
   const paused = await snapshot(); const inferenceCount = await page.evaluate(() => window.__berryStats.inferences);
+  assert.equal(await page.locator('.berry-camera').evaluate(canvas => canvas.getContext('2d').getImageData(40, 90, 1, 1).data[3]), 0);
   await fixture({ left: .07 }); await page.waitForTimeout(600);
   assert.equal((await snapshot()).clock, paused.clock); assert.equal((await snapshot()).score, 2);
   assert.equal(await page.evaluate(() => window.__berryStats.inferences), inferenceCount);
@@ -136,6 +137,23 @@ try {
   assert.equal(await page.evaluate(() => window.__berryStats.closed), 2);
   assert.equal(await page.locator('.berry-camera').count(), 0);
   check('Leaving during pending initialization closes late model and tracks without stale UI');
+
+  await fixture({ delay: 900 }); await enter(); await page.locator('[data-action=camera]').click();
+  await page.waitForFunction(() => window.__berryStats.requested === 3);
+  await page.evaluate(async () => {
+    const source = (await import('/src/main.ts')).game.scene.getScene('BerryKick').inputSource;
+    const onError = source.onError;
+    window.__berryEndedErrors = 0;
+    source.onError = message => { window.__berryEndedErrors++; onError(message); };
+    window.__berryStats.streams.at(-1).getVideoTracks()[0].dispatchEvent(new Event('ended'));
+  });
+  await page.locator('dialog [data-action=keyboard]').waitFor();
+  await page.waitForTimeout(1200);
+  assert.equal(await page.evaluate(() => window.__berryEndedErrors), 1);
+  assert.equal(await page.evaluate(() => window.__berryStats.closed), 3);
+  assert.equal(await page.locator('.berry-camera').count(), 0);
+  await page.locator('dialog [data-action=camera-home]').click();
+  check('Camera ending during initialization clears the preview and reports failure once after the late model closes');
 
   await fixture({ delay: 0 }); await enter(); await page.locator('[data-action=camera]').click();
   await wait(s => s.armed.left);

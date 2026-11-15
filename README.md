@@ -64,7 +64,7 @@ npm run preview
 使用官方 **`@mediapipe/tasks-vision@1.0.1`**，固定版本與 package-lock。`FilesetResolver`／`PoseLandmarker` 在選擇鏡頭時才 lazy import。
 
 - `runningMode: VIDEO`，`numPoses: 1`，CPU delegate。
-- Detection／presence／tracking confidence 均為 **0.55**。同一次推理會輸出人物 segmentation mask；Camera 小畫面及 Berry Camera 預覽預設只繪製人物，背景像素透明，不設背景移除開關。遮罩只供顯示，動作判定仍只使用人體 landmarks。
+- Detection／presence／tracking confidence 均為 **0.55**。同一次推理會輸出人物 segmentation mask。Camera 小畫面及 Berry Camera 預覽共用此遮罩。首頁「設置」可獨立開啟身體關鍵點及背景處理，背景效果可選模糊或灰色，兩項預設關閉。遮罩只供顯示，動作判定仍只使用人體 landmarks。
 - 官方 **Pose Landmarker Lite float16 v1**：`public/mediapipe/models/pose_landmarker_lite.task`。
 - Package WASM 位於 `public/mediapipe/wasm/`，依 BASE_URL 載入；runtime 不使用 CDN 或外部模型網址。
 - 模型來源：[Google 官方模型](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task)。SHA256：`59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`。
@@ -99,7 +99,7 @@ Preview 用 CSS 鏡像；骨架 canvas 亦作相同 visual mirror。模型讀取
 
 拔蘿蔔開啟鏡頭後先安靜等候。可靠人物入鏡後顯示自然站立指示，穩定取樣後自動進入舒服淺屈膝步驟，完成即套用個人範圍。自然企直、雙手放鬆並穩定約 600ms 後建立 MotionReference，3D 阿兔自動同步。發現未能穩定辨識可重試或使用鍵盤。手動「重新設定動作」及開發「重設參考姿勢」均保留。短暫丟失跟蹤保留當次設定，人物／鏡頭位置明顯改變時，3D 參考會提示重設。
 
-首頁「設置」保留預設／手動站立與屈膝閾值、保持時間、姿勢 EMA、確認時間、可信度、3D 增益、平滑及兔子大小。拔蘿蔔個人校準完成後以當次個人角度控制。只有手動數字設定會保存到 localStorage。
+首頁「設置」保留預設／手動站立與屈膝閾值、保持時間、姿勢 EMA、確認時間、可信度、3D 增益、平滑及兔子大小。拔蘿蔔個人校準完成後以當次個人角度控制。手動數值及鏡頭預覽選項會保存到原有 localStorage，舊版數值設定會保留並補上預設關閉的預覽選項。
 
 開發預覽、骨骼角度與此次修復詳見 [Task 4B 文檔](docs/task-4b-motion-retargeting.md)。
 
@@ -120,9 +120,9 @@ QA_URL=http://127.0.0.1:5178/ npm run qa:carrot-game
 
 ## 開發 Preview／Debug
 
-Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏；顯示時一律只繪製人物，不顯示原始背景，沒有額外開關。Skeleton 和數值 debug 預設關閉：`DEV_POSE_DEBUG = false`、`DEV_POSE_PREVIEW = true` 在 `PoseDebugOverlay.ts`。
+Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏。首頁「設置」的「顯示身體關鍵點」會繪製 33 個綠色點及藍色骨架，低可信度點以半透明紅色顯示。「背景處理」可選模糊／灰色。兩項可獨立使用，預設關閉，於下次開啟鏡頭套用。原始影像、遮罩和骨架使用同一比例及 CSS 鏡像。背景處理沿用同次推理的遮罩，柔化邊緣並只對連續的低幅度邊緣變化作輕量平滑。人物／遮罩丟失、暫停及鏡頭停止會清除舊畫面或改用當前模糊／灰色背景。
 
-如要顯示 skeleton、左右／融合膝角、PoseState、信心、inference ms、FPS，以及 standing／bend baselines、兩個個人閾值和 range，在 `.env.local` 加入以下設定後重新啟動 dev server：
+如要顯示左右／融合膝角、PoseState、信心、inference ms、FPS，以及 standing／bend baselines、兩個個人閾值和 range，在 `.env.local` 加入以下設定後重新啟動 dev server：
 
 ```dotenv
 VITE_POSE_DEBUG=true
@@ -130,7 +130,7 @@ VITE_POSE_DEBUG=true
 VITE_SHOW_KEYBOARD_HINTS=false
 ```
 
-Debug 只在 DEV 啟用，只畫軀幹及雙腿，不保存影像或 landmarks。沒有開發快捷鍵；模式切換由明確 UI 按鈕處理。
+數值 Debug 只在 DEV 啟用。身體關鍵點由上述設置獨立控制。Preview 不保存影像或 landmarks。沒有開發快捷鍵。模式切換由明確 UI 按鈕處理。`npm run qa:person-preview` 驗證四種開關組合、兩種背景及持久化。
 
 ## 主要檔案
 

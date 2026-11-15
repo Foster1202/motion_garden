@@ -1,6 +1,6 @@
-import { DEFAULT_GAME_SETTINGS, GAME_SETTING_LIMITS, getGameSettings, saveGameSettings, type GameSettings } from './gameSettings';
+import { DEFAULT_GAME_SETTINGS, GAME_SETTING_LIMITS, getGameSettings, saveGameSettings, type GameSettings, type NumericGameSetting } from './gameSettings';
 
-const FIELDS: readonly [keyof GameSettings, string, string, number][] = [
+const FIELDS: readonly [NumericGameSetting, string, string, number][] = [
   ['standingAngle', '站立觸發角度（°）', '膝角達到此值即視為企直。', 1],
   ['bendingAngle', '屈膝觸發角度（°）', '膝角低於此值即視為屈膝；數值越大，越容易觸發，毋須追求深蹲。', 1],
   ['bendHoldMs', '屈膝保持時間（毫秒）', '保持多久才捉實蘿蔔。', 50],
@@ -15,7 +15,11 @@ const FIELDS: readonly [keyof GameSettings, string, string, number][] = [
 
 export class SettingsPanel {
   private readonly dialog = document.createElement('dialog');
-  private readonly inputs = new Map<keyof GameSettings, HTMLInputElement>();
+  private readonly inputs = new Map<NumericGameSetting, HTMLInputElement>();
+  private readonly showBodyKeypoints = document.createElement('input');
+  private readonly backgroundProcessing = document.createElement('input');
+  private readonly backgroundMode = document.createElement('select');
+  private readonly backgroundModeLabel = document.createElement('label');
   private readonly error = document.createElement('p');
   private closed = false;
 
@@ -31,6 +35,38 @@ export class SettingsPanel {
     form.append(heading, intro);
     const fields = document.createElement('div');
     fields.className = 'game-settings-fields';
+    const preview = document.createElement('fieldset');
+    preview.className = 'game-settings-preview';
+    const legend = document.createElement('legend');
+    legend.textContent = '鏡頭預覽';
+    preview.append(legend);
+    for (const [input, name, title] of [
+      [this.showBodyKeypoints, 'showBodyKeypoints', '顯示身體關鍵點'],
+      [this.backgroundProcessing, 'backgroundProcessing', '背景處理'],
+    ] as const) {
+      const label = document.createElement('label');
+      label.className = 'game-settings-switch';
+      input.type = 'checkbox';
+      input.name = name;
+      const caption = document.createElement('span');
+      caption.textContent = title;
+      label.append(input, caption);
+      preview.append(label);
+    }
+    this.backgroundModeLabel.className = 'game-settings-background-mode';
+    const modeCaption = document.createElement('span');
+    modeCaption.textContent = '背景效果';
+    this.backgroundMode.name = 'backgroundMode';
+    for (const [value, title] of [['blur', '模糊'], ['gray', '灰色']] as const) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = title;
+      this.backgroundMode.append(option);
+    }
+    this.backgroundModeLabel.append(modeCaption, this.backgroundMode);
+    preview.append(this.backgroundModeLabel);
+    this.backgroundProcessing.addEventListener('change', () => this.updateBackgroundMode());
+    fields.append(preview);
     for (const [key, title, help, step] of FIELDS) {
       const label = document.createElement('label');
       const caption = document.createElement('span');
@@ -69,7 +105,12 @@ export class SettingsPanel {
     form.append(fields, this.error, actions);
     form.addEventListener('submit', event => {
       event.preventDefault();
-      const settings = Object.fromEntries([...this.inputs].map(([key, input]) => [key, input.valueAsNumber])) as unknown as GameSettings;
+      const numeric = Object.fromEntries([...this.inputs].map(([key, input]) => [key, input.valueAsNumber])) as Pick<GameSettings, NumericGameSetting>;
+      const settings: GameSettings = { ...numeric,
+        showBodyKeypoints: this.showBodyKeypoints.checked,
+        backgroundProcessing: this.backgroundProcessing.checked,
+        backgroundMode: this.backgroundMode.value as GameSettings['backgroundMode'],
+      };
       try { saveGameSettings(settings); this.destroy(); }
       catch (error) { this.error.textContent = error instanceof Error ? error.message : '未能儲存設定，請檢查瀏覽器儲存權限。'; }
     });
@@ -81,6 +122,15 @@ export class SettingsPanel {
 
   private setValues(settings: Readonly<GameSettings>): void {
     for (const [key, input] of this.inputs) input.value = String(settings[key]);
+    this.showBodyKeypoints.checked = settings.showBodyKeypoints;
+    this.backgroundProcessing.checked = settings.backgroundProcessing;
+    this.backgroundMode.value = settings.backgroundMode;
+    this.updateBackgroundMode();
+  }
+
+  private updateBackgroundMode(): void {
+    this.backgroundMode.disabled = !this.backgroundProcessing.checked;
+    this.backgroundModeLabel.hidden = !this.backgroundProcessing.checked;
   }
 
   destroy(): void {

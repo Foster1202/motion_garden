@@ -46,8 +46,8 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui = new Overlay(); this.renderHud();
     this.inputSource = new BerryKickInput(() => this.togglePause(), message => {
       this.pause(); this.ui.closeModal(); this.ui.dialog(`<h2 id="dialog-title">相機暫停咗</h2><p>${message}</p>
-        <button class="button primary" data-action="keyboard">使用鍵盤</button><button class="button quiet" data-action="home">返回主頁</button>`);
-      this.ui.on('keyboard', () => { this.inputSource.useKeyboard(); this.active = true; this.resume(); }); this.ui.on('home', () => this.home());
+        <button class="button primary" data-action="keyboard">使用鍵盤</button><button class="button quiet" data-action="camera-home">返回主頁</button>`);
+      this.ui.on('keyboard', () => { this.inputSource.useKeyboard(); this.active = true; this.resume(); }); this.ui.on('camera-home', () => this.home());
     });
     window.addEventListener('blur', this.onBlur); document.addEventListener('visibilitychange', this.onVisibility);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup());

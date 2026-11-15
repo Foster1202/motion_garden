@@ -1011,7 +1011,7 @@ kbd {
 .pose-preview {
   pointer-events:none;
   position:absolute;
-  left:3%;
+  right:3%;
   bottom:15%;
   width:min(23%,320px);
   padding:6px;
@@ -1028,6 +1028,9 @@ kbd {
   overflow:hidden;
   border-radius:8px;
 }
+
+.using-camera:not(.calibrating) .pose-preview { max-width:calc(12cqw * var(--pose-preview-aspect, 1.7778)); }
+.pose-preview-label { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
 
 .pose-video,
 .pose-preview-media canvas {
@@ -1079,7 +1082,7 @@ kbd {
     border-radius:10px;
   }
   .motion-switch { min-height:32px; padding:.3em; }
-  .pose-preview { width:35%; bottom:21%; left:2%; padding:3px; }
+  .pose-preview { width:35%; bottom:21%; right:2%; padding:3px; }
   .pose-preview-label { font-size:9px; }
   .pose-metrics { font-size:9px; }
 }
@@ -1242,10 +1245,15 @@ kbd {
   .mocap-debug, .rabbit-ik-debug, .carrot-grab-debug { padding:6px; font-size:11px; }
 }
 .calibrating .instruction,.calibrating .steps,.calibrating .hold-indicator { visibility:hidden; }
-@media (max-width:700px) {
-  .mocap-debug-visible.using-camera:not(.calibrating) .pose-preview {
-    left:2%;
-    right:auto;
+.using-camera:not(.calibrating) .rabbit-tools { left:2%; right:auto; }
+.using-camera:not(.calibrating):has(.rabbit-tools) .motion-controls { left:auto; right:3%; top:40%; max-height:24%; overflow:auto; }
+@media (max-width:1000px) {
+  .using-camera:not(.calibrating):has(.rabbit-tools) .motion-controls { width:40%; font-size:12px; padding:6px; }
+  .using-camera:not(.calibrating):has(.rabbit-tools) .motion-switch { min-height:32px; padding:.3em; }
+  .using-camera:not(.calibrating):has(.rabbit-tools) .person-status { right:29%; max-width:34%; }
+  .using-camera:not(.calibrating):has(.rabbit-tools) .pose-preview {
+    left:auto;
+    right:2%;
     top:auto;
     bottom:4%;
     width:24%;
@@ -1268,7 +1276,13 @@ kbd {
 .game-settings h2 { margin: 0 0 12px; }
 .game-settings-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-top: 24px; }
 .game-settings-fields label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
-.game-settings-fields input { box-sizing: border-box; width: 100%; min-height: 44px; border: 1px solid #87977a; border-radius: 8px; padding: 8px; font: inherit; background: white; color: #263822; }
+.game-settings-fields input,.game-settings-fields select { box-sizing: border-box; width: 100%; min-height: 44px; border: 1px solid #87977a; border-radius: 8px; padding: 8px; font: inherit; background: white; color: #263822; }
+.game-settings-preview { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; border:1px solid #c4cfb7; border-radius:12px; margin:0; padding:12px; min-width:0; }
+.game-settings-preview legend { padding:0 6px; font-weight:700; }
+.game-settings-fields .game-settings-switch { flex-direction:row; align-items:center; gap:10px; min-height:44px; cursor:pointer; }
+.game-settings-switch input { width:22px; height:22px; min-height:22px; margin:0; accent-color:#476743; flex-shrink:0; }
+.game-settings-background-mode { grid-column:1 / -1; }
+.game-settings-background-mode[hidden] { display:none; }
 .game-settings-fields small { font-size: 13px; font-weight: 400; line-height: 1.5; }
 .game-settings-error { color: #9b362b; min-height: 1.5em; }
 .game-settings-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
@@ -1278,6 +1292,7 @@ kbd {
 @media (max-width: 600px) {
   .game-settings { padding: 18px; }
   .game-settings-fields { grid-template-columns: 1fr; }
+  .game-settings-preview { grid-template-columns:1fr; }
 }
 .game-settings form { display:flex; flex-direction:column; max-height:calc(90dvh - 52px); }
 .game-settings-fields { overflow:auto; min-height:0; flex:1 1 auto; padding:3px 6px 6px 3px; }

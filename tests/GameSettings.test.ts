@@ -6,6 +6,9 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(validateGameSettings(DEFAULT_GAME_SETTINGS), true);
   assert.equal(DEFAULT_GAME_SETTINGS.bendingAngle, 150);
   assert.equal(DEFAULT_GAME_SETTINGS.standingAngle, 160);
+  assert.equal(DEFAULT_GAME_SETTINGS.showBodyKeypoints, false);
+  assert.equal(DEFAULT_GAME_SETTINGS.backgroundProcessing, false);
+  assert.equal(DEFAULT_GAME_SETTINGS.backgroundMode, 'blur');
 });
 
 test('settings reject nonfinite, missing, excessive and overlapping thresholds', () => {
@@ -13,13 +16,15 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { standingAngle: NaN }, { bendingAngle: Infinity }, { smoothingAlpha: 0 },
     { mocapGain: 10 }, { rabbitScale: -1 }, { bendHoldMs: 0 },
     { standingAngle: 150, bendingAngle: 150 }, { standingAngle: 150, bendingAngle: 148 },
+    { showBodyKeypoints: 'true' }, { backgroundProcessing: 1 }, { backgroundMode: 'transparent' },
+    { showBodyKeypoints: undefined }, { backgroundProcessing: null }, { backgroundMode: undefined },
   ]) assert.equal(validateGameSettings({ ...DEFAULT_GAME_SETTINGS, ...change }), false);
   assert.equal(validateGameSettings({}), false);
   assert.equal(validateGameSettings(null), false);
   assert.equal(validateGameSettings({ ...DEFAULT_GAME_SETTINGS, standingAngle: 153, bendingAngle: 150 }), true);
 });
 
-test('persist only supported numeric parameters, recover invalid storage, reset defaults', () => {
+test('persist only supported settings, recover invalid storage, reset defaults', () => {
   const values = new Map<string, string>();
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
@@ -40,6 +45,50 @@ test('persist only supported numeric parameters, recover invalid storage, reset 
     assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
     assert.deepEqual(resetGameSettings(), DEFAULT_GAME_SETTINGS);
     assert.equal(values.has(SETTINGS_STORAGE_KEY), false);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('legacy numeric settings retain values and default both preview effects off', () => {
+  const { showBodyKeypoints, backgroundProcessing, backgroundMode, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => JSON.stringify({ ...legacy, bendingAngle: 155, mocapGain: 1.25, rawPose: [1, 2, 3] }),
+  } });
+  try {
+    assert.deepEqual(getGameSettings(), { ...DEFAULT_GAME_SETTINGS, bendingAngle: 155, mocapGain: 1.25 });
+    assert.equal(showBodyKeypoints, false);
+    assert.equal(backgroundProcessing, false);
+    assert.equal(backgroundMode, 'blur');
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('all independent preview combinations and both background modes persist', () => {
+  const values = new Map<string, string>();
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+  } });
+  try {
+    for (const showBodyKeypoints of [false, true]) {
+      for (const backgroundProcessing of [false, true]) {
+        for (const backgroundMode of ['blur', 'gray'] as const) {
+          const settings = { ...DEFAULT_GAME_SETTINGS, showBodyKeypoints, backgroundProcessing, backgroundMode };
+          saveGameSettings(settings);
+          assert.deepEqual(getGameSettings(), settings);
+        }
+      }
+    }
+    for (const invalid of [{ showBodyKeypoints: 'true' }, { backgroundProcessing: 1 }, { backgroundMode: 'green' }]) {
+      values.set(SETTINGS_STORAGE_KEY, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, ...invalid }));
+      assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
+    }
   } finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');
