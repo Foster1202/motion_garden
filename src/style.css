@@ -1038,6 +1038,7 @@ kbd {
   object-fit:fill;
   transform:scaleX(-1);
 }
+.pose-video { opacity:0; pointer-events:none; }
 
 .pose-preview-label,
 .pose-metrics {
@@ -1300,5 +1301,6 @@ kbd {
 .berry-footer { position:absolute; bottom:2%; left:3.5%; right:3.5%; padding:.65cqw 1.1cqw; display:flex; justify-content:space-between; align-items:center; gap:1cqw; background:#fffbeeeb; border:1px solid #e1d6b3; border-radius:1cqw; color:#3c5740; font-size:1.25cqw; box-shadow:0 .15cqw .4cqw #5d512e0a; }
 .berry-footer small { font-size:1.1cqw; }
 .berry-camera { position:absolute; right:2%; bottom:9%; width:13%; border:4px solid #fffbed; border-radius:14px; transform:scaleX(-1); }
+.berry-camera-source { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 
 .berry-card-image { width:66%; height:66%; object-fit:contain; }

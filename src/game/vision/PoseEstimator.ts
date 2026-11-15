@@ -1,7 +1,19 @@
 import type { PoseFrame, PoseLandmark } from './poseTypes';
 
+export interface PoseSegmentationMaskLike {
+  width: number;
+  height: number;
+  getAsFloat32Array(): Float32Array;
+}
+
+export interface PoseLandmarkerResultLike {
+  landmarks: readonly (readonly PoseLandmark[])[];
+  segmentationMasks?: readonly PoseSegmentationMaskLike[];
+  close?(): void;
+}
+
 export interface PoseLandmarkerLike {
-  detectForVideo(video: HTMLVideoElement, timestampMs: number): { landmarks: PoseLandmark[][] };
+  detectForVideo(video: HTMLVideoElement, timestampMs: number): PoseLandmarkerResultLike;
   close(): void;
 }
 
@@ -47,8 +59,24 @@ async function createLandmarker(assets: PoseEstimatorAssets): Promise<PoseLandma
     minPoseDetectionConfidence: 0.55,
     minPosePresenceConfidence: 0.55,
     minTrackingConfidence: 0.55,
-    outputSegmentationMasks: false,
+    outputSegmentationMasks: true,
   });
+}
+
+export function personMask(mask: PoseSegmentationMaskLike): PoseFrame['personMask'] {
+  const width = Math.floor(mask.width);
+  const height = Math.floor(mask.height);
+  const probabilities = mask.getAsFloat32Array();
+  if (width <= 0 || height <= 0 || probabilities.length !== width * height) return undefined;
+  const alpha = new Uint8ClampedArray(probabilities.length);
+  for (let index = 0; index < probabilities.length; index++) {
+    const probability = probabilities[index];
+    if (!Number.isFinite(probability)) continue;
+    const normalized = Math.max(0, Math.min(1, (probability - .15) / .7));
+    const feathered = normalized * normalized * (3 - 2 * normalized);
+    alpha[index] = Math.round(feathered * 255);
+  }
+  return { width, height, alpha };
 }
 
 export class PoseEstimator {
@@ -166,19 +194,25 @@ export class PoseEstimator {
       try {
         const startedMs = this.now();
         const result = this.landmarker.detectForVideo(video, modelTimestamp);
-        const inferenceMs = Math.max(0, this.now() - startedMs);
-        this.totalInferenceMs += inferenceMs;
-        this.inferenceCount++;
-        if (this.previousFrameMs !== undefined) {
-          const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
-          this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
+        try {
+          const inferenceMs = Math.max(0, this.now() - startedMs);
+          this.totalInferenceMs += inferenceMs;
+          this.inferenceCount++;
+          if (this.previousFrameMs !== undefined) {
+            const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
+            this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
+          }
+          this.previousFrameMs = timestampMs;
+          this.options.onFrame({
+            landmarks: result.landmarks[0],
+            personMask: result.segmentationMasks?.[0] ? personMask(result.segmentationMasks[0]) : undefined,
+            timestampMs, inferenceMs, poseFps: this.poseFps,
+            averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
+            imageWidth: video.videoWidth, imageHeight: video.videoHeight,
+          });
+        } finally {
+          result.close?.();
         }
-        this.previousFrameMs = timestampMs;
-        this.options.onFrame({
-          landmarks: result.landmarks[0], timestampMs, inferenceMs, poseFps: this.poseFps,
-          averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
-          imageWidth: video.videoWidth, imageHeight: video.videoHeight,
-        });
       } catch (error) {
         this.pause();
         this.options.onError?.(new PoseEstimatorError('inference', { cause: error }));

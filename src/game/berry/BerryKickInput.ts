@@ -3,6 +3,7 @@ import { MotionRetargeter } from '../mocap/MotionRetargeter';
 import type { BerryMotionSample } from '../mocap/LegExtensionDetector';
 import { PoseCamera } from '../vision/PoseCamera';
 import { PoseEstimator } from '../vision/PoseEstimator';
+import { PersonOnlyRenderer } from '../vision/PersonOnlyRenderer';
 const neutral = (): BerryMotionSample => ({ leftLegExtensionAmount: 0, rightLegExtensionAmount: 0,
   lateralOffset: 0, reliable: false, timestampMs: 0 });
 export class BerryKickInput {
@@ -13,6 +14,8 @@ export class BerryKickInput {
   private retargeter = new MotionRetargeter();
   private camera?: PoseCamera;
   private estimator?: PoseEstimator;
+  private preview?: PersonOnlyRenderer;
+  private previewCanvas?: HTMLCanvasElement;
   private generation = 0;
   private paused = false;
   private destroyed = false;
@@ -36,6 +39,7 @@ export class BerryKickInput {
     this.camera = camera;
     const estimator = new PoseEstimator({ onFrame: frame => {
       if (generation !== this.generation || this.paused || this.destroyed) return;
+      this.preview?.render(frame);
       this.sample = this.retargeter.retargetLegMotion(this.extractor.extractLegMotion(frame));
       this.lastFrame = performance.now();
     }, onError: error => { this.sample = neutral(); this.onError(error.message); } });
@@ -43,7 +47,12 @@ export class BerryKickInput {
     try {
       const video = await camera.start();
       if (generation !== this.generation || this.destroyed) return;
-      video.className = 'berry-camera'; host.append(video);
+      video.className = 'berry-camera-source';
+      const canvas = document.createElement('canvas');
+      canvas.className = 'berry-camera';
+      host.append(video, canvas);
+      this.previewCanvas = canvas;
+      this.preview = new PersonOnlyRenderer(video, canvas);
       await estimator.initialize();
       if (generation !== this.generation || this.destroyed) return;
       await estimator.start(video);
@@ -68,7 +77,8 @@ export class BerryKickInput {
   pause() { this.paused = true; this.keys.clear(); this.estimator?.pause(); }
   resume() { this.paused = false; this.sample = { ...this.sample, leftLegExtensionAmount: 0, rightLegExtensionAmount: 0, reliable: false };
     this.lastFrame = -Infinity; this.estimator?.resume(); }
-  private releaseCamera() { this.estimator?.destroy(); this.estimator = undefined; this.camera?.destroy(); this.camera = undefined; }
+  private releaseCamera() { this.estimator?.destroy(); this.estimator = undefined; this.preview?.clear(); this.preview = undefined;
+    this.previewCanvas?.remove(); this.previewCanvas = undefined; this.camera?.destroy(); this.camera = undefined; }
   destroy() { if (this.destroyed) return; this.destroyed = true; ++this.generation; this.releaseCamera();
     this.keys.clear(); window.removeEventListener('keydown', this.down); window.removeEventListener('keyup', this.up); }
 }

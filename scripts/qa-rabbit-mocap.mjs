@@ -95,7 +95,12 @@ const installFixture = () => page.evaluate(async () => {
             }
           }
           if (f.leftHidden) for (const index of [13, 15]) points[index].visibility = .1;
-          return { landmarks: [points] };
+          return {
+            landmarks: [points],
+            segmentationMasks: [{ width: 4, height: 2,
+              getAsFloat32Array: () => Float32Array.of(1, 1, 0, 0, 1, 1, 0, 0) }],
+            close() {},
+          };
         },
       };
     };
@@ -162,6 +167,21 @@ try {
   assert.equal(await page.locator('.rabbit-3d-debug').count(), 0);
   check('Person entry starts calibration, completed calibration automatically enables mocap, standing establishes reference', profile);
   assert.match(await page.locator('.person-status').innerText(), /已偵測到人物/);
+  const personPreview = await page.evaluate(() => {
+    const canvas = document.querySelector('.pose-preview canvas');
+    const context = canvas.getContext('2d');
+    return {
+      sourceOpacity: getComputedStyle(document.querySelector('.pose-video')).opacity,
+      keptAlpha: context.getImageData(40, 90, 1, 1).data[3],
+      removedAlpha: context.getImageData(280, 90, 1, 1).data[3],
+      label: document.querySelector('.pose-preview-label').textContent,
+    };
+  });
+  assert.equal(personPreview.sourceOpacity, '0');
+  assert.ok(personPreview.keptAlpha > 0);
+  assert.equal(personPreview.removedAlpha, 0);
+  assert.match(personPreview.label, /背景已移除/);
+  check('Camera preview hides the raw video and draws only segmentation-mask pixels by default', personPreview);
   await page.screenshot({ path: `${output}/standing.png` });
   const rest = await snapshot();
 

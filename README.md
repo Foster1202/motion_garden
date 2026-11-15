@@ -64,7 +64,7 @@ npm run preview
 使用官方 **`@mediapipe/tasks-vision@1.0.1`**，固定版本與 package-lock。`FilesetResolver`／`PoseLandmarker` 在選擇鏡頭時才 lazy import。
 
 - `runningMode: VIDEO`，`numPoses: 1`，CPU delegate。
-- Detection／presence／tracking confidence 均為 **0.55**，不輸出 segmentation mask。
+- Detection／presence／tracking confidence 均為 **0.55**。同一次推理會輸出人物 segmentation mask；Camera 小畫面及 Berry Camera 預覽預設只繪製人物，背景像素透明，不設背景移除開關。遮罩只供顯示，動作判定仍只使用人體 landmarks。
 - 官方 **Pose Landmarker Lite float16 v1**：`public/mediapipe/models/pose_landmarker_lite.task`。
 - Package WASM 位於 `public/mediapipe/wasm/`，依 BASE_URL 載入；runtime 不使用 CDN 或外部模型網址。
 - 模型來源：[Google 官方模型](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task)。SHA256：`59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`。
@@ -120,7 +120,7 @@ QA_URL=http://127.0.0.1:5178/ npm run qa:carrot-game
 
 ## 開發 Preview／Debug
 
-Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏。Skeleton 和數值 debug 預設關閉：`DEV_POSE_DEBUG = false`、`DEV_POSE_PREVIEW = true` 在 `PoseDebugOverlay.ts`。
+Camera mode 提供「顯示鏡頭小畫面」toggle。開發環境預設顯示小 preview，production 預設隱藏；顯示時一律只繪製人物，不顯示原始背景，沒有額外開關。Skeleton 和數值 debug 預設關閉：`DEV_POSE_DEBUG = false`、`DEV_POSE_PREVIEW = true` 在 `PoseDebugOverlay.ts`。
 
 如要顯示 skeleton、左右／融合膝角、PoseState、信心、inference ms、FPS，以及 standing／bend baselines、兩個個人閾值和 range，在 `.env.local` 加入以下設定後重新啟動 dev server：
 

@@ -1,5 +1,6 @@
 import type { PoseFrame, PoseSnapshot } from './poseTypes';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
+import { PersonOnlyRenderer } from './PersonOnlyRenderer';
 
 export const DEV_POSE_DEBUG = false;
 export const DEV_POSE_PREVIEW = true;
@@ -8,6 +9,7 @@ const LINKS = [[11,12],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]] 
 export class PoseDebugOverlay {
   readonly root: HTMLElement;
   private readonly canvas: HTMLCanvasElement;
+  private readonly personRenderer: PersonOnlyRenderer;
   private readonly metrics: HTMLElement;
   private readonly debug: boolean;
   private calibration?: CalibrationProfile;
@@ -17,17 +19,15 @@ export class PoseDebugOverlay {
     this.root = document.createElement('aside');
     this.root.className = 'pose-preview';
     this.root.setAttribute('aria-label', '鏡頭小畫面');
-    this.root.innerHTML = '<div class="pose-preview-media"></div><p class="pose-preview-label">鏡頭小畫面 · 本機處理</p><p class="pose-metrics"></p>';
+    this.root.innerHTML = '<div class="pose-preview-media"></div><p class="pose-preview-label">人物小畫面 · 背景已移除 · 本機處理</p><p class="pose-metrics"></p>';
     const media = this.root.querySelector<HTMLElement>('.pose-preview-media')!;
     video.classList.add('pose-video');
     if (video.videoWidth && video.videoHeight) media.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
     media.append(video);
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 320;
-    this.canvas.height = 180;
-    this.canvas.hidden = !this.debug;
     this.canvas.setAttribute('aria-hidden', 'true');
     media.append(this.canvas);
+    this.personRenderer = new PersonOnlyRenderer(video, this.canvas);
     this.metrics = this.root.querySelector<HTMLElement>('.pose-metrics')!;
     this.metrics.hidden = !this.debug;
     host.append(this.root);
@@ -39,14 +39,12 @@ export class PoseDebugOverlay {
   setCalibration(profile?: CalibrationProfile) { this.calibration = profile ? { ...profile } : undefined; }
 
   update(frame: PoseFrame, pose: PoseSnapshot) {
+    const ctx = this.personRenderer.render(frame);
     if (!this.debug) return;
     const angle = (value: number | undefined) => value === undefined ? '—' : `${value.toFixed(1)}°`;
     this.metrics.textContent = `L ${angle(pose.leftKneeAngle)} · R ${angle(pose.rightKneeAngle)} · ${angle(pose.activeKneeAngle)}\n${pose.state} · 信心 ${(pose.confidence * 100).toFixed(0)}%\n${frame.inferenceMs.toFixed(1)} ms · 平均 ${(frame.averageInferenceMs ?? frame.inferenceMs).toFixed(1)} ms · ${frame.poseFps.toFixed(1)} FPS`;
     const profile = this.calibration;
     if (profile) this.metrics.textContent += `\n基準 ${angle(profile.standingAngle)} / ${angle(profile.bendingAngle)}\n閾值 ${angle(profile.standingThreshold)} / ${angle(profile.bendingThreshold)}\n幅度 ${angle(profile.range)}`;
-    const ctx = this.canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, 320, 180);
     const landmarks = frame.landmarks;
     if (!landmarks) return;
     ctx.strokeStyle = '#e9ff64';
@@ -67,5 +65,5 @@ export class PoseDebugOverlay {
     }
   }
 
-  destroy() { this.calibration = undefined; this.root.remove(); }
+  destroy() { this.calibration = undefined; this.personRenderer.clear(); this.root.remove(); }
 }

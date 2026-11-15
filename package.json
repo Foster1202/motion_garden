@@ -20,6 +20,7 @@
     "build:carrot3d": "bash model/scripts/build_carrot_glb.sh",
     "qa:mocap": "node scripts/qa-rabbit-mocap.mjs",
     "qa:mocap-engine": "node scripts/qa-mocap-engine.mjs",
+    "qa:person-preview": "node scripts/qa-person-preview.mjs",
     "qa:berry": "node scripts/qa-berry-kick.mjs",
     "qa:berry-camera": "node scripts/qa-berry-camera.mjs",
     "build:berry-art": "bash model/scripts/build_berry_art.sh"

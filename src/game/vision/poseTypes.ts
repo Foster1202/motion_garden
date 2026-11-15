@@ -11,6 +11,11 @@ export interface PoseLandmark {
 
 export interface PoseFrame {
   landmarks?: readonly PoseLandmark[];
+  personMask?: {
+    width: number;
+    height: number;
+    alpha: Uint8ClampedArray;
+  };
   timestampMs: number;
   inferenceMs: number;
   averageInferenceMs?: number;

@@ -57,7 +57,12 @@ try {
             set(23, .54, .5); set(24, .46, .5);
             set(25, .54 + f.left * .5, .7); set(26, .46 - f.right * .5, .7);
             set(27, .54 + f.left, .9); set(28, .46 - f.right, .9);
-            return { landmarks: [points] };
+            return {
+              landmarks: [points],
+              segmentationMasks: [{ width: 4, height: 2,
+                getAsFloat32Array: () => Float32Array.of(1, 1, 0, 0, 1, 1, 0, 0) }],
+              close() {},
+            };
           },
         };
       };
@@ -74,6 +79,19 @@ try {
   await page.locator('[data-action=resume]').click();
   await wait(s => s.armed.left && s.armed.right);
   assert.equal(await page.locator('.calibration-panel,[data-calibration-state]').count(), 0);
+  const personPreview = await page.evaluate(() => {
+    const canvas = document.querySelector('.berry-camera');
+    const context = canvas.getContext('2d');
+    return {
+      sourceOpacity: getComputedStyle(document.querySelector('.berry-camera-source')).opacity,
+      keptAlpha: context.getImageData(40, 90, 1, 1).data[3],
+      removedAlpha: context.getImageData(280, 90, 1, 1).data[3],
+    };
+  });
+  assert.equal(personPreview.sourceOpacity, '0');
+  assert.ok(personPreview.keptAlpha > 0);
+  assert.equal(personPreview.removedAlpha, 0);
+  check('Berry camera hides the raw video and draws only segmentation-mask pixels by default');
   check('Camera starts without calibration; pause during delayed initialization retains camera and resumes');
 
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);

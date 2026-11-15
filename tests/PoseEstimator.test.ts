@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PoseEstimator, PoseEstimatorError, poseEstimatorAssets, type PoseLandmarkerLike } from '../src/game/vision/PoseEstimator';
+import { personMask, PoseEstimator, PoseEstimatorError, poseEstimatorAssets, type PoseLandmarkerLike } from '../src/game/vision/PoseEstimator';
 import type { PoseFrame } from '../src/game/vision/poseTypes';
 
 function setupEstimator(detect?: PoseLandmarkerLike['detectForVideo']) {
@@ -80,6 +80,28 @@ test('no detected pose still emits a frame and inference failure pauses the loop
   assert.equal(fixture.errors[0].code, 'inference');
   assert.equal(fixture.pendingFrames.size, 0);
   fixture.estimator.destroy();
+});
+
+test('person segmentation is copied into a feathered alpha mask and inference results are closed', async () => {
+  let resultClosed = 0;
+  const fixture = setupEstimator(() => ({
+    landmarks: [[{ x: .5, y: .5 }]],
+    segmentationMasks: [{ width: 2, height: 2,
+      getAsFloat32Array: () => new Float32Array([0, .15, .5, 1]) }],
+    close: () => { resultClosed++; },
+  }));
+  await fixture.estimator.start(fixture.video);
+  fixture.tick(0, 0);
+  assert.deepEqual(fixture.frames[0].personMask, {
+    width: 2, height: 2, alpha: new Uint8ClampedArray([0, 0, 128, 255]),
+  });
+  assert.equal(resultClosed, 1);
+  fixture.estimator.destroy();
+});
+
+test('invalid segmentation dimensions are rejected without affecting landmark output', () => {
+  assert.equal(personMask({ width: 2, height: 2,
+    getAsFloat32Array: () => new Float32Array([1]) }), undefined);
 });
 
 test('destroy during initialization closes a late model and never schedules frames', async () => {
