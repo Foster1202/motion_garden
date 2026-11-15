@@ -7,22 +7,30 @@ export class Overlay {
   readonly root = document.getElementById('game-ui')!;
   private modal?: HTMLDialogElement;
   private returnFocus?: HTMLElement;
+  private readonly clickHandlers = new WeakMap<HTMLElement, EventListener>();
 
   render(html: string) {
     this.closeModal();
     this.root.innerHTML = html;
   }
   on(action: string, callback: () => void) {
-    this.root.querySelector<HTMLButtonElement>(`[data-action="${action}"]`)?.addEventListener('click', callback);
+    const scope = this.modal ?? this.root;
+    for (const button of scope.querySelectorAll<HTMLButtonElement>(`[data-action="${action}"]`)) {
+      const previous = this.clickHandlers.get(button);
+      if (previous) button.removeEventListener('click', previous);
+      button.addEventListener('click', callback);
+      this.clickHandlers.set(button, callback);
+    }
   }
   focus(action: string) {
-    this.root.querySelector<HTMLButtonElement>(`[data-action="${action}"]`)?.focus({ preventScroll: true });
+    (this.modal ?? this.root).querySelector<HTMLButtonElement>(`[data-action="${action}"]`)?.focus({ preventScroll: true });
   }
   text(selector: string, value: string) {
     const element = this.root.querySelector<HTMLElement>(selector);
     if (element && element.textContent !== value) element.textContent = value;
   }
   dialog(html: string, dismiss?: () => void) {
+    this.closeModal();
     this.returnFocus = document.activeElement as HTMLElement;
     this.modal = document.createElement('dialog');
     this.modal.className = 'rest-dialog';

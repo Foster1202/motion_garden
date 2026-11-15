@@ -1,6 +1,6 @@
 # Motion Garden — agent handoff and working agreement
 
-Updated 2026-11-15. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
+Updated 2026-11-16. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
 
 ## Mandatory workflow
 
@@ -67,6 +67,7 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 
 ## Current implemented state
 
+- Shared Overlay binds and focuses actions within the current dialog, replaces duplicate handlers and closes earlier dialogs. Berry intro, pause, fallback and completion Home buttons use their own dialog bindings.
 - Vite + TypeScript + Phaser 3, 1600×900 logical world with FIT scaling. Traditional Hong Kong Chinese UI.
 - Menu offers Carrot Pull and Berry Kick; Apple Harvest and Rabbit Goes Home remain disabled.
 - Carrot Pull now offers production camera-driven realtime 3D gameplay after existing personal calibration/reference. The original CarrotRound owns shallow-bend/standing holds and the single five-carrot score path. A raised garden bed, bounded primary-hand assisted reach, continuous final-bone attachment/pull and smooth basket transfer form the complete loop. Keyboard retains complete Sprite gameplay. WebGL/GLB or unreachable assisted contact visibly falls back to Sprite. Independent DEV bone/grab previews remain available. See `docs/task-4d2-full-3d-carrot-pull.md`.
@@ -106,6 +107,16 @@ Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:ra
 None.
 
 ## Verification and handoff history
+
+### 2026-11-16 — 2026-11-16-lead-modal-buttons — Shared dialog action repair
+- Owner / agent — Codex Lead with bounded button audit and browser regression worker.
+- Branch / base — main / 2efad4c. Clean `git pull --ff-only` PASS before edits.
+- Request / scope — Repair the Berry intro and pause Home buttons and audit similar action problems across all scenes.
+- Changes — `src/game/ui/Overlay.ts` scopes action binding and focus to the active dialog. All matching buttons in that scope receive a single replaceable listener tracked in a WeakMap. New dialogs close their predecessor. This fixes Berry intro, pause, model-failure and completion Home actions shadowed by HUD Home and prevents repeated registrations from accumulating callbacks. Audited Menu, Carrot, Settings, calibration and debug handlers. New `scripts/qa-dialog-buttons.mjs` covers real scene navigation and direct Overlay DOM regressions.
+- Validation — PASS `npm run typecheck`, `npm run build`, `npm test` 313/313, `node --check scripts/qa-dialog-buttons.mjs` and `git diff --check`. Chrome 157 / Playwright at 127.0.0.1:5179,1440×900 PASS new dialog script 9 checks including actual scoped Home clicks, repeated pause, Resume/Escape/Restart, focus, keyboard activation, listener replacement and modal cleanup. Completion-button checks use explicitly labeled completed-round fixtures. Separate `qa:berry` PASS full six-harvest keyboard flow, restart and model fallback. `qa:berry-camera` PASS 9 checks including camera interruption and recovery. Browser errors[] in new and camera suites, expected deliberately aborted GLB diagnostic in fallback tests. Screenshots reviewed. Evidence `/private/tmp/motion-garden-dialog-buttons/`, `/private/tmp/mg-buttons-berry/`, `/private/tmp/mg-buttons-berry-camera/` and `/private/tmp/mg-buttons-{typecheck,build,tests}.log`.
+- Risks / blockers — Safari and Firefox were not exercised. None blocking delivery.
+- Next action — None.
+- Delivery — Normal commit and push to origin/main, verified by Lead in final response.
 
 ### 2026-11-15 — 2026-11-15-lead-webcam-preview — Configurable Webcam preview
 - Owner / agent — Codex Lead with bounded settings, browser QA and independent review workers. Lead integrated the changes and final verification.
