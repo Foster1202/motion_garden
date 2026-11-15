@@ -45,6 +45,8 @@ npm run preview
 
 拔蘿蔔 Camera mode 以當次個人站立／舒服屈膝基準計算動作範圍。請按自己舒服幅度活動，未能完成設定可重試或使用鍵盤。莓果大豐收保留原有免校準伸腳流程。
 
+若人物狀態反覆變動，請先看鏡頭小畫面確認全身清楚入鏡，毋須一直退後。看見人物但肩／臀或腿部關鍵點不可靠時，狀態會提示正在確認姿勢，主提示會指出需要看清的部位；畫面超過 250ms 沒有更新時另有停頓提示。可靠追蹤後才自動開始動作設定，無須尋找額外的設定按鈕。
+
 ## 瀏覽器與權限
 
 鏡頭需要 **HTTPS 或 localhost** secure context，以及 `navigator.mediaDevices.getUserMedia`。目前 QA 使用 macOS Chrome；Safari、Firefox、實體 Raspberry Pi 及真人 webcam 流程仍需各自驗證。非 localhost 的純 HTTP LAN 網址不能假定可用鏡頭。

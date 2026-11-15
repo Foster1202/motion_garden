@@ -25,7 +25,7 @@ function fixture(failure?: Error) {
         pause: () => { calls.pause++; }, resume: () => { calls.resume++; }, destroy: () => { calls.estimatorDestroyed++; } };
     },
   });
-  const emit = (timestampMs: number, angle?: number) => {
+  const emit = (timestampMs: number, angle?: number, modify?: (points: PoseLandmark[]) => void) => {
     clock = timestampMs;
     let landmarks: PoseLandmark[] | undefined;
     if (angle !== undefined) {
@@ -38,6 +38,7 @@ function fixture(failure?: Error) {
         landmarks[ankle] = { x: x + .25 * Math.sin(radians), y: .65 - .25 * Math.cos(radians), visibility: 1 };
       }
     }
+    if (landmarks) modify?.(landmarks);
     callbacks.onFrame({ landmarks, timestampMs, inferenceMs: 8, poseFps: 25, imageWidth: 1000, imageHeight: 1000 });
   };
   return { input, calls, emit, setClock: (time: number) => { clock = time; } };
@@ -58,6 +59,37 @@ test('pose input is inactive until explicit start and maps only stable fresh pos
   f.input.destroy();
 });
 
+test('visible people with occluded legs or torso receive specific guidance without action input', async () => {
+  const f = fixture();
+  await f.input.start();
+  for (const [time, ids, hint] of [
+    [0, [25, 26, 27, 28], /腿部未看清/],
+    [40, [11, 12], /雙肩和臀部/],
+  ] as const) {
+    f.emit(time, 180, points => { for (const id of ids) points[id].visibility = 0; });
+    assert.equal(f.input.getStatus().personDetected, true);
+    assert.equal(f.input.getStatus().suspended, true);
+    assert.match(f.input.getStatus().message, hint);
+    assert.deepEqual(f.input.sample(), { bending: false, standing: false });
+  }
+  f.input.destroy();
+});
+
+test('fresh missing-person frames and stalled frames have distinct guidance and recovery still works', async () => {
+  const f = fixture();
+  await f.input.start();
+  f.emit(0);
+  assert.match(f.input.getStatus().message, /未偵測到人物/);
+  f.emit(40, 180);
+  f.setClock(291);
+  assert.match(f.input.getStatus().message, /畫面更新太慢或已停頓/);
+  assert.equal(f.input.getStatus().suspended, true);
+  for (let time = 320; time <= 560; time += 40) f.emit(time, 180);
+  assert.equal(f.input.getStatus().suspended, false);
+  assert.equal(f.input.sample().standing, true);
+  f.input.destroy();
+});
+
 test('camera mapping preserves hold durations and freezes progress during loss and reacquisition', async () => {
   const f = fixture();
   const round = new CarrotRound();
@@ -73,7 +105,7 @@ test('camera mapping preserves hold durations and freezes progress during loss a
   assert.equal(f.input.getStatus().suspended, true);
   assert.deepEqual(f.input.sample(), { bending: false, standing: false });
   f.setClock(1120);
-  assert.match(f.input.getStatus().message, /未偵測到人物/);
+  assert.match(f.input.getStatus().message, /畫面更新太慢或已停頓/);
   assert.equal(round.progress, progress);
   for (let time = 1160; time < 1360; time += 40) {
     f.emit(time, 140);

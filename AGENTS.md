@@ -107,6 +107,16 @@ None.
 
 ## Verification and handoff history
 
+### 2026-11-16 — 2026-11-16-codex-camera-tracking-feedback — Clarify interrupted camera setup
+- Owner / agent: Codex
+- Branch / base: main / 2efad4c; pre-edit pull already current.
+- Request / scope: Diagnose intermittent human webcam detection and misleading setup prompt, with local validation before any push.
+- Changes: `MediapipeMotionInput.ts` now distinguishes no pose, stale video, unreliable torso and unreliable legs with specific player guidance. `MotionInputController.ts` only shows automatic setup guidance when tracking is ready, and preserves tracking-loss messages while waiting for standing. README and two regression cases in `MediapipeMotionInput.test.ts` cover the behavior. Detection/calibration thresholds and gameplay are unchanged.
+- Validation: PASS TypeScript `tsc --noEmit`, focused adapter tests 16/16, Vite production build and Chrome browser assertions for unstable/ready/lost/calibrated labels plus loss during standing wait. Full test command `node node_modules/tsx/dist/cli.mjs --test tests/*.test.ts`: 314/315 PASS; one pre-existing failure is missing ignored `model/dist/rabbit3d/backup-v1/rabbit_realtime.glb`. Earlier diagnostic used actual local MediaPipe and Google's temporary pose.jpg source video: 57/57 frames supplied 33 landmarks and segmentation, including with opacity-zero video; this is not human webcam validation. `git diff --check` PASS.
+- Risks / blockers: User-camera intermittent detection root cause remains unconfirmed. New guidance identifies the rejected part or stale video without masking the failure as an incomplete-setup request. User feedback on visible raw camera preview remains pending.
+- Next action: User refreshes their manually started game and reports the specific new message and whether raw video shows their full body; continue diagnosis from that evidence.
+- Delivery: Local main only; no push per user's instruction. Local commit reported separately.
+
 ### 2026-11-15 — 2026-11-15-lead-webcam-preview — Configurable Webcam preview
 - Owner / agent — Codex Lead with bounded settings, browser QA and independent review workers. Lead integrated the changes and final verification.
 - Branch / base — main / 422d542. Clean upstream `git pull --ff-only` PASS before edits.

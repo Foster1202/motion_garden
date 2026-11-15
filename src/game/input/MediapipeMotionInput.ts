@@ -105,8 +105,9 @@ export class MediapipeMotionInput implements MotionInput {
       : this.recovering ? 'PERSON_DETECTED' : 'TRACKING_READY';
     this.updateTrackingState(desiredTrackingState, now);
     const message = this.paused ? '休息緊，準備好先再繼續。'
-      : !personDetected ? '未偵測到人物，請慢慢行到鏡頭前。'
-      : trackingLost ? '正在確認姿勢…請讓鏡頭看見全身。'
+      : this.lastFrame && !freshFrame ? '鏡頭畫面更新太慢或已停頓，請關閉其他佔用資源的程式，再重新開啟鏡頭。'
+      : !personDetected ? '未偵測到人物，請面向鏡頭，調整位置讓全身清楚入鏡；不用一直退後。'
+      : trackingLost ? this.trackingHint(pose.reason)
       : pose.state === 'STANDING' ? '準備好啦，慢慢屈膝。'
       : pose.state === 'BENDING' ? '見到你啦！慢慢企返起身。'
       : pose.state === 'TRANSITION' ? '見到你啦！企穩少少，準備好先開始。' : '企喺鏡頭前面，等阿兔見到你。';
@@ -119,6 +120,20 @@ export class MediapipeMotionInput implements MotionInput {
   }
 
   getPoseSnapshot(): PoseSnapshot { return this.classifier.snapshot(this.now()); }
+
+  private trackingHint(reason?: string): string {
+    switch (reason) {
+      case 'stale-frame':
+        return '姿勢處理太慢，請關閉其他佔用資源的程式，再重新開啟鏡頭。';
+      case 'unreliable-or-leaning-torso':
+        return '已見到人物，請面向鏡頭自然企直，讓雙肩和臀部清楚入鏡。';
+      case 'unreliable-legs':
+      case 'calibrated-legs-unavailable':
+        return '已見到人物，但腿部未看清；請讓臀部、膝蓋和腳踝入鏡，避免雙腿互相遮擋。';
+      default:
+        return '已見到人物，正在確認姿勢，請保持全身清楚入鏡。';
+    }
+  }
 
   setCalibration(profile?: CalibrationProfile): void {
     if (this.destroyed) throw new Error('Camera input has been destroyed.');

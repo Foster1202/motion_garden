@@ -269,7 +269,8 @@ export class MotionInputController implements MotionInput {
     this.panel.querySelector<HTMLElement>('#motion-setup-message')!.textContent = message;
   }
   private renderStatus(status: MotionInputStatus) {
-    const message = this.waitingForStanding ? '動作設定完成，請自然企直、雙手放鬆，阿兔會自動跟隨。'
+    const message = this.waitingForStanding && status.personDetected && status.trackingState === 'TRACKING_READY'
+      ? '動作設定完成，請自然企直、雙手放鬆，阿兔會自動跟隨。'
       : this.cameraPlaying && !status.suspended && this.capture.isContinuousPreview?.()
       ? this.capture.getMotionHint?.() ?? '即時動作預覽，按自己舒適幅度活動。' : status.message;
     if (message !== this.lastMessage) {
@@ -284,9 +285,9 @@ export class MotionInputController implements MotionInput {
       PERSON_DETECTED: '已偵測到人物', TRACKING_UNSTABLE: '正在確認姿勢…',
       TRACKING_LOST: '未偵測到人物', TRACKING_READY: '已偵測到人物',
     };
-    const displayedPerson = ['PERSON_DETECTED', 'TRACKING_UNSTABLE', 'TRACKING_READY'].includes(state);
     const text = status.cameraStatus === 'paused' ? '已暫停'
-      : displayedPerson && !status.calibrationReady ? '請先完成動作設定' : labels[state];
+      : state === 'TRACKING_READY' && !status.suspended && !status.calibrationReady
+        ? '正在設定動作，請跟隨畫面指示' : labels[state];
     if (this.personStatus.textContent !== text) this.personStatus.textContent = text;
   }
   private setKeyboardHints(visible: boolean) {
