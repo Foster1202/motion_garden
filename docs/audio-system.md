@@ -1,12 +1,12 @@
 # 遊戲音效與後續配音／BGM
 
-更新於 2026-11-17。
+更新於 2026-11-18。
 
 ## 使用方式
 
 首頁「設置」提供「音效開關」和「音效音量」，預設開啟、60%。儲存後即時套用，重新載入亦會保留。取消會放棄當次修改，恢復預設需按儲存才生效。舊版 localStorage 會補上音效預設值並保留已有設定。
 
-五個原創音效以柔和短音、上行和音及 2.45 秒完成提示組成。來源、檔案規格與數位響度列於音效授權文檔。配音與 BGM 的音量分別預設 80% 及 25%，尚待作者加入錄音和音樂。[音效授權文檔](../LICENSES/audio-assets.md)
+五個音效包含四個原創短音，以及 2.8 秒的真人歡呼伴掌聲完成提示。完成提示使用 jessepash 的 CC0 錄音，經裁剪、頻率處理、淡入淡出及峰值限制。來源、檔案規格與數位響度列於音效授權文檔。配音與 BGM 的音量分別預設 80% 及 25%，尚待作者加入錄音和音樂。[音效授權文檔](../LICENSES/audio-assets.md)
 
 ## 管理與事件
 
@@ -64,7 +64,7 @@ npm run build
 QA_URL=http://127.0.0.1:5179/ QA_OUTPUT=/private/tmp/motion-garden-audio npm run qa:audio
 ```
 
-`qa:audio` 以 installed Chrome／Playwright 操作真實 DOM、AudioContext 與 BufferSource，量測輸出 PCM，執行完整五棵鍵盤遊戲、實際莓果腳骨投影命中及明確標記的倒數完成 fixture。錄音及 BGM 的接口測試借用本次原創短音作測試檔。結果與截圖由 `QA_OUTPUT` 輸出至倉庫外。最新實際結果見 AGENTS.md 的本次交接記錄。
+`qa:audio` 以 installed Chrome／Playwright 操作真實 DOM、AudioContext 與 BufferSource，量測輸出 PCM，執行完整五棵鍵盤遊戲、實際莓果腳骨投影命中及明確標記的倒數完成 fixture。錄音及 BGM 的接口測試借用本次已授權音效作測試檔。結果與截圖由 `QA_OUTPUT` 輸出至倉庫外。最新實際結果見 AGENTS.md 的本次交接記錄。
 
 ## Web Audio 參考
 

@@ -146,7 +146,16 @@ const enter = async name => {
 
 try {
   await page.goto(url);
-  await page.locator('[data-action=start]').waitFor();
+  // Observe startup without granting browser user activation.
+  const startupCdp = await page.context().newCDPSession(page);
+  await poll(async () => {
+    const state = await startupCdp.send('Runtime.evaluate', {
+      expression: "Boolean(document.querySelector('[data-action=start]'))",
+      returnByValue: true, userGesture: false,
+    });
+    return state.result.value;
+  }, ready => ready);
+  await startupCdp.detach();
   assert.equal(new URL(page.url()).origin, new URL(url).origin);
   assert.match(await page.title(), /動態花園/);
   assert.match(await page.locator('#game-ui').innerText(), /開始遊戲/);
@@ -279,9 +288,9 @@ try {
     window.__qaInterfaceManager = manager;
     manager.registerVoice('ready', '/assets/audio/success.wav');
     manager.registerVoice('complete', '/assets/audio/complete.wav');
-    manager.registerBgm('qa-original-fixture', '/assets/audio/complete.wav');
+    manager.registerBgm('qa-bundled-fixture', '/assets/audio/complete.wav');
     manager.setVolume('voice', .65); manager.setVolume('bgm', .3);
-    manager.playBgm('qa-original-fixture');
+    manager.playBgm('qa-bundled-fixture');
   });
   await poll(audio, value => value.active.some(event => event.loop));
   await page.waitForTimeout(220);
@@ -325,7 +334,7 @@ try {
   check('Hidden-page lifecycle stops every source and restores only selected BGM on visibility recovery');
   await page.evaluate(() => window.__qaInterfaceManager.stopAll());
   assert.equal((await audio()).active.length, 0);
-  check('Original WAV fixtures exercise registered narration replacement and looping BGM pause/resume at its saved offset', { resumedOffset: resumedBgm.offset });
+  check('Bundled WAV fixtures exercise registered narration replacement and looping BGM pause/resume at its saved offset', { resumedOffset: resumedBgm.offset });
 
   let delayedRequested = false;
   const delayedBody = await (await page.request.get(`${url}assets/audio/success.wav`)).body();

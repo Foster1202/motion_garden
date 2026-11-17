@@ -8,4 +8,4 @@
 - Third-party packages, MediaPipe models/WASM, and any externally sourced material retain their own licenses. This repository license does not relicense them or claim ownership of them. See package-lock.json and public/mediapipe/manifest.json for dependency/source provenance. A complete redistribution notice audit remains a release task.
 - Material outside this Git repository (course handouts, service photographs, presentations, room-modeling workspace) is not licensed by this file. AI-generated concept art carries no guarantee of exclusive rights; rights are granted only to the extent held by contributors.
 
-Original audio provenance and the third-party audio register are in [audio-assets.md](audio-assets.md).
+Audio provenance and the third-party audio register are in [audio-assets.md](audio-assets.md).

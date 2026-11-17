@@ -1,6 +1,6 @@
 # Motion Garden — agent handoff and working agreement
 
-Updated 2026-11-17. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
+Updated 2026-11-18. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
 
 ## Mandatory workflow
 
@@ -81,7 +81,7 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 - Camera previews default to the original image. Settings provide independently persisted body-keypoint and background-processing switches, both off by default, blur/gray modes and legacy numeric-setting migration. One existing inference supplies the 33 landmarks and segmentation mask for Carrot and Berry previews. Normalized coordinates share one CSS mirror, edges are feathered and lightly stabilized, and loss/stall/pause/stop clear old output.
 - Berry Kick uses a timed challenge, default 120 seconds with persisted 60/90/120 options. Every valid trunk hit drops three berries and adds 3, both trees replenish without a harvest cap. Actual continuous GLB leg motion, independent lateral movement, normalized no-calibration detection, foot-bone trunk projection and retraction/cooldown remain. MM:SS HUD, independent game-time +3 popups, overlapping 10-to-1 digits and immediate idempotent results share the game clock. Pause/blur/hidden freeze the round and animations, resume discards stale delta, finish/cleanup clears effects and falling fruit. A/D movement, Q/E extension, release to retract, Esc pause. GLB failure disables scoring with an honest fallback message.
 - Berry visual v2: separately rendered curved leafy trees, raspberry clusters, layered orchard, sand clearing, botanical foreground and woven basket. `npm run build:berry-art` regenerates assets. Rabbit driving, game rules and hitboxes were preserved during art work.
-- AudioManager now loads five original gentle WAV effects and owns activation, six-source SFX overlap, deduplication, persisted enable/volume controls, gain/limiter output and scene/pause/tracking/visibility cleanup. Voice registration supports latest-wins narration and BGM ducking. BGM registration supports one loop and pause-offset recovery. Recorded voice and composed BGM can be supplied through the documented interfaces. See `docs/audio-system.md` and `LICENSES/audio-assets.md`. No account/backend, long-term pose storage, action-quality scoring or clinical efficacy validation.
+- AudioManager now loads four original gentle WAV effects and a 2.8-second CC0 crowd cheer/applause completion effect and owns activation, six-source SFX overlap, deduplication, persisted enable/volume controls, gain/limiter output and scene/pause/tracking/visibility cleanup. Voice registration supports latest-wins narration and BGM ducking. BGM registration supports one loop and pause-offset recovery. Recorded voice and composed BGM can be supplied through the documented interfaces. See `docs/audio-system.md` and `LICENSES/audio-assets.md`. No account/backend, long-term pose storage, action-quality scoring or clinical efficacy validation.
 
 ## Commands and known environment constraints
 
@@ -109,6 +109,16 @@ Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:ra
 None.
 
 ## Verification and handoff history
+
+### 2026-11-18 — 2026-11-18-lead-completion-applause — Shared applause/cheer completion
+- Owner / agent — Codex Lead with a bounded read-only source/license research and browser QA worker.
+- Branch / base — main / d7381fa. Clean `git pull --ff-only` before edits.
+- Request / scope — Search permitted real clapping/applause/cheering and replace the shared challenge-completion effect, with gentle loudness, provenance, verification and Git delivery.
+- Changes — `public/assets/audio/complete.wav` now contains a 2.8-second excerpt of jessepash's CC0 `Crowd.Yay.Applause.25ppl.Short.wav`, source Freesound139972. Saved public HQ MP3 in `assets/audio-sources/139972_968325-hq.mp3`. `scripts/generate-audio.py` reproduces the excerpt using FFmpeg mono44.1kHz decoding,100Hz high-pass/6000Hz low-pass, DC removal,35ms fade-in/450ms fade-out, peak≤0.23FS and16-bit PCM. Measured peak−12.77dBFS/RMS−27.31dBFS,247004bytes. Updated asset duration regression, source/license/hash register, README and integration docs. QA fixture descriptions now cover bundled audio. Corrected audio QA startup readiness to CDP polling with userGesture:false after ordinary locator polling granted test-only user activation during startup. Existing shared complete event serves both games.
+- Validation — PASS `npm run typecheck`, `npm test`386/386, `npm run build`, focused audio asset/manager19/19, `node --check scripts/qa-audio.mjs`, `git diff --check`, local documentation links, repeat byte-identical generation and built/runtime hash parity. The four original effect files match their base Git blobs. Verified original author page explicitly CC0 and public HQ source HTTP200. Final actual `npm run qa:audio` Chrome157/Playwright at127.0.0.1:5181 PASS14checks with errors[]/warnings[]/diagnostics[], page/content/overlay/PCM/settings/lifecycle/voice-BGM checks, full five-carrot keyboard flow5grab/5success/1complete and actual projected-foot Berry collection1/complete1. Both completion BufferSources measured2.8seconds, server WAV hash37042ba07156edbea51dab7bf9d0abc16c0900d7f8205e389500d9b91d383bba, mono44100Hz PCM16. Berry completion uses the labeled deadline fixture. Desktop/mobile screenshots inspected. Browser plugin unavailable, existing installed Chrome/Playwright used. Evidence `/private/tmp/mg-applause-audio-qa-final/results.json` and `completion-audio-verification.json`, command logs `/private/tmp/mg-applause-{tests,focused,build}.log`.
+- Risks / blockers — Physical speaker listening, elderly comfort and Safari/Firefox/target-device output remain unverified. Regeneration requires Python3 and FFmpeg. No delivery blocker.
+- Next action — None within this replacement task.
+- Delivery — Normal commit and push to origin/main. Lead verifies final commit, remote parity and worktree status in the final reply.
 
 ### 2026-11-17 — 2026-11-17-lead-audio — Original effects and managed audio
 - Owner / agent — Codex Lead with bounded settings, scene integration, audio test/browser QA and independent read-only review workers. Lead integrated all results and fixes.

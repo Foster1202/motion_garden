@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const durations = { click: .13, grab: .32, success: .78, berry: .46, complete: 2.45 };
+const durations = { click: .13, grab: .32, success: .78, berry: .46, complete: 2.8 };
 
-test('bundled original effects are complete, gentle mono PCM WAV files', () => {
+test('bundled effects are complete, gentle mono PCM WAV files', () => {
   for (const [id, duration] of Object.entries(durations)) {
     const bytes = readFileSync(new URL(`../public/assets/audio/${id}.wav`, import.meta.url));
     assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
