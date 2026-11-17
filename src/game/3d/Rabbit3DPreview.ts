@@ -3,6 +3,7 @@ import { Quaternion, Vector3 } from 'three';
 import type { RabbitCharacter } from '../characters/RabbitCharacter';
 import { BASKET_DROP_TARGET, CARROT_PULL_DEPTHS, PLANTED_CARROT } from '../assets/carrotPullLayout';
 import { Rabbit3D } from './Rabbit3D';
+import { RabbitWorldMotion } from './RabbitWorldMotion';
 import { ThreeOverlay, CARROT_GAME_VIEWPORT, CARROT_GRAB_VIEWPORT, RABBIT_VIEWPORT, phaserToRabbitWorld, rabbitWorldToPhaser } from './ThreeOverlay';
 import { DEV_RABBIT_3D_DEBUG, Rabbit3DDebug } from './Rabbit3DDebug';
 import { MocapController } from '../mocap/MocapController';
@@ -40,6 +41,7 @@ export class Rabbit3DPreview {
   private grabDebug?: CarrotGrabDebug;
   private coordinator?: CarrotPull3DCoordinator;
   private environment?: CarrotPull3DEnvironment;
+  private worldMotion?: RabbitWorldMotion;
   private gameDebug?: CarrotGameDebug;
   private gameUpdateMs = 0;
   private target: 'sprite' | 'debug' | 'game' = 'sprite';
@@ -60,6 +62,7 @@ export class Rabbit3DPreview {
   private mocapEnabled = false;
   private manualOverride = false;
   private inputStatus?: MotionInputStatus;
+  private lastMocapDiagnosticsMs = -Infinity;
   private request?: AbortController;
   private generation = 0;
   private destroyed = false;
@@ -69,19 +72,35 @@ export class Rabbit3DPreview {
   private readonly textureKey = `rabbit-three-${crypto.randomUUID()}`;
 
   get isMocapActive() { return this.mode === '3d' && this.mocapEnabled; }
-  get motionHint() { return this.isMocapActive ? this.mocap?.statusMessage : undefined; }
+  get motionHint() {
+    if (!this.isMocapActive) return undefined;
+    if (this.mocap?.gameplayReady && this.isGameplay && this.roundState === 'READY' && !this.nearGardenBed) {
+      return '可在花園前後左右活動。回到花槽旁站穩，再慢慢屈膝拔蘿蔔。';
+    }
+    return this.mocap?.statusMessage;
+  }
   get hasGrabPrototype() { return this.mode === '3d' && !!this.carrot; }
   get isGameplay() { return this.mode === '3d' && this.purpose === 'game'; }
   get isDebugPreview() { return this.mode === '3d' && this.purpose === 'debug'; }
   get gameplaySelected() { return this.target === 'game'; }
-  get canAdvanceGameRound() { return this.gameplayReady && !!this.coordinator?.canAdvanceRound; }
+  get canAdvanceGameRound() {
+    if ((this.roundState === 'READY' && !this.nearGardenBed)
+      || (this.roundState === 'BENDING' && !this.atGardenBed)) return false;
+    return this.gameplayReady && !!this.coordinator?.canAdvanceRound;
+  }
+  private get nearGardenBed() {
+    const movement = this.worldMotion?.snapshot();
+    return !movement || Math.max(Math.abs(movement.offset.x), Math.abs(movement.target.x),
+      Math.abs(movement.offset.z), Math.abs(movement.target.z)) <= 1.2;
+  }
+  private get atGardenBed() {
+    const offset = this.worldMotion?.snapshot().offset;
+    return !offset || Math.max(Math.abs(offset.x), Math.abs(offset.z)) < .01;
+  }
   get gameplayReady() {
     if (this.paused || !this.isGameplay || !this.inputStatus?.ready || this.inputStatus.suspended) return false;
     if (this.inputStatus.mode === 'keyboard') return true;
-    const motion = this.mocap?.snapshot();
-    const timestamp = motion?.raw?.timestampMs;
-    return !!motion?.referenceReady && !motion.lastRejection && timestamp !== undefined
-      && performance.now() >= timestamp && performance.now() - timestamp <= 250;
+    return this.mocap?.gameplayReady ?? false;
   }
 
   constructor(private readonly scene: Phaser.Scene, private readonly sprite: RabbitCharacter,
@@ -165,7 +184,8 @@ export class Rabbit3DPreview {
           });
         }
       }
-      this.mocap = new MocapController(rabbit.rig, undefined, purpose === 'game' || DEV_CARROT_GRAB_DEBUG);
+      this.mocap = new MocapController(rabbit.rig, undefined, purpose === 'game' || DEV_CARROT_GRAB_DEBUG, purpose === 'game');
+      if (purpose === 'game') this.worldMotion = new RabbitWorldMotion(rabbit.pivot);
       this.label.textContent = purpose === 'game' ? '阿兔即時跟隨你 · 自動輔助抓握' : `3D ${rabbit.rig.version.toUpperCase()} 開發預覽 · 骨骼測試，拔蘿蔔請切回 Sprite`;
       this.bar.hidden = !import.meta.env.DEV;
       this.changed(true);
@@ -189,6 +209,16 @@ export class Rabbit3DPreview {
           if (this.paused) this.grabController.pause();
         }
       }
+      if (import.meta.env.DEV && purpose === 'game') {
+        if (!this.tools) {
+          this.tools = document.createElement('aside');
+          this.tools.className = 'rabbit-tools';
+          this.host.append(this.tools);
+        }
+        this.host.classList.add('mocap-debug-visible');
+        this.mocapDebug = new MocapDebug(this.tools,
+          () => this.setMocapEnabled(!this.mocapEnabled), () => this.resetMotionReference());
+      }
       if (this.paused) this.coordinator?.pause();
       this.update(0);
     } catch (error) {
@@ -208,19 +238,33 @@ export class Rabbit3DPreview {
   }
 
   update(deltaSeconds: number) {
-    if (this.paused) return;
+    if (this.paused) { this.updateMocapDiagnostics(); return; }
     const gameReady = this.gameplayReady;
     this.coordinator?.setTrackingReliable(gameReady);
-    if (this.isGameplay && this.gameWasReady && !gameReady) {
+    if (this.isGameplay && this.gameWasReady && !gameReady && !this.mocap?.gameplayReady) {
+      this.mocap?.update(deltaSeconds, performance.now(), false);
+      this.worldMotion?.update(deltaSeconds, undefined, undefined, false);
+      this.updateMocapDiagnostics();
       this.gameDebug?.update(deltaSeconds);
       return;
     }
     if (gameReady) this.gameWasReady = true;
     this.mocap?.update(deltaSeconds);
+    if (this.worldMotion) {
+      const movement = this.mocap?.movementFrame;
+      const idle = this.roundState === 'READY' || this.roundState === 'NEXT_ROUND' || this.roundState === 'COMPLETE';
+      // The existing assisted grab starts from its measured anchor; approach only within the nearby zone.
+      const sample = this.roundState === 'BENDING' ? movement?.reference
+        : movement && { ...movement.pose, depthReliable: movement.standing };
+      this.worldMotion.update(deltaSeconds, sample, movement?.reference,
+        !!movement && (idle || this.roundState === 'BENDING'));
+      const inFront = this.worldMotion.snapshot().offset.z > .15;
+      this.image?.setDepth(inFront ? CARROT_PULL_DEPTHS.soilFront + .2 : CARROT_PULL_DEPTHS.rabbit);
+    }
     let preparationMs = 0;
     if (this.coordinator) {
       const started = performance.now();
-      const pose = this.mocapEnabled ? this.mocap!.snapshot().smoothed : this.updateSimulation(deltaSeconds);
+      const pose = this.mocapEnabled ? this.mocap!.pose : this.updateSimulation(deltaSeconds);
       this.coordinator.preparePose(deltaSeconds, pose.bendAmount, pose, this.roundProgress);
       preparationMs = performance.now() - started;
     }
@@ -242,10 +286,29 @@ export class Rabbit3DPreview {
     context.clearRect(0, 0, viewport.width, viewport.height);
     context.drawImage(this.overlay.renderer.domElement, 0, 0);
     this.texture.refresh();
+    this.mocap?.recordRenderedFrame();
     this.debug?.update(this.overlay.fps);
     this.ikDebug?.update(deltaSeconds);
     this.gameDebug?.update(deltaSeconds);
-    if (this.mocap && this.mocapDebug) this.mocapDebug.update(this.mocap.snapshot(), this.overlay.fps, this.inputStatus);
+    this.updateMocapDiagnostics();
+  }
+
+  private updateMocapDiagnostics() {
+    if (!this.mocap || !this.mocapDebug) return;
+    const now = performance.now();
+    if (now - this.lastMocapDiagnosticsMs < 150) return;
+    this.lastMocapDiagnosticsMs = now;
+    this.mocapDebug.update(this.mocap.snapshot(), this.overlay?.fps ?? 0, this.inputStatus, {
+      generation: this.generation, gameplayReady: this.gameplayReady, gameWasReady: this.gameWasReady,
+      visualReady: this.mocap.gameplayReady,
+      renderMode: this.mode, purpose: this.purpose,
+      imageVisible: !!this.image?.visible && !!this.image?.active,
+      textureExists: this.scene.textures.exists(this.textureKey),
+      rootClamped: this.overlay?.rabbit.rig.ikSnapshot().feet?.rootClamped,
+      worldMovement: this.worldMotion?.snapshot(),
+      worldBonePositions: this.overlay ? Object.fromEntries((['root', 'hand.L', 'hand.R', 'foot.L', 'foot.R'] as const)
+        .map(name => [name, this.overlay!.rabbit.rig.bones.get(name)!.getWorldPosition(new Vector3()).toArray()])) : undefined,
+    });
   }
 
   acceptMotionFrame(frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile) {
@@ -282,6 +345,7 @@ export class Rabbit3DPreview {
     return this.simulation;
   }
   resetMotionInput() {
+    this.gameWasReady = false;
     this.cameraFallback = false;
     this.manualRenderOverride = false;
     this.manualOverride = false;
@@ -290,11 +354,13 @@ export class Rabbit3DPreview {
     this.mocapEnabled = false;
     if (this.mode === '3d') this.label.textContent = this.isGameplay ? '等待鏡頭動作設定，準備好先開始。' : '3D 開發預覽 · 等待鏡頭動作設定';
     this.overlay?.rabbit.rig.resetPose();
+    this.worldMotion?.reset();
     this.restoreManualDebug();
   }
-  resetMotionReference() { this.mocap?.resetReference(); }
+  resetMotionReference() { this.mocap?.resetReference(); this.worldMotion?.reset(); }
   pause() {
     this.paused = true; this.mocap?.pause(); this.grabController?.pause(); this.grabDebug?.setPaused(true); this.coordinator?.pause();
+    this.updateMocapDiagnostics();
   }
   resume() {
     this.paused = false; this.mocap?.resume(); this.grabController?.resume(); this.grabDebug?.setPaused(false); this.coordinator?.resume();
@@ -357,8 +423,13 @@ export class Rabbit3DPreview {
       quaternions: this.overlay ? Object.fromEntries([...this.overlay.rabbit.rig.bones].map(([name, bone]) => [name, bone.quaternion.toArray()])) : {},
       pixelsPerUnit: this.overlay?.rabbit.pixelsPerUnit, viewport: this.overlay?.viewport ?? RABBIT_VIEWPORT, spriteVisible: this.sprite.root.visible,
       rootPosition: this.overlay?.rabbit.rig.bones.get('root')?.position.toArray(),
+      worldMovement: this.worldMotion?.snapshot(),
+      nearGardenBed: this.nearGardenBed,
+      finalWorldBonePositions: this.overlay ? Object.fromEntries([...this.overlay.rabbit.rig.bones]
+        .map(([name, bone]) => [name, bone.getWorldPosition(new Vector3()).toArray()])) : {},
       camera: this.overlay ? { type: 'OrthographicCamera', position: this.overlay.camera.position.toArray(), direction: [0, 0, -1] } : null,
-      textureExists: this.scene.textures.exists(this.textureKey), debug: !!this.debug,
+      textureExists: this.scene.textures.exists(this.textureKey),
+      rootClamped: this.overlay?.rabbit.rig.ikSnapshot().feet?.rootClamped, debug: !!this.debug,
       controlSource: this.mode === 'sprite' ? 'sprite' : this.mocapEnabled ? 'mocap' : 'manual',
       rigVersion: this.overlay?.rabbit.rig.version, limits: this.overlay?.rabbit.rig.limits,
       elbowLimitsByRaise: this.overlay?.rabbit.rig.elbowLimitsByRaise,
@@ -378,6 +449,7 @@ export class Rabbit3DPreview {
     this.gameDebug?.destroy(); this.gameDebug = undefined;
     this.coordinator?.dispose(); this.coordinator = undefined;
     this.environment?.destroy(); this.environment = undefined;
+    this.worldMotion = undefined;
     this.gameWasReady = false;
     this.grabDebug?.destroy(); this.grabDebug = undefined;
     this.grabController?.dispose(); this.grabController = undefined;
@@ -387,6 +459,7 @@ export class Rabbit3DPreview {
     this.ikDebug?.destroy(); this.ikDebug = undefined;
     this.mocap?.dispose(); this.mocap = undefined; this.mocapEnabled = false;
     this.mocapDebug?.destroy(); this.mocapDebug = undefined;
+    this.lastMocapDiagnosticsMs = -Infinity;
     this.tools?.remove(); this.tools = undefined;
     this.host.classList.remove('mocap-debug-visible');
     this.image?.destroy(); this.image = undefined;

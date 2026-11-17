@@ -11,6 +11,7 @@ import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 export interface MotionCaptureEvents {
   onFrame?: (frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile) => void;
   onReset?: () => void;
+  onReferenceReset?: () => void;
   onStatus?: (status: MotionInputStatus) => void;
   isContinuousPreview?: () => boolean;
   getMotionHint?: () => string | undefined;
@@ -47,7 +48,7 @@ export class MotionInputController implements MotionInput {
     this.controls = document.createElement('aside');
     this.controls.className = 'motion-controls';
     this.controls.hidden = true;
-    this.controls.innerHTML = `<p class="motion-mode-label"></p><p class="motion-status" role="status"></p><button class="motion-switch" data-input-action="change-mode">切換輸入模式</button><button class="motion-switch" data-input-action="recalibrate" hidden>重新設定動作</button><label class="preview-toggle" hidden><input type="checkbox" checked> 顯示鏡頭小畫面</label>`;
+    this.controls.innerHTML = `<p class="motion-mode-label"></p><p class="motion-status" role="status"></p><button class="motion-switch" data-input-action="change-mode">切換輸入模式</button><button class="motion-switch" data-input-action="recalibrate" hidden>重新設定動作</button><button class="motion-switch" data-input-action="reference" hidden>重設參考姿勢</button><label class="preview-toggle" hidden><input type="checkbox" checked> 顯示鏡頭小畫面</label>`;
     this.personStatus.className = 'person-status';
     this.personStatus.hidden = true;
     this.personStatus.setAttribute('role', 'status');
@@ -57,6 +58,9 @@ export class MotionInputController implements MotionInput {
     this.panel.querySelector('[data-input-action="keyboard"]')!.addEventListener('click', () => this.useKeyboard());
     this.controls.querySelector('[data-input-action="change-mode"]')!.addEventListener('click', () => this.chooseMode());
     this.controls.querySelector('[data-input-action="recalibrate"]')!.addEventListener('click', () => this.restartCalibration());
+    this.controls.querySelector('[data-input-action="reference"]')!.addEventListener('click', () => {
+      if (this.cameraPlaying && !this.paused) this.capture.onReferenceReset?.();
+    });
     this.controls.querySelector('input')!.addEventListener('change', event => this.preview?.setVisible((event.target as HTMLInputElement).checked));
     this.setKeyboardHints(false);
     this.cameraButton.focus({ preventScroll: true });
@@ -169,10 +173,11 @@ export class MotionInputController implements MotionInput {
         this.preview?.update(frame, pose);
         this.updateCalibration(input, pose);
         if (this.waitingForStanding && pose.state === 'STANDING' && !input.getStatus().suspended) this.waitingForStanding = false;
-        const status = this.getStatus();
+        this.getStatus();
         const profile = input.getCalibration();
         if (this.cameraPlaying && !this.paused && profile) {
-          this.capture.onFrame?.(frame, status.suspended ? { ...pose, state: 'TRACKING_LOST' } : pose, profile);
+          // Action recovery debounce must not relabel a reliable visual pose as lost.
+          this.capture.onFrame?.(frame, pose, profile);
         }
       },
       onError: error => { if (generation === this.generation && !this.destroyed) this.cameraFailed(error); },
@@ -269,6 +274,10 @@ export class MotionInputController implements MotionInput {
     this.panel.querySelector<HTMLElement>('#motion-setup-message')!.textContent = message;
   }
   private renderStatus(status: MotionInputStatus) {
+    const reference = this.controls.querySelector<HTMLButtonElement>('[data-input-action="reference"]')!;
+    reference.hidden = !(status.mode === 'camera' && status.calibrationReady
+      && this.capture.onReferenceReset && this.capture.isContinuousPreview?.());
+    reference.disabled = this.paused;
     const message = this.waitingForStanding ? '動作設定完成，請自然企直、雙手放鬆，阿兔會自動跟隨。'
       : this.cameraPlaying && !status.suspended && this.capture.isContinuousPreview?.()
       ? this.capture.getMotionHint?.() ?? '即時動作預覽，按自己舒適幅度活動。' : status.message;

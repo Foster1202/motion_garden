@@ -222,3 +222,396 @@ test('combined arm planes, torso and calibrated knees vary continuously without 
     close(target.bendAmount, amount);
   }
 });
+
+test('relaxed projected arms acquire despite monocular depth inflating 3D elevation and elbow bend', () => {
+  const extractor = new HumanPoseExtractor();
+  const mapper = new MotionRetargeter();
+  let last!: HumanPose;
+  for (let time = 0; time <= 600; time += 40) {
+    const raw = frame();
+    raw.timestampMs = time;
+    const points = raw.landmarks as PoseLandmark[];
+    points.forEach(point => { point.z = 0; });
+    const noise = time % 80 === 0 ? .008 : -.008;
+    for (const [elbow, wrist] of [[13, 15], [14, 16]]) {
+      points[elbow].z = -.075 + noise;
+      points[wrist].z = -.02 - noise;
+    }
+    last = extractor.extract(raw, snapshot({ timestampMs: time }), profile)!;
+    assert.ok(last.leftArmElevation! > 25);
+    assert.ok(last.leftElbowBend! > 35);
+    close(last.leftArmProjectedElevation!, 0);
+    close(last.leftElbowProjectedBend!, 0);
+    mapper.update(last, profile);
+  }
+  assert.equal(mapper.snapshot.referenceReady, true);
+  assert.equal(mapper.snapshot.referenceProgress, 1);
+  assert.ok(mapper.reference!.leftArmElevation > 25);
+  assert.ok(mapper.reference!.leftElbowBend > 35);
+});
+
+test('image-plane reference gates still reject clear lateral raises and foreshortened forward reaches', () => {
+  for (const forward of [false, true]) {
+    const mapper = new MotionRetargeter();
+    const extractor = new HumanPoseExtractor();
+    for (let time = 0; time <= 1000; time += 40) {
+      const raw = frame(forward ? 0 : 70, forward ? 0 : 70);
+      raw.timestampMs = time;
+      const points = raw.landmarks as PoseLandmark[];
+      if (forward) {
+        points.forEach(point => { point.z = 0; });
+        for (const [shoulder, elbow, wrist] of [[11, 13, 15], [12, 14, 16]]) {
+          points[elbow] = { ...points[shoulder], z: -.1 };
+          points[wrist] = { ...points[shoulder], z: -.2 };
+        }
+      }
+      const rawHuman = extractor.extract(raw, snapshot({ timestampMs: time }), profile)!;
+      assert.equal(mapper.update(rawHuman, profile), undefined);
+    }
+    assert.equal(mapper.snapshot.referenceReady, false);
+    assert.match(mapper.snapshot.rejectionReason!, forward ? /projected-upper-length-min/ : /ProjectedElevation-max/);
+  }
+});
+
+test('one confidence dropout preserves accepted reference progress and receives no capture credit', () => {
+  const mapper = new MotionRetargeter();
+  for (let time = 0; time <= 320; time += 40) mapper.update(human(time), profile);
+  const previous = mapper.snapshot;
+  assert.ok(previous.referenceProgress > .5);
+  mapper.update(human(360, { leftArmConfidence: .1 }), profile);
+  close(mapper.snapshot.referenceProgress, previous.referenceProgress);
+  assert.equal(mapper.snapshot.acceptedSamples, previous.acceptedSamples);
+  assert.match(mapper.snapshot.rejectionReason!, /left-arm-confidence-min 0.10/);
+  mapper.update(human(400), profile);
+  close(mapper.snapshot.referenceProgress, previous.referenceProgress);
+  for (let time = 440; time <= 680; time += 40) mapper.update(human(time), profile);
+  assert.equal(mapper.snapshot.referenceReady, true);
+});
+
+test('isolated center outlier retains progress while sustained movement starts a fresh stable cluster', () => {
+  const mapper = new MotionRetargeter();
+  for (let time = 0; time <= 320; time += 40) mapper.update(human(time), profile);
+  const progress = mapper.snapshot.referenceProgress;
+  mapper.update(human(360, { centerX: .6 }), profile);
+  close(mapper.snapshot.referenceProgress, progress);
+  assert.match(mapper.snapshot.rejectionReason!, /center-spread-max/);
+  for (let time = 400; time <= 640; time += 40) mapper.update(human(time, { centerX: .6 }), profile);
+  assert.equal(mapper.snapshot.referenceProgress, 0);
+  for (let time = 680; time <= 1280; time += 40) mapper.update(human(time, { centerX: .6 }), profile);
+  assert.equal(mapper.snapshot.referenceReady, true);
+  close(mapper.reference!.centerX, .6);
+});
+
+test('prolonged bent or raised posture reports failed conditions then recovers without recalibration', () => {
+  const mapper = new MotionRetargeter();
+  const before = JSON.stringify(profile);
+  for (let time = 0; time <= 1600; time += 40) mapper.update(human(time, { activeKneeAngle: 150 }), profile);
+  assert.equal(mapper.snapshot.referenceReady, false);
+  assert.equal(mapper.snapshot.acceptedSamples, 0);
+  assert.ok(mapper.snapshot.conditions.some(condition => condition.name === 'standing-knee-min' && !condition.pass));
+  for (let time = 1640; time <= 2240; time += 40) mapper.update(human(time), profile);
+  assert.equal(mapper.snapshot.referenceReady, true);
+  assert.equal(JSON.stringify(profile), before);
+  const status = mapper.snapshot;
+  status.conditions[0].pass = false;
+  assert.equal(mapper.snapshot.conditions[0].pass, true);
+});
+
+test('reference offsets use medians of reliable samples while projected posture stays stable', () => {
+  const mapper = new MotionRetargeter();
+  const angles = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 70];
+  for (const [index, angle] of angles.entries()) mapper.update(human(index * 40, {
+    leftArmElevation: angle, leftArmProjectedElevation: 2,
+  }), profile);
+  assert.equal(mapper.snapshot.referenceReady, true);
+  close(mapper.reference!.leftArmElevation, 10);
+});
+
+test('extractor rejection identifies classifier, confidence and malformed knee stages', () => {
+  const extractor = new HumanPoseExtractor();
+  assert.equal(extractor.extract(frame(), snapshot({ state: 'TRACKING_LOST' }), profile), undefined);
+  assert.equal(extractor.lastRejection, 'classifier-TRACKING_LOST');
+  const raw = frame();
+  (raw.landmarks as PoseLandmark[])[11].visibility = .1;
+  assert.equal(extractor.extract(raw, snapshot(), profile), undefined);
+  assert.match(extractor.lastRejection!, /torso-confidence 0.1 < 0.65/);
+  assert.ok(extractor.extract(frame(), snapshot(), profile));
+  assert.equal(extractor.lastRejection, undefined);
+});
+
+
+test('a short malformed depth cue cannot discard otherwise valid reference progress', () => {
+  const mapper = new MotionRetargeter();
+  for (let time = 0; time <= 320; time += 40) mapper.update(human(time), profile);
+  const progress = mapper.snapshot.referenceProgress;
+  mapper.update(human(360, { torsoForward: NaN }), profile);
+  close(mapper.snapshot.referenceProgress, progress);
+  assert.equal(mapper.snapshot.rejectionReason, 'invalid-human-pose');
+  mapper.update(human(400), profile);
+  close(mapper.snapshot.referenceProgress, progress);
+  for (let time = 440; time <= 680; time += 40) mapper.update(human(time), profile);
+  assert.equal(mapper.snapshot.referenceReady, true);
+});
+
+
+test('partially foreshortened forward arms cannot masquerade as relaxed image-plane posture', () => {
+  const mapper = new MotionRetargeter();
+  const extractor = new HumanPoseExtractor();
+  for (let time = 0; time <= 1000; time += 40) {
+    const raw = frame();
+    raw.timestampMs = time;
+    const points = raw.landmarks as PoseLandmark[];
+    points.forEach(point => { point.z = 0; });
+    for (const [shoulder, elbow, wrist] of [[11, 13, 15], [12, 14, 16]]) {
+      const projectedStep = .08 * 270 / 900;
+      points[elbow] = { ...points[shoulder], y: points[shoulder].y + projectedStep, z: -.135 };
+      points[wrist] = { ...points[shoulder], y: points[shoulder].y + projectedStep * 2, z: -.27 };
+    }
+    const extracted = extractor.extract(raw, snapshot({ timestampMs: time }), profile)!;
+    close(extracted.leftArmProjectedElevation!, 0);
+    close(extracted.leftArmProjectedLength!, .08);
+    assert.ok(extracted.leftArmElevation! > 80);
+    assert.equal(mapper.update(extracted, profile), undefined);
+  }
+  assert.equal(mapper.snapshot.referenceReady, false);
+  assert.match(mapper.snapshot.rejectionReason!, /left-projected-upper-length-min 0.08.*0.20/);
+});
+
+test('rejected whole frames do not contribute time to reference capture and cannot mutate a captured reference', () => {
+  const mapper = new MotionRetargeter();
+  for (let time = 0; time <= 1600; time += 40) {
+    if (time % 80) mapper.rejectFrame(time, 'torso-confidence');
+    else mapper.update(human(time), profile);
+  }
+  assert.equal(mapper.isReferenceReady, false);
+  close(mapper.snapshot.referenceProgress, 0);
+  assert.equal(mapper.requiresReferenceReset, false);
+  for (let time = 1640; time <= 2280; time += 40) mapper.update(human(time), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  const reference = mapper.reference;
+  const status = mapper.snapshot;
+  mapper.rejectFrame(2320, 'torso-confidence');
+  assert.deepEqual(mapper.reference, reference);
+  assert.deepEqual(mapper.snapshot, status);
+});
+
+test('required camera reference reset includes concrete scale and center conditions', () => {
+  for (const change of [{ bodyScale: .3 }, { centerX: .9 }]) {
+    const mapper = ready();
+    assert.equal(mapper.update(human(640, change), profile), undefined);
+    assert.equal(mapper.requiresReferenceReset, true);
+    assert.match(mapper.snapshot.rejectionReason!, /camera-(scale|center)-shift-max/);
+    assert.equal(mapper.snapshot.conditions.length, 2);
+    assert.ok(mapper.snapshot.conditions.some(condition => !condition.pass && condition.value! > condition.limit));
+  }
+});
+
+
+function depthBiasedArmFrame(timestampMs: number, leftDegrees = 8, rightDegrees = 8): PoseFrame {
+  const raw = frame(0, 0, 640, 360);
+  raw.timestampMs = timestampMs;
+  const points = raw.landmarks as PoseLandmark[];
+  points.forEach(point => { point.z = 0; });
+  for (const [shoulder, elbow, wrist, angle, sign] of [[11, 13, 15, leftDegrees, -1], [12, 14, 16, rightDegrees, 1]]) {
+    const radians = angle * Math.PI / 180;
+    const dx = sign * Math.sin(radians) * 46.8 / 640;
+    const dy = Math.cos(radians) * 46.8 / 360;
+    points[elbow] = { ...points[shoulder], x: points[shoulder].x + dx, y: points[shoulder].y + dy, z: -.075 };
+    points[wrist] = { ...points[shoulder], x: points[shoulder].x + dx * 2, y: points[shoulder].y + dy * 2, z: -.15 };
+  }
+  return raw;
+}
+
+test('visible lateral raises overcome a depth-inflated natural arm reference independently', () => {
+  const extractor = new HumanPoseExtractor();
+  const mapper = new MotionRetargeter();
+  const extract = (time: number, left = 8, right = 8) =>
+    extractor.extract(depthBiasedArmFrame(time, left, right), snapshot({ timestampMs: time }), profile)!;
+  for (let time = 0; time <= 600; time += 40) mapper.update(extract(time), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  assert.ok(Math.abs(mapper.reference!.leftArmElevation - 46.266) < .1);
+  close(mapper.reference!.leftArmProjectedElevation!, 8);
+  close(mapper.reference!.rightArmProjectedElevation!, 8);
+  const natural = mapper.update(extract(640), profile)!;
+  close(natural.leftArmElevation, 0);
+  close(natural.rightArmElevation, 0);
+  const raised = extract(680, 80, 8);
+  const oldDepthChange = raised.leftArmElevation! - mapper.reference!.leftArmElevation;
+  assert.ok(oldDepthChange < 40);
+  const left = mapper.update(raised, profile)!;
+  assert.ok(left.leftArmElevation >= 70);
+  close(left.leftArmElevation, 72);
+  close(left.rightArmElevation, 0);
+  const right = mapper.update(extract(720, 8, 80), profile)!;
+  close(right.leftArmElevation, 0);
+  close(right.rightArmElevation, 72);
+  const both = mapper.update(extract(760, 80, 80), profile)!;
+  close(both.leftArmElevation, 72);
+  close(both.rightArmElevation, 72);
+  for (let time = 800; time <= 1200; time += 40) {
+    const stable = mapper.update(extract(time), profile)!;
+    close(stable.leftArmElevation, 0);
+    close(stable.rightArmElevation, 0);
+  }
+});
+
+test('legacy references retain depth mapping and invalid projected values do not amplify targets', () => {
+  const mapper = ready({ leftArmElevation: 5 });
+  assert.equal(mapper.reference!.leftArmProjectedElevation, undefined);
+  const legacy = mapper.update(human(640, { leftArmElevation: 35, leftArmProjectedElevation: 80 }), profile)!;
+  close(legacy.leftArmElevation, 30);
+  const projected = ready({ leftArmElevation: 46.266, leftArmProjectedElevation: 8 });
+  for (const [index, value] of [undefined, NaN, -1, 181].entries()) {
+    const target = projected.update(human(640 + index * 40, {
+      leftArmElevation: 83, leftArmProjectedElevation: value,
+    }), profile)!;
+    close(target.leftArmElevation, 83 - 46.266);
+  }
+  const bounded = projected.update(human(800, { leftArmElevation: 83, leftArmProjectedElevation: 180 }), profile)!;
+  close(bounded.leftArmElevation, RABBIT_3D_CONFIG.limits.arm.max);
+});
+
+test('returning to the original camera volume confirms and resumes the same captured reference', () => {
+  const mapper = ready({ leftArmElevation: 5, torsoLean: 3 });
+  const original = mapper.reference;
+  const calibration = JSON.stringify(profile);
+  for (let time = 640; time <= 1600; time += 40) {
+    assert.equal(mapper.update(human(time, { bodyScale: .3 }), profile), undefined);
+    assert.equal(mapper.requiresReferenceReset, true);
+    assert.equal(mapper.snapshot.referenceProgress, 0);
+    assert.match(mapper.snapshot.rejectionReason!, /camera-scale-shift-max/);
+  }
+  for (let time = 1640; time < 2240; time += 40) {
+    assert.equal(mapper.update(human(time), profile), undefined);
+    assert.equal(mapper.requiresReferenceReset, true);
+    assert.match(mapper.snapshot.rejectionReason!, /reference-return-confirmation/);
+  }
+  const restored = mapper.update(human(2240, { leftArmElevation: 45, torsoLean: 8 }), profile)!;
+  assert.equal(mapper.requiresReferenceReset, false);
+  assert.equal(mapper.isReferenceReady, true);
+  close(restored.leftArmElevation, 40);
+  close(restored.torsoLean, 5);
+  assert.deepEqual(mapper.reference, original);
+  assert.equal(JSON.stringify(profile), calibration);
+  assert.equal(mapper.snapshot.rejectionReason, undefined);
+});
+
+test('reference return confirmation tolerates bounded noise and gives rejected frames zero time credit', () => {
+  const mapper = ready();
+  mapper.update(human(640, { centerX: .9 }), profile);
+  for (let time = 680; time <= 1000; time += 40) {
+    mapper.update(human(time, { centerX: time % 80 === 0 ? .501 : .499 }), profile);
+  }
+  const progress = mapper.snapshot.referenceProgress;
+  assert.ok(progress > .5);
+  mapper.rejectFrame(1040, 'unreliable-pose');
+  close(mapper.snapshot.referenceProgress, progress);
+  assert.match(mapper.snapshot.rejectionReason!, /unreliable-pose/);
+  assert.equal(mapper.update(human(1080), profile), undefined);
+  close(mapper.snapshot.referenceProgress, progress);
+  for (let time = 1120; time < 1360; time += 40) assert.equal(mapper.update(human(time), profile), undefined);
+  assert.ok(mapper.update(human(1360), profile));
+  assert.equal(mapper.requiresReferenceReset, false);
+});
+
+test('alternating bad return frames and long gaps cannot complete reference recovery', () => {
+  const mapper = ready();
+  mapper.update(human(640, { centerX: .9 }), profile);
+  for (let time = 680; time <= 2280; time += 40) {
+    if (time % 80) mapper.update(human(time), profile);
+    else mapper.rejectFrame(time, 'unreliable-pose');
+  }
+  assert.equal(mapper.requiresReferenceReset, true);
+  close(mapper.snapshot.referenceProgress, 0);
+  for (let time = 2320; time <= 2640; time += 40) mapper.update(human(time), profile);
+  assert.ok(mapper.snapshot.referenceProgress > 0);
+  assert.equal(mapper.update(human(2960), profile), undefined);
+  close(mapper.snapshot.referenceProgress, 0);
+  for (let time = 3000; time < 3560; time += 40) assert.equal(mapper.update(human(time), profile), undefined);
+  assert.ok(mapper.update(human(3560), profile));
+  assert.equal(mapper.requiresReferenceReset, false);
+});
+
+test('leaving the camera volume again restarts recovery and manual reference reset still recaptures', () => {
+  const mapper = ready();
+  mapper.update(human(640, { centerX: .9 }), profile);
+  for (let time = 680; time <= 1000; time += 40) mapper.update(human(time), profile);
+  assert.ok(mapper.snapshot.referenceProgress > 0);
+  mapper.update(human(1040, { bodyScale: .3 }), profile);
+  close(mapper.snapshot.referenceProgress, 0);
+  assert.equal(mapper.requiresReferenceReset, true);
+  mapper.resetReference();
+  assert.equal(mapper.requiresReferenceReset, false);
+  assert.equal(mapper.reference, undefined);
+  for (let time = 1080; time <= 1680; time += 40) mapper.update(human(time, { centerX: .6 }), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  close(mapper.reference!.centerX, .6);
+  assert.equal(mapper.reference!.timestampMs, 1680);
+});
+
+test('optional garden movement retains the captured reference through ordinary lateral and depth travel', () => {
+  const mapper = new MotionRetargeter(90, true);
+  for (let time = 0; time <= 600; time += 40) mapper.update(human(time, { torsoScale: .3 }), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  const original = mapper.reference;
+  for (const [index, movement] of [
+    { centerX: .88, bodyScale: .34, torsoScale: .51 },
+    { centerX: .12, bodyScale: .12, torsoScale: .18 },
+    { centerX: .5, bodyScale: .2, torsoScale: .3 },
+  ].entries()) {
+    const target = mapper.update(human(640 + index * 40, movement), profile);
+    assert.ok(target);
+    assert.equal(mapper.requiresReferenceReset, false);
+    assert.ok(Object.values(target).every(Number.isFinite));
+    assert.deepEqual(mapper.reference, original);
+  }
+  close(mapper.reference!.torsoScale!, .3);
+  const legacy = ready();
+  assert.equal(legacy.update(human(640, { centerX: .88, bodyScale: .34, torsoScale: .51 }), profile), undefined);
+  assert.equal(legacy.requiresReferenceReset, true);
+});
+
+test('garden movement rejects degenerate body measurements and supports legacy torso-scale omission', () => {
+  const mapper = new MotionRetargeter(90, true);
+  for (let time = 0; time <= 600; time += 40) mapper.update(human(time), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  assert.equal(mapper.reference!.torsoScale, undefined);
+  const original = mapper.reference;
+  for (const [index, invalid] of [
+    { torsoScale: NaN }, { torsoScale: Infinity }, { torsoScale: 0 }, { torsoScale: .001 },
+    { bodyScale: 0 }, { centerX: 1.1 }, { trackingConfidence: .1 },
+  ].entries()) {
+    assert.equal(mapper.update(human(640 + index * 40, invalid), profile), undefined);
+    assert.deepEqual(mapper.reference, original);
+  }
+  assert.ok(mapper.update(human(1000, { centerX: .75, bodyScale: .3 }), profile));
+  assert.equal(mapper.requiresReferenceReset, false);
+});
+
+test('torso scale uses projected torso length normalized by image height across aspect ratios', () => {
+  const extractor = new HumanPoseExtractor();
+  for (const [width, height] of [[1600, 900], [900, 1600], [640, 360]]) {
+    const extracted = extractor.extract(frame(0, 0, width, height), snapshot(), profile)!;
+    close(extracted.torsoScale!, .3);
+  }
+  const raw = frame();
+  const points = raw.landmarks as PoseLandmark[];
+  points[11].x += .03;
+  points[12].x += .03;
+  const leaned = extractor.extract(raw, snapshot(), profile)!;
+  close(leaned.torsoScale!, Math.hypot(48, 270) / 900);
+  points.forEach(point => { point.z = 0; });
+  points[11] = { ...points[23], y: points[23].y - .001, z: -.5 };
+  points[12] = { ...points[24], y: points[24].y - .001, z: -.5 };
+  assert.equal(extractor.extract(raw, snapshot(), profile), undefined);
+  assert.equal(extractor.lastRejection, 'torso-degenerate-geometry');
+});
+
+test('optional torso-scale reference uses reliable sample medians', () => {
+  const mapper = new MotionRetargeter(90, true);
+  for (let index = 0; index <= 15; index++) mapper.update(human(index * 40, {
+    torsoScale: index === 15 ? .6 : .3,
+  }), profile);
+  assert.equal(mapper.isReferenceReady, true);
+  close(mapper.reference!.torsoScale!, .3);
+});

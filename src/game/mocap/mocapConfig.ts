@@ -4,8 +4,10 @@ export const MOCAP_CONFIG = {
   confidenceThreshold: 0.65,
   reference: {
     captureMs: 600,
+    minimumSamples: 8,
     maximumSampleGapMs: 250,
     relaxedArmDegrees: 25,
+    minimumProjectedArmLength: 0.2,
     relaxedElbowDegrees: 35,
     maximumLeanDegrees: 25,
     angularSpreadDegrees: 6,

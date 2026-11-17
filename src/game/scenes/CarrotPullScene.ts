@@ -118,6 +118,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.motion = new MotionInputController(this.ui.root, {
       onFrame: (frame, pose, profile) => this.rabbit3d?.acceptMotionFrame(frame, pose, profile),
       onReset: () => this.rabbit3d?.resetMotionInput(),
+      onReferenceReset: () => this.rabbit3d?.resetMotionReference(),
       onStatus: status => {
         this.rabbit3d?.setInputStatus(status);
         this.setTrackingSuspended(status.mode === 'camera' && (!status.ready || status.suspended));

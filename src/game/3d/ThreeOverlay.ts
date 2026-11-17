@@ -3,7 +3,7 @@ import { Rabbit3D } from './Rabbit3D';
 
 export const RABBIT_VIEWPORT = { x: 634, y: 229, width: 520, height: 520 } as const;
 export const CARROT_GRAB_VIEWPORT = { x: 574, y: 119, width: 640, height: 700 } as const;
-export const CARROT_GAME_VIEWPORT = { x: 574, y: 119, width: 820, height: 660 } as const;
+export const CARROT_GAME_VIEWPORT = { x: 250, y: 100, width: 1300, height: 720 } as const;
 export interface ThreeViewport { x: number; y: number; width: number; height: number }
 export function rabbitWorldToPhaser(x: number, y: number, pixelsPerUnit: number) {
   return { x: 894 + x * pixelsPerUnit, y: 681 - y * pixelsPerUnit };
@@ -20,6 +20,7 @@ export class ThreeOverlay {
   fps = 0;
   private elapsed = 0;
   private samples = 0;
+  private renderElapsed = 0;
   private destroyed = false;
   private readonly contextLost: (event: Event) => void;
 
@@ -54,9 +55,14 @@ export class ThreeOverlay {
     this.rabbit.rig.update(deltaSeconds);
     afterPose?.(deltaSeconds);
     if (this.destroyed) return false;
+    this.elapsed += deltaSeconds;
+    this.renderElapsed += deltaSeconds;
+    // Keep the existing scene clock while bounding WebGL draws and Phaser texture uploads.
+    if (this.renderElapsed < 1 / 60) return false;
+    this.renderElapsed %= 1 / 60;
     this.renderer.render(this.scene, this.camera);
     this.renderedFrames++;
-    this.samples++; this.elapsed += deltaSeconds;
+    this.samples++;
     if (this.elapsed >= 1) { this.fps = this.samples / this.elapsed; this.elapsed = 0; this.samples = 0; }
     return true;
   }
