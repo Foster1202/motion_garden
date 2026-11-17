@@ -9,26 +9,46 @@ export class BerryKickRound {
   private readonly nextHit = { left: 0, right: 0 };
   private clock = 0;
   private lastHitAt = -Infinity;
+  private isPaused = false;
+  readonly durationMs: number;
   state: BerryState = 'READY';
-  paused = false;
-  constructor(readonly zones: Record<BerrySide, TreeTrunkHitZone>) {}
-  get score() { return this.counts.left + this.counts.right; }
-  get complete() { return this.score === C.targetPerSide * 2; }
+  constructor(readonly zones: Record<BerrySide, TreeTrunkHitZone>, durationSeconds: number = C.defaultDurationSeconds) {
+    const duration = C.durationOptions.some(option => option === durationSeconds) ? durationSeconds : C.defaultDurationSeconds;
+    this.durationMs = duration * 1000;
+  }
+  get score() { return (this.counts.left + this.counts.right) * C.berriesPerHit; }
+  get elapsedMs() { return this.clock; }
+  get remainingMs() { return this.durationMs - this.clock; }
+  get complete() { return this.remainingMs === 0; }
+  get paused() { return this.isPaused; }
+  set paused(value: boolean) {
+    if (this.complete || this.isPaused === value) return;
+    this.isPaused = value;
+    this.armed.left = this.armed.right = false;
+  }
   update(deltaMs: number, input: BerryRoundInput): BerrySide | undefined {
     if (this.paused || this.complete) return undefined;
-    if (![deltaMs, input.left, input.right, input.rootX].every(Number.isFinite)
+    if (!Number.isFinite(deltaMs) || deltaMs <= 0) {
+      this.armed.left = this.armed.right = false; return undefined;
+    }
+    this.clock = Math.min(this.durationMs, this.clock + deltaMs);
+    if (this.complete) {
+      this.state = 'COMPLETE';
+      this.armed.left = this.armed.right = false;
+      return undefined;
+    }
+    if (![input.left, input.right, input.rootX].every(Number.isFinite)
       || input.left < 0 || input.left > 1 || input.right < 0 || input.right > 1) {
       this.armed.left = this.armed.right = false; return undefined;
     }
-    this.clock += Math.max(0, Math.min(deltaMs, 100));
     if (!input.reliable) { this.armed.left = this.armed.right = false; return undefined; }
     for (const side of ['left', 'right'] as const) {
       if (input[side] <= C.retractThreshold) this.armed[side] = true;
       const correctPosition = side === 'left' ? input.rootX < 720 : input.rootX > 880;
-      if (this.armed[side] && this.counts[side] < C.targetPerSide && input[side] >= C.extensionThreshold
+      if (this.armed[side] && input[side] >= C.extensionThreshold
         && this.clock >= this.nextHit[side] && correctPosition && footInTrunk(input.feet[side], this.zones[side])) {
         this.counts[side]++; this.armed[side] = false; this.nextHit[side] = this.clock + C.cooldownMs;
-        this.lastHitAt = this.clock; this.state = this.complete ? 'COMPLETE' : 'TREE_HIT'; return side;
+        this.lastHitAt = this.clock; this.state = 'TREE_HIT'; return side;
       }
     }
     const elapsed = this.clock - this.lastHitAt;
@@ -38,5 +58,6 @@ export class BerryKickRound {
     return undefined;
   }
   snapshot() { return { score: this.score, counts: { ...this.counts }, state: this.state, paused: this.paused,
-    armed: { ...this.armed }, clock: this.clock }; }
+    armed: { ...this.armed }, clock: this.clock, durationMs: this.durationMs, elapsedMs: this.elapsedMs,
+    remainingMs: this.remainingMs, complete: this.complete }; }
 }

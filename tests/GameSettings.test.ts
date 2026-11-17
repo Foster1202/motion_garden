@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_GAME_SETTINGS, getGameSettings, resetGameSettings, saveGameSettings, SETTINGS_STORAGE_KEY, validateGameSettings } from '../src/game/settings/gameSettings';
+import { DEFAULT_GAME_SETTINGS, getGameSettings, resetGameSettings, saveGameSettings, SETTINGS_STORAGE_KEY, validateGameSettings, type GameSettings } from '../src/game/settings/gameSettings';
 
 test('manual defaults allow a shallow bend and form valid separated thresholds', () => {
   assert.equal(validateGameSettings(DEFAULT_GAME_SETTINGS), true);
@@ -9,6 +9,7 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(DEFAULT_GAME_SETTINGS.showBodyKeypoints, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundProcessing, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundMode, 'blur');
+  assert.equal(DEFAULT_GAME_SETTINGS.berryDurationSeconds, 120);
 });
 
 test('settings reject nonfinite, missing, excessive and overlapping thresholds', () => {
@@ -18,6 +19,9 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { standingAngle: 150, bendingAngle: 150 }, { standingAngle: 150, bendingAngle: 148 },
     { showBodyKeypoints: 'true' }, { backgroundProcessing: 1 }, { backgroundMode: 'transparent' },
     { showBodyKeypoints: undefined }, { backgroundProcessing: null }, { backgroundMode: undefined },
+    { berryDurationSeconds: 30 }, { berryDurationSeconds: 61 }, { berryDurationSeconds: 0 },
+    { berryDurationSeconds: 121 }, { berryDurationSeconds: '60' }, { berryDurationSeconds: NaN },
+    { berryDurationSeconds: Infinity }, { berryDurationSeconds: undefined }, { berryDurationSeconds: null },
   ]) assert.equal(validateGameSettings({ ...DEFAULT_GAME_SETTINGS, ...change }), false);
   assert.equal(validateGameSettings({}), false);
   assert.equal(validateGameSettings(null), false);
@@ -51,8 +55,8 @@ test('persist only supported settings, recover invalid storage, reset defaults',
   }
 });
 
-test('legacy numeric settings retain values and default both preview effects off', () => {
-  const { showBodyKeypoints, backgroundProcessing, backgroundMode, ...legacy } = DEFAULT_GAME_SETTINGS;
+test('legacy numeric settings retain values and default preview effects off and Berry duration to 120', () => {
+  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, ...legacy } = DEFAULT_GAME_SETTINGS;
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: () => JSON.stringify({ ...legacy, bendingAngle: 155, mocapGain: 1.25, rawPose: [1, 2, 3] }),
@@ -62,6 +66,52 @@ test('legacy numeric settings retain values and default both preview effects off
     assert.equal(showBodyKeypoints, false);
     assert.equal(backgroundProcessing, false);
     assert.equal(backgroundMode, 'blur');
+    assert.equal(berryDurationSeconds, 120);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('legacy preview settings retain values when Berry duration is added', () => {
+  const { berryDurationSeconds, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => JSON.stringify({ ...legacy, rabbitScale: 1.25, showBodyKeypoints: true, backgroundMode: 'gray' }),
+  } });
+  try {
+    assert.deepEqual(getGameSettings(), { ...DEFAULT_GAME_SETTINGS, rabbitScale: 1.25,
+      showBodyKeypoints: true, backgroundMode: 'gray' });
+    assert.equal(berryDurationSeconds, 120);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('Berry duration choices persist, reject unsupported storage and reset to 120', () => {
+  const values = new Map<string, string>();
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+  } });
+  try {
+    for (const berryDurationSeconds of [60, 90, 120] as const) {
+      const settings = { ...DEFAULT_GAME_SETTINGS, berryDurationSeconds, bendingAngle: 155 };
+      assert.equal(validateGameSettings(settings), true);
+      saveGameSettings(settings);
+      assert.deepEqual(getGameSettings(), settings);
+    }
+    for (const berryDurationSeconds of [0, 30, 60.5, 61, 119, 121, '60', null]) {
+      values.set(SETTINGS_STORAGE_KEY, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds }));
+      assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
+      assert.throws(() => saveGameSettings({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds } as GameSettings));
+    }
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds: 60 });
+    assert.equal(resetGameSettings().berryDurationSeconds, 120);
+    assert.equal(values.has(SETTINGS_STORAGE_KEY), false);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');

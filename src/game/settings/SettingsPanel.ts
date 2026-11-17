@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_SETTINGS, GAME_SETTING_LIMITS, getGameSettings, saveGameSettings, type GameSettings, type NumericGameSetting } from './gameSettings';
+import { BERRY_CONFIG as C } from '../berry/berryConfig';
 
 const FIELDS: readonly [NumericGameSetting, string, string, number][] = [
   ['standingAngle', '站立觸發角度（°）', '膝角達到此值即視為企直。', 1],
@@ -20,6 +21,7 @@ export class SettingsPanel {
   private readonly backgroundProcessing = document.createElement('input');
   private readonly backgroundMode = document.createElement('select');
   private readonly backgroundModeLabel = document.createElement('label');
+  private readonly berryDuration = document.createElement('select');
   private readonly error = document.createElement('p');
   private closed = false;
 
@@ -35,6 +37,22 @@ export class SettingsPanel {
     form.append(heading, intro);
     const fields = document.createElement('div');
     fields.className = 'game-settings-fields';
+    const durationLabel = document.createElement('label');
+    const durationCaption = document.createElement('span');
+    durationCaption.textContent = '莓果挑戰時間';
+    this.berryDuration.name = 'berryDurationSeconds';
+    for (const duration of C.durationOptions) {
+      const option = document.createElement('option');
+      option.value = String(duration);
+      option.textContent = `${duration} 秒`;
+      this.berryDuration.append(option);
+    }
+    const durationHint = document.createElement('small');
+    durationHint.id = 'settings-help-berry-duration';
+    durationHint.textContent = '選擇每局莓果大豐收的限時，時間內可持續收集莓果。';
+    this.berryDuration.setAttribute('aria-describedby', durationHint.id);
+    durationLabel.append(durationCaption, this.berryDuration, durationHint);
+    fields.append(durationLabel);
     const preview = document.createElement('fieldset');
     preview.className = 'game-settings-preview';
     const legend = document.createElement('legend');
@@ -110,6 +128,7 @@ export class SettingsPanel {
         showBodyKeypoints: this.showBodyKeypoints.checked,
         backgroundProcessing: this.backgroundProcessing.checked,
         backgroundMode: this.backgroundMode.value as GameSettings['backgroundMode'],
+        berryDurationSeconds: Number(this.berryDuration.value) as GameSettings['berryDurationSeconds'],
       };
       try { saveGameSettings(settings); this.destroy(); }
       catch (error) { this.error.textContent = error instanceof Error ? error.message : '未能儲存設定，請檢查瀏覽器儲存權限。'; }
@@ -125,6 +144,7 @@ export class SettingsPanel {
     this.showBodyKeypoints.checked = settings.showBodyKeypoints;
     this.backgroundProcessing.checked = settings.backgroundProcessing;
     this.backgroundMode.value = settings.backgroundMode;
+    this.berryDuration.value = String(settings.berryDurationSeconds);
     this.updateBackgroundMode();
   }
 

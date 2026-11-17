@@ -2,7 +2,7 @@
 
 ## 遊戲與操作
 
-主頁 → 開始遊戲 → 莓果大豐收。選攝像頭或鍵盤後即可玩，沒有個人校準畫面。左右樹各收集三次，共六分；沒有倒數限時。每次接觸掉三顆視覺莓果，但只加一分。
+主頁 → 開始遊戲 → 莓果大豐收。選攝像頭或鍵盤後開始限時挑戰。預設120秒，在首頁「設置」可選60／90／120秒，於下次開局套用。每次成功踢中任意樹幹掉落三顆莓果，總分增加三顆。兩棵樹均可持續收集，只有時間耗盡才完成。
 
 鍵盤：A / D 左右移動，Q / E 左右伸腳，放開收腳，Esc 暫停。鍵盤與相機使用同一個 RabbitRigController、投影及樹幹碰撞判定。暫停畫面提供繼續、重新開始及返回主頁。真人只需小幅、緩慢、舒服地伸腳，可用旁邊穩固椅子支撐；不需要踢到真實物件。
 
@@ -11,6 +11,7 @@
 - `scenes/BerryKickScene.ts`：場景、提示、HUD、生命週期。
 - `berry/BerryKickRound.ts`：純遊戲規則，與姿勢偵測分離。
 - `berry/TreeTrunk.ts`：每棵樹獨立莓果清單、搖晃及掉落動畫。
+- `settings/gameSettings.ts`／`SettingsPanel.ts` 保存及選擇挑戰時長，舊設定自動補上120秒並保留既有值。
 - `berry/BerryKickInput.ts`：鍵盤或 PoseCamera / PoseEstimator。
 - `mocap/LegExtensionDetector.ts`：無校準、身體尺寸歸一化動作偵測。
 - `mocap/HumanPoseExtractor.ts` 的 `extractLegMotion` → `MotionRetargeter.retargetLegMotion`：沿用動作管線，Berry 路徑不接受 CalibrationProfile。
@@ -56,29 +57,46 @@
 
 `foot.L/R.getWorldPosition` → `Vector3.project(camera)` → NDC轉1600×900邏輯座標。投影讀取真實骨骼世界矩陣，包含兔子縮放、root平移、鏡像和camera。Phaser FIT只縮放最終畫布，不改變邏輯碰撞座標。
 
-左樹只查左腳，右樹只查右腳；腳骨必須在可見鏡頭範圍、進入對應樹幹矩形，伸腿量至少0.4，root靠近該側，資料可靠，未暫停，尚有果實，且已收腿及冷卻。腳骨是保守接觸點，不按整個腳掌外輪廓加分。網址加 `?berryDebug=1` 顯示左右腳點及樹幹矩形。
+左樹只查左腳，右樹只查右腳；腳骨必須在可見鏡頭範圍、進入對應樹幹矩形，伸腿量至少0.4，root靠近該側，資料可靠，未暫停、尚有挑戰時間，且已收腿及冷卻。腳骨是保守接觸點，不按整個腳掌外輪廓加分。網址加 `?berryDebug=1` 顯示左右腳點及樹幹矩形。
 
-每次命中後解除該腿armed。只有伸腿量回到0.15以下才重新armed，並須滿足1000ms遊戲時間冷卻。一直伸腳不會重複得分。追蹤丟失會解除兩腿armed，必須重新收腿。每側最多三次，六次後完成，結果不可再改變。
+每次命中後解除該腿armed。只有伸腿量回到0.15以下才重新armed，並須滿足1000ms遊戲時間冷卻。一直伸腳不會重複得分。追蹤丟失、暫停及恢復會解除兩腿armed，必須重新收腿。每次命中以三顆計分，果樹補回可採果實。計分沒有數量上限，到期後結果固定。
 
 狀態包括READY、MOVING、LEG_EXTENDING、TREE_HIT、BERRIES_FALLING、RECOVERY、COMPLETE；不阻斷連續骨骼更新。
 
 ## 暫停、失敗及資源
 
-暫停停止計分、規則時間、Three更新、推論及所有樹木／莓果Tweens。失去視窗焦點或頁面隱藏自動暫停。返回主頁／重玩會中止載入、停止camera tracks、關閉PoseEstimator、移除影片與事件監聽、銷毀renderer及GPU資源／CanvasTexture。
+回合時鐘使用Phaser遊戲幀的delta及scene timeScale，有限正delta完整計入，動作平滑另限制單次步長。姿勢不可靠仍會倒數。到達截止時間的同一幀先鎖定COMPLETE，停止計分並立即顯示一次結算。
+
+暫停停止計分、規則時間、Three更新、推論、樹木／莓果Tweens及UI提示動畫。Berry場景的TweenManager停用自動牆鐘更新，逐幀以同一遊戲delta推進各Tween。UI使用暫停的Web Animations，currentTime由回合elapsedMs驅動。失去視窗焦點或頁面隱藏自動暫停，須按「繼續玩」恢復，恢復首幀跳過舊delta。返回主頁／重玩會中止載入、停止camera tracks、關閉PoseEstimator、移除影片與事件監聽、銷毀renderer及GPU資源／CanvasTexture。到期、載入失敗及離場都清除動態提示、掉落果實及Tween回調。
 
 GLB載入或WebGL失敗只顯示替代角色提示，禁止所有莓果計分並提供返回主頁。沒有可行的腳骨時鍵盤也不假裝可以正常玩。
 
+## 限時挑戰 UI
+
+頂部顯示MM:SS剩餘時間及「收集 N」，移除左右進度框。每次成功命中增加獨立「🍓 +3」提示，在上方以彈跳、輕微放大及淡出播放約一秒，多次提示各自保留及清除。
+
+最後十秒在上方中央顯示10至1的大型描邊數字，每個數字播放1100ms，具有彈跳放大、短暫停留及淡出，切換保留約100ms重疊。數字區域位於角色上方，提示層不接收操作事件。到期清除提示及掉落動畫，結算顯示「挑戰完成！」、總莓果顆數及設定時長，提供「再玩一次」「返回主頁」。
+
 ## 測試與效能
 
-執行 `npm run typecheck`、`npm run build`、`npm test`。新測試覆蓋左右、鏡像、尺度、平移與伸腿、可信度、收腿、投影／camera／scale／viewport、hitbox、正確腳、冷卻、暫停及六次完成；既有Carrot及rig測試保留。
+執行 `npm run typecheck`、`npm run build`、`npm test`。測試覆蓋左右、鏡像、尺度、平移與伸腿、可信度、收腿、投影／camera／scale／viewport、hitbox、正確腳、冷卻、全部時長、無限計分、到期邊界、暫停恢復及固定結算；既有Carrot及rig測試保留。
 
-`npm run qa:berry` 使用已安裝Chrome和Playwright，預設localhost:5175，截圖與結果寫入 `/tmp/berry-kick-qa/`（可用 QA_URL/QA_OUTPUT 覆寫）。驗證1920×1080及1512×982、完整鍵盤左右各三次、幾何接觸、錯腳不計分、長伸腿、暫停、重玩、返回及GLB失敗。`scripts/qa-berry-camera.mjs` 驗證模擬camera管線。舊動捕腳本已移除等待已刪除Calibration UI的過時步驟。
+`npm run qa:berry` 使用已安裝Chrome和Playwright，預設localhost:5175，截圖與結果寫入 `/tmp/berry-kick-qa/`（可用 QA_URL/QA_OUTPUT 覆寫）。驗證1920×1080、1512×982及600×800、完整60秒鍵盤挑戰、左右各四次收穫、幾何接觸、錯腳不計分、長伸腿、動畫暫停恢復、頁面隱藏、全部倒數數字、結算、重玩、返回及GLB失敗。獨立提示重疊採用明確標示的純視覺fixture。`scripts/qa-berry-camera.mjs` 驗證模擬camera管線及遊戲時間加速的到期結算，`scripts/qa-dialog-buttons.mjs` 使用到期fixture驗證結算按鈕。
 
 Three輸出1200×675透明畫布再貼到1600×900 Phaser世界。鍵盤Chrome headless實測約60 FPS；這不是所有裝置的保證。CPU MediaPipe上限25 FPS，推論和render頻率分離。
 
 ## 已知限制
 
 未進行真人webcam驗證；合成關鍵點／虛擬相機只能驗證軟體管線，不代表長者動作或所有鏡頭高度都已驗證。正面鏡頭須看清雙髖、雙膝及雙腳；側身、遮擋或裁掉腳會停止計分。現有兔子腿較短，伸腿視覺幅度有限；採用安全小幅FK而非全身IK，沒有重新塑形或動作質量評分。本次只新增莓果遊戲。
+
+### 限時挑戰驗收（2026-11-17）
+
+- `npm run typecheck`、`npm test` 364/364、`npm run build`及diff／三個瀏覽器腳本語法檢查通過，獨立審查未發現可操作的正確性問題。
+- Chrome157／Playwright於 `http://127.0.0.1:5180/`，`qa:berry` 12項、`qa:berry-camera` 10項、對話框9項、`qa:rabbit3d` 15項全部通過。Browser插件未提供，沿用已安裝的Playwright及Chrome。
+- 正常60秒鍵盤挑戰使用原速遊戲迴圈，於60000ms收集27顆並立即結算。左右各四次以上、10至1順序與重疊、UI及果實動畫長暫停、失焦及隱藏、恢復、到期固定分數、重玩及返回清理均通過。設定三種時長、舊版遷移、保存／取消／重設通過。
+- 攝像頭測試使用合成landmarks與實際GLB，時鐘加速fixture驗證到期及停止推論，4個model全部close，tracks全部ended，Berry紋理清除。純視覺提示重疊及對話框到期另有明確標示fixture。
+- 最終報告errors[]，故意阻擋GLB的預期載入診斷單獨記錄。1920×1080、1512×982及600×800截圖已核對，倒數位於兔子上方，窄畫面結算按鈕完整可見。鍵盤及合成相機Three約60FPS。
+- 證據保留於 `/private/tmp/mg-berry-timed-{keyboard,camera,dialog}-final/`、`/private/tmp/mg-berry-timed-carrot-regression/`及 `/private/tmp/mg-berry-timed-{typecheck,unit-tests,build}.log`。真人webcam、其他瀏覽器及目標硬件尚待實測。
 
 ### 本輪驗收結果（2026-10-23）
 

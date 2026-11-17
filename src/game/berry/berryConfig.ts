@@ -1,6 +1,7 @@
 export type BerrySide = 'left' | 'right';
 export const BERRY_CONFIG = {
-  targetPerSide: 3, cooldownMs: 1000, retractThreshold: 0.15, extensionThreshold: 0.4,
+  durationOptions: [60, 90, 120], defaultDurationSeconds: 120, berriesPerHit: 3,
+  cooldownMs: 1000, retractThreshold: 0.15, extensionThreshold: 0.4,
   rootTravel: 290, rootSpeed: 250, feetY: 730,
   tree: { left: 440, right: 1160, y: 735, width: 380, height: 470 },
 } as const;

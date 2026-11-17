@@ -4,6 +4,7 @@ export class TreeTrunk {
   readonly root: Phaser.GameObjects.Container;
   readonly zone: TreeTrunkHitZone;
   private readonly fruit: Phaser.GameObjects.Image[] = [];
+  private readonly falling = new Set<Phaser.GameObjects.Image>();
   constructor(private readonly scene: Phaser.Scene, readonly side: BerrySide) {
     const x = C.tree[side];
     this.root = scene.add.container(x, C.tree.y).setDepth(3);
@@ -20,16 +21,31 @@ export class TreeTrunk {
   harvest() {
     this.scene.tweens.add({ targets: this.root, angle: { from: -2, to: 2 }, duration: 110, yoyo: true, repeat: 3,
       onComplete: () => this.root.setAngle(0) });
-    for (const fruit of this.fruit.splice(0, 3)) {
+    for (const fruit of this.fruit.splice(0, C.berriesPerHit)) {
+      const replacement = this.scene.add.image(fruit.x, fruit.y, berryKey('berry'))
+        .setDisplaySize(fruit.displayWidth, fruit.displayHeight).setAngle(fruit.angle).setAlpha(0);
+      this.root.add(replacement);
+      this.fruit.push(replacement);
+      this.scene.tweens.add({ targets: replacement, alpha: 1, delay: 500, duration: 250 });
       const x = this.root.x + fruit.x; const y = this.root.y + fruit.y;
       this.root.remove(fruit); fruit.setPosition(x, y).setDepth(8);
+      this.falling.add(fruit);
       this.scene.tweens.add({ targets: fruit, x: x + (x < 800 ? 35 : -35), y: 758, angle: 30,
         duration: 650, ease: 'Quad.easeIn', onComplete: () => {
           this.scene.tweens.add({ targets: fruit, y: 721, duration: 130, yoyo: true, ease: 'Sine.easeOut', onComplete: () => {
             this.scene.tweens.add({ targets: fruit, x: 800, y: 780, scaleX: fruit.scaleX * .55,
-              scaleY: fruit.scaleY * .55, alpha: 0, duration: 430, ease: 'Quad.easeInOut', onComplete: () => fruit.destroy() });
+              scaleY: fruit.scaleY * .55, alpha: 0, duration: 430, ease: 'Quad.easeInOut', onComplete: () => {
+                this.falling.delete(fruit);
+                fruit.destroy();
+              } });
           } });
         } });
     }
+  }
+  clearHarvests() {
+    for (const fruit of this.falling) fruit.destroy();
+    this.falling.clear();
+    this.root.setAngle(0);
+    for (const fruit of this.fruit) fruit.setAlpha(1);
   }
 }

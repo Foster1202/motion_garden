@@ -96,20 +96,20 @@ try {
 
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
   assert.equal((await snapshot()).score, 0);
-  await fixture({ left: .07 }); const left = await wait(s => s.score === 1);
+  await fixture({ left: .07 }); const left = await wait(s => s.score === 3);
   assert.ok(left.feet.left.x >= left.zones.left.x && left.feet.left.x <= left.zones.left.x + left.zones.left.width);
-  await page.waitForTimeout(1300); assert.equal((await snapshot()).score, 1);
+  await page.waitForTimeout(1300); assert.equal((await snapshot()).score, 3);
   await page.screenshot({ path: `${output}/camera-left-contact.png` });
   check('Synthetic left extension drives actual left bone and projected contact; held extension cannot repeat');
   await fixture({ left: 0 }); await page.waitForTimeout(650);
   await fixture({ shift: -.13 }); await wait(s => s.rootX > 1060);
-  await fixture({ right: .07 }); const right = await wait(s => s.score === 2);
+  await fixture({ right: .07 }); const right = await wait(s => s.score === 6);
   assert.equal(right.counts.left, 1); assert.equal(right.counts.right, 1);
   assert.ok(right.feet.right.x >= right.zones.right.x && right.feet.right.x <= right.zones.right.x + right.zones.right.width);
   check('Synthetic right extension uses same independent right-foot geometric scoring');
 
   await fixture({ lost: true }); await page.waitForTimeout(700);
-  assert.equal((await snapshot()).score, 2); assert.equal((await snapshot()).armed.right, false);
+  assert.equal((await snapshot()).score, 6); assert.equal((await snapshot()).armed.right, false);
   assert.match(await page.locator('[data-berry-hint]').innerText(), /睇唔清楚/);
   await fixture({ lost: false, shift: 0, left: 0, right: 0 }); await wait(s => s.armed.left && s.armed.right);
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
@@ -117,20 +117,41 @@ try {
   const paused = await snapshot(); const inferenceCount = await page.evaluate(() => window.__berryStats.inferences);
   assert.equal(await page.locator('.berry-camera').evaluate(canvas => canvas.getContext('2d').getImageData(40, 90, 1, 1).data[3]), 0);
   await fixture({ left: .07 }); await page.waitForTimeout(600);
-  assert.equal((await snapshot()).clock, paused.clock); assert.equal((await snapshot()).score, 2);
+  assert.equal((await snapshot()).clock, paused.clock); assert.equal((await snapshot()).score, 6);
   assert.equal(await page.evaluate(() => window.__berryStats.inferences), inferenceCount);
   await fixture({ left: 0 }); await page.locator('[data-action=resume]').click();
-  await wait(s => s.armed.left); assert.equal((await snapshot()).score, 2);
+  await wait(s => s.armed.left); assert.equal((await snapshot()).score, 6);
   check('Tracking loss suppresses scoring; recovery acquires reference; pause freezes inference, rules and time');
   report.performance = { threeFps: (await snapshot()).fps, kind: 'Synthetic landmarks, actual GLB renderer' };
-  await page.locator('[data-action=home]').click();
+  await page.evaluate(async () => {
+    // Accelerate the existing game clock while preserving actual scene updates and camera input.
+    (await import('/src/main.ts')).game.scene.getScene('BerryKick').time.timeScale = 30;
+  });
+  await wait(s => s.completeShown);
+  const complete = await snapshot();
+  assert.equal(complete.remainingMs, 0);
+  assert.equal(complete.elapsedMs, complete.durationMs);
+  assert.equal(complete.score, 6);
+  assert.match(await page.locator('dialog.berry-results').innerText(), /挑戰完成/);
+  const completedInferences = await page.evaluate(() => window.__berryStats.inferences);
+  await fixture({ left: .07 });
+  await page.waitForTimeout(500);
+  assert.equal((await snapshot()).score, 6);
+  assert.equal(await page.evaluate(() => window.__berryStats.inferences), completedInferences);
+  await page.evaluate(() => window.__berryStats.streams.at(-1).getVideoTracks()[0].dispatchEvent(new Event('ended')));
+  assert.equal(await page.locator('dialog.berry-results').count(), 1);
+  assert.equal(await page.locator('.berry-score-popup,.berry-countdown-digit').count(), 0);
+  await page.screenshot({ path: `${output}/camera-complete.png` });
+  await page.evaluate(async () => { (await import('/src/main.ts')).game.scene.getScene('BerryKick').time.timeScale = 1; });
+  check('Accelerated game-clock fixture expires camera round once, freezes score/inference and keeps results after track interruption');
+  await page.locator('dialog [data-action=home]').click();
   await page.waitForTimeout(200);
   assert.equal(await page.locator('.berry-camera').count(), 0);
   assert.equal(await page.evaluate(() => window.__berryStats.streams.every(s => s.getTracks().every(t => t.readyState === 'ended'))), true);
   assert.equal(await page.evaluate(() => window.__berryStats.closed), 1);
   check('Returning home closes webcam, model and preview');
 
-  await fixture({ delay: 1500, shift: 0 }); await enter(); await page.locator('[data-action=camera]').click();
+  await fixture({ delay: 1500, shift: 0, left: 0, right: 0, lost: false }); await enter(); await page.locator('[data-action=camera]').click();
   await page.waitForFunction(() => window.__berryStats.requested === 2);
   await page.locator('[data-action=home]').click(); await page.waitForTimeout(1900);
   assert.equal(await page.evaluate(() => window.__berryStats.models), 2);
@@ -162,7 +183,7 @@ try {
   assert.match(await page.locator('dialog').innerText(), /相機暫停/);
   await page.locator('dialog [data-action=keyboard]').click();
   await page.keyboard.down('a'); await page.waitForTimeout(1800); await page.keyboard.up('a');
-  await page.keyboard.down('q'); await wait(s => s.score === 1); await page.keyboard.up('q');
+  await page.keyboard.down('q'); await wait(s => s.score === 3); await page.keyboard.up('q');
   assert.equal((await snapshot()).mode, 'keyboard');
   await page.locator('[data-action=home]').click();
   const resources = await page.evaluate(async () => ({

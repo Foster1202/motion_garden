@@ -30,9 +30,10 @@ const complete = async game => {
   await page.evaluate(async game => {
     const scene = (await import('/src/main.ts')).game.scene.getScene(game === 'berry' ? 'BerryKick' : 'CarrotPull');
     if (game === 'berry') {
-      scene.round.counts.left = scene.round.counts.right = 3;
-      scene.round.state = 'COMPLETE';
-      scene.finishElapsed = 2;
+      // Bounded expiry fixture exercises the real result dialog and its buttons.
+      scene.round.update(scene.round.remainingMs, { left: 0, right: 0,
+        feet: { left: { x: 0, y: 0, visible: false }, right: { x: 0, y: 0, visible: false } },
+        reliable: false, rootX: 800 });
     } else {
       for (let index = 0; index < 5; index++) {
         scene.model.state = 'SUCCESS';
@@ -96,8 +97,16 @@ try {
 
   await berryPlay();
   await complete('berry');
-  assert.match(await dialog().innerText(), /大豐收/);
+  assert.match(await dialog().innerText(), /挑戰完成/);
   await page.screenshot({ path: `${output}/berry-complete.png` });
+  await page.setViewportSize({ width: 600, height: 800 });
+  await page.screenshot({ path: `${output}/berry-complete-600.png` });
+  for (const action of ['restart', 'home']) {
+    const button = await dialog().locator(`[data-action=${action}]`).boundingBox();
+    assert.ok(button.x >= 0 && button.x + button.width <= 600);
+    assert.ok(button.y >= 0 && button.y + button.height <= 800);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
   await dialog().locator('[data-action=restart]').click();
   await dialog().locator('[data-action=keyboard]').click();
   await complete('berry');

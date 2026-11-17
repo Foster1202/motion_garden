@@ -1,3 +1,5 @@
+import { BERRY_CONFIG as C } from '../berry/berryConfig';
+
 export interface GameSettings {
   standingAngle: number;
   bendingAngle: number;
@@ -12,15 +14,17 @@ export interface GameSettings {
   showBodyKeypoints: boolean;
   backgroundProcessing: boolean;
   backgroundMode: 'blur' | 'gray';
+  berryDurationSeconds: (typeof C.durationOptions)[number];
 }
 
-export type NumericGameSetting = Exclude<keyof GameSettings, 'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode'>;
+export type NumericGameSetting = Exclude<keyof GameSettings, 'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds'>;
 
 export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   standingAngle: 160, bendingAngle: 150, bendHoldMs: 650, standHoldMs: 500,
   smoothingAlpha: 0.35, debounceMs: 200, confidenceThreshold: 0.5,
   mocapGain: 1, mocapSmoothingAlpha: 0.35, rabbitScale: 1,
   showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
+  berryDurationSeconds: C.defaultDurationSeconds,
 });
 
 export const SETTINGS_STORAGE_KEY = 'motion-garden-settings-v1';
@@ -43,20 +47,23 @@ export function validateGameSettings(value: unknown): value is GameSettings {
   return (input.standingAngle as number) - (input.bendingAngle as number) >= 3
     && typeof input.showBodyKeypoints === 'boolean'
     && typeof input.backgroundProcessing === 'boolean'
-    && (input.backgroundMode === 'blur' || input.backgroundMode === 'gray');
+    && (input.backgroundMode === 'blur' || input.backgroundMode === 'gray')
+    && C.durationOptions.some(duration => duration === input.berryDurationSeconds);
 }
 
 function supportedSettings(value: GameSettings): GameSettings {
   const numeric = Object.fromEntries(Object.keys(GAME_SETTING_LIMITS).map(key => [key, value[key as NumericGameSetting]])) as Pick<GameSettings, NumericGameSetting>;
   return { ...numeric, showBodyKeypoints: value.showBodyKeypoints,
-    backgroundProcessing: value.backgroundProcessing, backgroundMode: value.backgroundMode };
+    backgroundProcessing: value.backgroundProcessing, backgroundMode: value.backgroundMode,
+    berryDurationSeconds: value.berryDurationSeconds };
 }
 
 export function getGameSettings(): GameSettings {
   try {
     const stored: unknown = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? 'null');
     if (stored && typeof stored === 'object') {
-      const settings = { showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur', ...stored };
+      const settings = { showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
+        berryDurationSeconds: C.defaultDurationSeconds, ...stored };
       if (validateGameSettings(settings)) return supportedSettings(settings);
     }
   } catch { /* Storage may be unavailable. */ }
@@ -64,7 +71,7 @@ export function getGameSettings(): GameSettings {
 }
 
 export function saveGameSettings(settings: GameSettings): void {
-  if (!validateGameSettings(settings)) throw new Error('參數超出範圍，或站立角度與屈膝角度相差不足 3°。');
+  if (!validateGameSettings(settings)) throw new Error('請檢查參數範圍、莓果挑戰時間，以及站立角度與屈膝角度是否相差至少 3°。');
   localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(supportedSettings(settings)));
 }
 

@@ -7,6 +7,14 @@ import { BerryKickRound } from '../berry/BerryKickRound';
 import { BerryKickInput } from '../berry/BerryKickInput';
 import { BerryRabbitView } from '../berry/BerryRabbitView';
 import { TreeTrunk } from '../berry/TreeTrunk';
+import { getGameSettings } from '../settings/gameSettings';
+
+interface BerryEffect {
+  element: HTMLElement;
+  animation: Animation;
+  startedAt: number;
+  duration: number;
+}
 
 export class BerryKickScene extends Phaser.Scene {
   private ui!: Overlay;
@@ -22,9 +30,11 @@ export class BerryKickScene extends Phaser.Scene {
   private dead = false;
   private failed = false;
   private completeShown = false;
-  private finishElapsed = 0;
+  private skipNextDelta = true;
   private feedbackUntil = 0;
-  private playClock = 0;
+  private lastCountdown = 11;
+  private popupIndex = 0;
+  private readonly effects = new Set<BerryEffect>();
   private feet?: Record<BerrySide, FootPoint>;
   private debugEnabled = false;
   constructor() { super('BerryKick'); }
@@ -34,10 +44,16 @@ export class BerryKickScene extends Phaser.Scene {
   }
   create() {
     this.dead = this.active = this.paused = this.failed = this.completeShown = false;
-    this.finishElapsed = this.feedbackUntil = this.playClock = 0;
+    this.skipNextDelta = true;
+    this.feedbackUntil = this.popupIndex = 0;
+    this.lastCountdown = 11;
+    this.feet = undefined;
+    this.effects.clear();
     this.add.image(0, 0, berryKey('background')).setOrigin(0).setDisplaySize(1600, 900);
     this.trees = { left: new TreeTrunk(this, 'left'), right: new TreeTrunk(this, 'right') };
-    this.round = new BerryKickRound({ left: this.trees.left.zone, right: this.trees.right.zone });
+    this.round = new BerryKickRound({ left: this.trees.left.zone, right: this.trees.right.zone }, getGameSettings().berryDurationSeconds);
+    // Berry tweens are advanced explicitly with the same game delta as the round.
+    this.tweens.pauseAll();
     this.shadow = this.add.ellipse(800, 731, 124, 20, 0x53623b, .12).setDepth(4);
     this.add.image(800, 780, berryKey('basket')).setDisplaySize(180, 144).setDepth(9);
     this.add.image(0, 0, berryKey('foreground')).setOrigin(0).setDisplaySize(1600, 900).setDepth(10);
@@ -45,6 +61,7 @@ export class BerryKickScene extends Phaser.Scene {
     this.debugEnabled = new URLSearchParams(location.search).has('berryDebug');
     this.ui = new Overlay(); this.renderHud();
     this.inputSource = new BerryKickInput(() => this.togglePause(), message => {
+      if (this.dead || this.failed || this.completeShown) return;
       this.pause(); this.ui.closeModal(); this.ui.dialog(`<h2 id="dialog-title">相機暫停咗</h2><p>${message}</p>
         <button class="button primary" data-action="keyboard">使用鍵盤</button><button class="button quiet" data-action="camera-home">返回主頁</button>`);
       this.ui.on('keyboard', () => { this.inputSource.useKeyboard(); this.active = true; this.resume(); }); this.ui.on('camera-home', () => this.home());
@@ -58,20 +75,22 @@ export class BerryKickScene extends Phaser.Scene {
   private async loadRabbit(signal: AbortSignal) {
     try {
       const rabbit = await Rabbit3D.load(`${import.meta.env.BASE_URL}assets/rabbit3d/rabbit_realtime.glb`, signal);
-      if (this.dead) { rabbit.dispose(); return; }
+      if (this.dead || signal.aborted) { rabbit.dispose(); return; }
       try { this.view = new BerryRabbitView(this, rabbit, () => this.modelFailure()); }
       catch (error) { rabbit.dispose(); throw error; }
-      this.ui.dialog(`<h2 id="dialog-title">準備好啦！</h2><p>我哋一齊收集莓果！小幅、慢慢伸腳就得。<br>可以喺旁邊放穩固椅子作支撐，唔使踢任何真實物件。</p>
+      this.ui.dialog(`<h2 id="dialog-title">準備好啦！</h2><p>${this.round.durationMs / 1000} 秒內，每次踢中樹幹就收集 3 顆莓果，左右兩邊都可以繼續收集！<br>舒服地慢慢伸腳，可在旁邊放穩固椅子作支撐。</p>
         <button class="button primary" data-action="camera">開啟攝像頭</button>
         <button class="button secondary" data-action="keyboard">鍵盤試玩</button>
         <button class="button quiet" data-action="home">返回主頁</button>`);
       this.ui.on('keyboard', () => { this.inputSource.useKeyboard(); this.begin(); });
       this.ui.on('camera', () => { this.begin(); void this.inputSource.startCamera(this.ui.root); });
       this.ui.on('home', () => this.home());
-    } catch { if (!this.dead) this.modelFailure(); }
+    } catch { if (!this.dead && !signal.aborted) this.modelFailure(); }
   }
   private modelFailure() {
-    if (this.failed || this.dead) return; this.failed = true; this.active = false; this.tweens.pauseAll();
+    if (this.failed || this.dead || this.completeShown) return;
+    this.failed = true; this.active = false;
+    this.clearAnimations();
     this.inputSource?.destroy(); this.view?.destroy(); this.view = undefined;
     new Rabbit(this, 800, 730, .85);
     this.ui.closeModal(); this.ui.dialog(`<h2 id="dialog-title">3D 阿兔未能載入</h2>
@@ -79,56 +98,128 @@ export class BerryKickScene extends Phaser.Scene {
       <button class="button primary" data-action="home">返回主頁</button>`);
     this.ui.on('home', () => this.home());
   }
-  private begin() { this.ui.closeModal(); this.active = true; this.paused = false; this.ui.text('[data-berry-hint]', '準備好啦！我哋一齊收集莓果！'); }
+  private begin() {
+    this.ui.closeModal(); this.active = true; this.paused = false; this.skipNextDelta = true;
+    this.ui.text('[data-berry-hint]', '準備好啦！我哋一齊收集莓果！');
+  }
   private renderHud() {
     this.ui.render(`<header class="berry-hud"><div class="berry-title"><span class="berry-eyebrow">動態花園</span><h1>莓果大豐收</h1></div>
-      <div class="berry-score" aria-live="polite"><img src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt="">收集 <b data-berry-score>0</b> / 6</div>
+      <div class="berry-timer" data-berry-timer><span>剩餘時間</span><strong data-berry-time role="timer">${this.formatTime(this.round.remainingMs)}</strong></div>
+      <div class="berry-score" aria-live="polite"><img src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt="">收集 <b data-berry-score>0</b></div>
       <button class="button secondary" data-action="pause">暫停</button><button class="button quiet" data-action="home">主頁</button></header>
-      <div class="berry-progress left" data-berry-left>左邊 0 / 3</div><div class="berry-progress right" data-berry-right>右邊 0 / 3</div>
+      <div class="berry-effects" data-berry-effects aria-hidden="true"></div>
       <p class="berry-hint" data-berry-hint role="status"></p>
       <footer class="berry-footer"><span data-berry-controls>A / D 左右移動 · Q / E 伸腳 · 放開收腳 · Esc 暫停</span><small>舒服地小幅伸腳，隨時可以休息</small></footer>`);
     this.ui.on('pause', () => this.togglePause()); this.ui.on('home', () => this.home());
+  }
+  private formatTime(milliseconds: number) {
+    const seconds = Math.ceil(milliseconds / 1000);
+    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
   }
   private onBlur = () => { if (this.active && !this.paused && !this.round.complete) this.pause(); };
   private onVisibility = () => { if (document.hidden) this.onBlur(); };
   private togglePause() { if (!this.active || this.failed || this.completeShown) return; if (this.paused) this.resume(); else this.pause(); }
   private pause() {
-    if (this.paused || !this.active) return;
-    this.paused = this.round.paused = true; this.inputSource.pause(); this.tweens.pauseAll();
+    if (this.paused || !this.active || this.round.complete) return;
+    this.paused = this.round.paused = true; this.inputSource.pause();
     this.ui.dialog(`<h2 id="dialog-title">休息一陣先</h2><p>準備好先再慢慢嚟。</p>
       <button class="button primary" data-action="resume">繼續玩</button><button class="button secondary" data-action="restart">重新開始</button>
       <button class="button quiet" data-action="home">返回主頁</button>`, () => this.resume());
     this.ui.on('resume', () => this.resume()); this.ui.on('restart', () => this.scene.restart()); this.ui.on('home', () => this.home());
   }
-  private resume() { this.ui.closeModal(); this.paused = this.round.paused = false; this.inputSource.resume(); this.tweens.resumeAll(); }
+  private resume() {
+    if (this.dead || this.failed || this.completeShown || document.hidden) return;
+    this.ui.closeModal(); this.paused = this.round.paused = false; this.skipNextDelta = true; this.inputSource.resume();
+  }
   private home() { this.scene.start('Menu'); }
   update(_time: number, delta: number) {
-    if (!this.active || this.paused || !this.view || this.failed) return;
-    const dt = Math.min(delta / 1000, .1); this.playClock += dt * 1000;
+    if (!this.active || this.paused || !this.view || this.failed || this.completeShown) return;
+    if (document.hidden) { this.pause(); return; }
+    if (this.skipNextDelta) { this.skipNextDelta = false; return; }
+    const deltaMs = delta * this.time.timeScale;
+    if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
+    const dt = Math.min(deltaMs, 100) / 1000;
     const sample = this.inputSource.update(dt);
     this.feet = this.view.update(dt, sample.lateralOffset, sample.reliable ? sample.leftLegExtensionAmount : 0,
       sample.reliable ? sample.rightLegExtensionAmount : 0);
     this.shadow.x = this.view.rootX;
-    const hit = this.round.update(dt * 1000, { left: sample.leftLegExtensionAmount, right: sample.rightLegExtensionAmount,
+    const hit = this.round.update(deltaMs, { left: sample.leftLegExtensionAmount, right: sample.rightLegExtensionAmount,
       feet: this.feet, reliable: sample.reliable, rootX: this.view.rootX });
-    if (hit) { this.trees[hit].harvest(); this.feedbackUntil = this.playClock + 1400; }
     this.ui.text('[data-berry-score]', String(this.round.score));
-    for (const side of ['left', 'right'] as const) this.ui.text(`[data-berry-${side}]`, `${side === 'left' ? '左' : '右'}邊 ${this.round.counts[side]} / ${C.targetPerSide}`);
-    const side = this.round.counts.left < C.targetPerSide ? '左' : '右';
+    this.ui.text('[data-berry-time]', this.formatTime(this.round.remainingMs));
+    this.ui.root.querySelector('[data-berry-timer]')?.setAttribute('data-urgent', String(this.round.remainingMs <= 10000));
+    if (this.round.complete) { this.finish(); return; }
+    for (const tween of this.tweens.getTweens()) {
+      if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
+    }
+    this.updateEffects();
+    if (hit) { this.trees[hit].harvest(); this.feedbackUntil = this.round.elapsedMs + 1400; this.showScorePopup(); }
+    const seconds = Math.ceil(this.round.remainingMs / 1000);
+    if (seconds <= 10 && seconds < this.lastCountdown) {
+      this.lastCountdown = seconds;
+      this.showCountdown(seconds);
+    }
     this.ui.text('[data-berry-controls]', this.inputSource.mode === 'camera' ? '攝像頭體感 · 左右小幅移動，再輕輕伸腳' : 'A / D 左右移動 · Q / E 伸腳 · 放開收腳 · Esc 暫停');
     this.ui.text('[data-berry-hint]', !sample.reliable ? '我睇唔清楚你，企返鏡頭中間少少。'
-      : this.playClock < this.feedbackUntil ? '好叻呀！莓果跌落嚟喇！'
-        : `慢慢移向${side}邊，伸出${side}腳輕輕掂下樹幹。`);
+      : this.round.elapsedMs < this.feedbackUntil ? '好叻呀！莓果跌落嚟喇！'
+        : '左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳。');
     this.drawDebug();
-    if (this.round.complete && !this.completeShown) {
-      this.finishElapsed += dt;
-      if (this.finishElapsed > 1.5) {
-        this.completeShown = true; this.inputSource.pause();
-        this.ui.dialog(`<h2 id="dialog-title">大豐收！</h2><p>成功收集 6 次莓果！</p>
-          <button class="button primary" data-action="restart">再玩一次</button><button class="button quiet" data-action="home">返回主頁</button>`);
-        this.ui.on('restart', () => this.scene.restart()); this.ui.on('home', () => this.home());
-      }
+  }
+  private showScorePopup() {
+    const element = document.createElement('span');
+    element.className = 'berry-score-popup'; element.textContent = `🍓 +${C.berriesPerHit}`;
+    element.style.left = `${[36, 64, 42, 58][this.popupIndex++ % 4]}%`;
+    this.addEffect(element, 1000, this.round.elapsedMs, [
+      { transform: 'translate(-50%, 16px) scale(.55) rotate(-8deg)', opacity: 0, offset: 0 },
+      { transform: 'translate(-50%, -6px) scale(1.16) rotate(4deg)', opacity: 1, offset: .2 },
+      { transform: 'translate(-50%, 0) scale(1)', opacity: 1, offset: .4 },
+      { transform: 'translate(-50%, -20px) scale(1.04)', opacity: 1, offset: .65 },
+      { transform: 'translate(-50%, -45px) scale(.95)', opacity: 0, offset: 1 },
+    ]);
+  }
+  private showCountdown(value: number) {
+    const element = document.createElement('span');
+    element.className = 'berry-countdown-digit'; element.textContent = String(value); element.dataset.value = String(value);
+    this.addEffect(element, 1100, this.round.durationMs - value * 1000, [
+      { transform: 'translateX(-50%) scale(.45) rotate(-9deg)', opacity: 0, offset: 0 },
+      { transform: 'translateX(-50%) scale(1.15) rotate(4deg)', opacity: 1, offset: .18 },
+      { transform: 'translateX(-50%) scale(.96)', opacity: 1, offset: .32 },
+      { transform: 'translateX(-50%) scale(1)', opacity: 1, offset: .5 },
+      { transform: 'translate(-50%, -12px) scale(1.04)', opacity: 0, offset: 1 },
+    ]);
+  }
+  private addEffect(element: HTMLElement, duration: number, startedAt: number, frames: Keyframe[]) {
+    this.ui.root.querySelector('[data-berry-effects]')!.append(element);
+    const animation = element.animate(frames, { duration, fill: 'both', easing: 'ease-out' });
+    animation.pause(); animation.currentTime = Math.max(0, this.round.elapsedMs - startedAt);
+    this.effects.add({ element, animation, startedAt, duration });
+  }
+  private updateEffects() {
+    for (const effect of this.effects) {
+      const elapsed = this.round.elapsedMs - effect.startedAt;
+      if (elapsed >= effect.duration) {
+        effect.animation.cancel(); effect.element.remove(); this.effects.delete(effect);
+      } else effect.animation.currentTime = elapsed;
     }
+  }
+  private finish() {
+    if (this.completeShown) return;
+    this.completeShown = true; this.active = false; this.inputSource.pause();
+    this.clearAnimations();
+    this.ui.text('[data-berry-hint]', '挑戰完成！');
+    this.ui.dialog(`<div class="berry-result-art" aria-hidden="true"><img src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt=""></div>
+      <h2 id="dialog-title">挑戰完成！</h2>
+      <div class="berry-result-total"><span>本局收集莓果</span><strong data-berry-result-score>${this.round.score}</strong><span>顆</span></div>
+      <p class="berry-result-duration">挑戰時長 <b data-berry-result-duration>${this.round.durationMs / 1000} 秒</b></p>
+      <div class="dialog-actions"><button class="button primary" data-action="restart">再玩一次</button><button class="button quiet" data-action="home">返回主頁</button></div>`);
+    this.ui.root.querySelector('dialog')?.classList.add('berry-results');
+    this.ui.on('restart', () => this.scene.restart()); this.ui.on('home', () => this.home());
+  }
+  private clearAnimations() {
+    this.tweens.killAll();
+    for (const effect of this.effects) { effect.animation.cancel(); effect.element.remove(); }
+    this.effects.clear();
+    this.trees.left.clearHarvests(); this.trees.right.clearHarvests();
   }
   private drawDebug() {
     this.debug.clear(); if (!this.debugEnabled || !this.feet) return;
@@ -140,9 +231,11 @@ export class BerryKickScene extends Phaser.Scene {
   }
   snapshot() { return { ...this.round.snapshot(), active: this.active, failed: this.failed, completeShown: this.completeShown,
     renderMode: this.view ? '3d' : 'fallback', feet: this.feet, zones: this.round.zones, rootX: this.view?.rootX,
-    fps: this.view?.fps ?? 0, mode: this.inputSource.mode, maxTravel: this.view?.maxTravel }; }
+    fps: this.view?.fps ?? 0, mode: this.inputSource.mode, maxTravel: this.view?.maxTravel, effectCount: this.effects.size }; }
   private cleanup() {
-    this.dead = true; this.request?.abort(); this.request = undefined; this.inputSource.destroy(); this.view?.destroy(); this.view = undefined;
-    this.tweens.killAll(); this.ui.destroy(); window.removeEventListener('blur', this.onBlur); document.removeEventListener('visibilitychange', this.onVisibility);
+    this.dead = true; this.active = false; this.request?.abort(); this.request = undefined;
+    this.inputSource.destroy(); this.view?.destroy(); this.view = undefined;
+    this.clearAnimations(); this.ui.destroy();
+    window.removeEventListener('blur', this.onBlur); document.removeEventListener('visibilitychange', this.onVisibility);
   }
 }
