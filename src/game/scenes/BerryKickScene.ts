@@ -8,6 +8,7 @@ import { BerryKickInput } from '../berry/BerryKickInput';
 import { BerryRabbitView } from '../berry/BerryRabbitView';
 import { TreeTrunk } from '../berry/TreeTrunk';
 import { getGameSettings } from '../settings/gameSettings';
+import { AudioManager } from '../systems/AudioManager';
 
 interface BerryEffect {
   element: HTMLElement;
@@ -18,6 +19,7 @@ interface BerryEffect {
 
 export class BerryKickScene extends Phaser.Scene {
   private ui!: Overlay;
+  private audio!: AudioManager;
   private inputSource!: BerryKickInput;
   private view?: BerryRabbitView;
   private round!: BerryKickRound;
@@ -43,6 +45,7 @@ export class BerryKickScene extends Phaser.Scene {
       this.load.image(berryKey(name), `${import.meta.env.BASE_URL}assets/berry_kick/${berryFile(name)}`);
   }
   create() {
+    this.audio = new AudioManager();
     this.dead = this.active = this.paused = this.failed = this.completeShown = false;
     this.skipNextDelta = true;
     this.feedbackUntil = this.popupIndex = 0;
@@ -90,6 +93,7 @@ export class BerryKickScene extends Phaser.Scene {
   private modelFailure() {
     if (this.failed || this.dead || this.completeShown) return;
     this.failed = true; this.active = false;
+    this.audio.stopAll();
     this.clearAnimations();
     this.inputSource?.destroy(); this.view?.destroy(); this.view = undefined;
     new Rabbit(this, 800, 730, .85);
@@ -122,6 +126,7 @@ export class BerryKickScene extends Phaser.Scene {
   private pause() {
     if (this.paused || !this.active || this.round.complete) return;
     this.paused = this.round.paused = true; this.inputSource.pause();
+    this.audio.pause();
     this.ui.dialog(`<h2 id="dialog-title">休息一陣先</h2><p>準備好先再慢慢嚟。</p>
       <button class="button primary" data-action="resume">繼續玩</button><button class="button secondary" data-action="restart">重新開始</button>
       <button class="button quiet" data-action="home">返回主頁</button>`, () => this.resume());
@@ -130,6 +135,7 @@ export class BerryKickScene extends Phaser.Scene {
   private resume() {
     if (this.dead || this.failed || this.completeShown || document.hidden) return;
     this.ui.closeModal(); this.paused = this.round.paused = false; this.skipNextDelta = true; this.inputSource.resume();
+    this.audio.resume();
   }
   private home() { this.scene.start('Menu'); }
   update(_time: number, delta: number) {
@@ -153,7 +159,7 @@ export class BerryKickScene extends Phaser.Scene {
       if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
     }
     this.updateEffects();
-    if (hit) { this.trees[hit].harvest(); this.feedbackUntil = this.round.elapsedMs + 1400; this.showScorePopup(); }
+    if (hit) { this.audio.playSfx('berry'); this.trees[hit].harvest(); this.feedbackUntil = this.round.elapsedMs + 1400; this.showScorePopup(); }
     const seconds = Math.ceil(this.round.remainingMs / 1000);
     if (seconds <= 10 && seconds < this.lastCountdown) {
       this.lastCountdown = seconds;
@@ -205,6 +211,9 @@ export class BerryKickScene extends Phaser.Scene {
   private finish() {
     if (this.completeShown) return;
     this.completeShown = true; this.active = false; this.inputSource.pause();
+    this.audio.stopAll();
+    this.audio.playSfx('complete');
+    this.audio.playVoice('complete');
     this.clearAnimations();
     this.ui.text('[data-berry-hint]', '挑戰完成！');
     this.ui.dialog(`<div class="berry-result-art" aria-hidden="true"><img src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt=""></div>
@@ -231,10 +240,11 @@ export class BerryKickScene extends Phaser.Scene {
   }
   snapshot() { return { ...this.round.snapshot(), active: this.active, failed: this.failed, completeShown: this.completeShown,
     renderMode: this.view ? '3d' : 'fallback', feet: this.feet, zones: this.round.zones, rootX: this.view?.rootX,
-    fps: this.view?.fps ?? 0, mode: this.inputSource.mode, maxTravel: this.view?.maxTravel, effectCount: this.effects.size }; }
+    audio: this.audio.snapshot(), fps: this.view?.fps ?? 0, mode: this.inputSource.mode, maxTravel: this.view?.maxTravel, effectCount: this.effects.size }; }
   private cleanup() {
     this.dead = true; this.active = false; this.request?.abort(); this.request = undefined;
     this.inputSource.destroy(); this.view?.destroy(); this.view = undefined;
+    this.audio.destroy();
     this.clearAnimations(); this.ui.destroy();
     window.removeEventListener('blur', this.onBlur); document.removeEventListener('visibilitychange', this.onVisibility);
   }

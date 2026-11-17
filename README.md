@@ -45,6 +45,10 @@ npm run preview
 
 拔蘿蔔 Camera mode 以當次個人站立／舒服屈膝基準計算動作範圍。請按自己舒服幅度活動，未能完成設定可重試或使用鍵盤。莓果大豐收保留原有免校準伸腳流程。
 
+## 音效、配音與 BGM
+
+首頁「設置」可儲存音效開關及音量，預設開啟、60%。按鈕、抓握／拔出蘿蔔、每次莓果收穫及遊戲完成均有原創柔和音效。暫停、追蹤中斷、重玩及退出會清理相應播放。AudioManager 已提供錄音註冊、單句配音、BGM 循環／暫停位置恢復、分頻道音量及配音時降低 BGM 的接口。[整合方式與驗證](docs/audio-system.md) [音效來源與授權](LICENSES/audio-assets.md)
+
 ## 瀏覽器與權限
 
 鏡頭需要 **HTTPS 或 localhost** secure context，以及 `navigator.mediaDevices.getUserMedia`。目前 QA 使用 macOS Chrome；Safari、Firefox、實體 Raspberry Pi 及真人 webcam 流程仍需各自驗證。非 localhost 的純 HTTP LAN 網址不能假定可用鏡頭。

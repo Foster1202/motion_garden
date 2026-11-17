@@ -22,6 +22,9 @@ export class SettingsPanel {
   private readonly backgroundMode = document.createElement('select');
   private readonly backgroundModeLabel = document.createElement('label');
   private readonly berryDuration = document.createElement('select');
+  private readonly sfxEnabled = document.createElement('input');
+  private readonly sfxVolume = document.createElement('input');
+  private readonly sfxVolumeOutput = document.createElement('output');
   private readonly error = document.createElement('p');
   private closed = false;
 
@@ -33,10 +36,38 @@ export class SettingsPanel {
     heading.id = 'game-settings-title';
     heading.textContent = '設置';
     const intro = document.createElement('p');
-    intro.textContent = '毋須校準，使用預設值即可開始。只需舒適輕屈膝，保持雙腳着地；如有不適請休息。設定會儲存在此瀏覽器，於下一次開始遊戲時套用。';
+    intro.textContent = '毋須校準，使用預設值即可開始。只需舒適輕屈膝，保持雙腳着地；如有不適請休息。設定會儲存在此瀏覽器。音效儲存後即時套用，其餘選項於下一次開始遊戲時套用。';
     form.append(heading, intro);
     const fields = document.createElement('div');
     fields.className = 'game-settings-fields';
+    const audio = document.createElement('fieldset');
+    audio.className = 'game-settings-audio';
+    const audioLegend = document.createElement('legend');
+    audioLegend.textContent = '音效';
+    const enabledLabel = document.createElement('label');
+    enabledLabel.className = 'game-settings-switch';
+    this.sfxEnabled.type = 'checkbox';
+    this.sfxEnabled.name = 'sfxEnabled';
+    const enabledCaption = document.createElement('span');
+    enabledCaption.textContent = '音效開關';
+    enabledLabel.append(this.sfxEnabled, enabledCaption);
+    const volumeLabel = document.createElement('label');
+    const volumeCaption = document.createElement('span');
+    volumeCaption.textContent = '音效音量';
+    this.sfxVolume.type = 'range';
+    this.sfxVolume.name = 'sfxVolume';
+    this.sfxVolume.id = 'settings-sfx-volume';
+    this.sfxVolume.min = '0';
+    this.sfxVolume.max = '1';
+    this.sfxVolume.step = '0.05';
+    this.sfxVolume.setAttribute('aria-label', '音效音量');
+    this.sfxVolumeOutput.setAttribute('for', this.sfxVolume.id);
+    this.sfxVolumeOutput.setAttribute('aria-label', '目前音效音量');
+    volumeLabel.append(volumeCaption, this.sfxVolume, this.sfxVolumeOutput);
+    this.sfxEnabled.addEventListener('change', () => this.updateAudioControls());
+    this.sfxVolume.addEventListener('input', () => this.updateAudioControls());
+    audio.append(audioLegend, enabledLabel, volumeLabel);
+    fields.append(audio);
     const durationLabel = document.createElement('label');
     const durationCaption = document.createElement('span');
     durationCaption.textContent = '莓果挑戰時間';
@@ -129,6 +160,8 @@ export class SettingsPanel {
         backgroundProcessing: this.backgroundProcessing.checked,
         backgroundMode: this.backgroundMode.value as GameSettings['backgroundMode'],
         berryDurationSeconds: Number(this.berryDuration.value) as GameSettings['berryDurationSeconds'],
+        sfxEnabled: this.sfxEnabled.checked,
+        sfxVolume: this.sfxVolume.valueAsNumber,
       };
       try { saveGameSettings(settings); this.destroy(); }
       catch (error) { this.error.textContent = error instanceof Error ? error.message : '未能儲存設定，請檢查瀏覽器儲存權限。'; }
@@ -145,7 +178,17 @@ export class SettingsPanel {
     this.backgroundProcessing.checked = settings.backgroundProcessing;
     this.backgroundMode.value = settings.backgroundMode;
     this.berryDuration.value = String(settings.berryDurationSeconds);
+    this.sfxEnabled.checked = settings.sfxEnabled;
+    this.sfxVolume.value = String(settings.sfxVolume);
+    this.updateAudioControls();
     this.updateBackgroundMode();
+  }
+
+  private updateAudioControls(): void {
+    this.sfxVolume.disabled = !this.sfxEnabled.checked;
+    const percentage = `${Math.round(this.sfxVolume.valueAsNumber * 100)}%`;
+    this.sfxVolumeOutput.value = percentage;
+    this.sfxVolume.setAttribute('aria-valuetext', percentage);
   }
 
   private updateBackgroundMode(): void {

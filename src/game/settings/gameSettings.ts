@@ -15,9 +15,11 @@ export interface GameSettings {
   backgroundProcessing: boolean;
   backgroundMode: 'blur' | 'gray';
   berryDurationSeconds: (typeof C.durationOptions)[number];
+  sfxEnabled: boolean;
+  sfxVolume: number;
 }
 
-export type NumericGameSetting = Exclude<keyof GameSettings, 'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds'>;
+export type NumericGameSetting = Exclude<keyof GameSettings, 'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds' | 'sfxEnabled' | 'sfxVolume'>;
 
 export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   standingAngle: 160, bendingAngle: 150, bendHoldMs: 650, standHoldMs: 500,
@@ -25,9 +27,11 @@ export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   mocapGain: 1, mocapSmoothingAlpha: 0.35, rabbitScale: 1,
   showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
   berryDurationSeconds: C.defaultDurationSeconds,
+  sfxEnabled: true, sfxVolume: 0.6,
 });
 
 export const SETTINGS_STORAGE_KEY = 'motion-garden-settings-v1';
+export const GAME_SETTINGS_CHANGED_EVENT = 'motion-garden-settings-changed';
 
 export const GAME_SETTING_LIMITS: Record<NumericGameSetting, readonly [number, number]> = {
   standingAngle: [140, 180], bendingAngle: [110, 170], bendHoldMs: [200, 2000],
@@ -48,6 +52,9 @@ export function validateGameSettings(value: unknown): value is GameSettings {
     && typeof input.showBodyKeypoints === 'boolean'
     && typeof input.backgroundProcessing === 'boolean'
     && (input.backgroundMode === 'blur' || input.backgroundMode === 'gray')
+    && typeof input.sfxEnabled === 'boolean'
+    && typeof input.sfxVolume === 'number' && Number.isFinite(input.sfxVolume)
+    && input.sfxVolume >= 0 && input.sfxVolume <= 1
     && C.durationOptions.some(duration => duration === input.berryDurationSeconds);
 }
 
@@ -55,7 +62,8 @@ function supportedSettings(value: GameSettings): GameSettings {
   const numeric = Object.fromEntries(Object.keys(GAME_SETTING_LIMITS).map(key => [key, value[key as NumericGameSetting]])) as Pick<GameSettings, NumericGameSetting>;
   return { ...numeric, showBodyKeypoints: value.showBodyKeypoints,
     backgroundProcessing: value.backgroundProcessing, backgroundMode: value.backgroundMode,
-    berryDurationSeconds: value.berryDurationSeconds };
+    berryDurationSeconds: value.berryDurationSeconds,
+    sfxEnabled: value.sfxEnabled, sfxVolume: value.sfxVolume };
 }
 
 export function getGameSettings(): GameSettings {
@@ -63,7 +71,7 @@ export function getGameSettings(): GameSettings {
     const stored: unknown = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? 'null');
     if (stored && typeof stored === 'object') {
       const settings = { showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
-        berryDurationSeconds: C.defaultDurationSeconds, ...stored };
+        berryDurationSeconds: C.defaultDurationSeconds, sfxEnabled: true, sfxVolume: 0.6, ...stored };
       if (validateGameSettings(settings)) return supportedSettings(settings);
     }
   } catch { /* Storage may be unavailable. */ }
@@ -71,11 +79,13 @@ export function getGameSettings(): GameSettings {
 }
 
 export function saveGameSettings(settings: GameSettings): void {
-  if (!validateGameSettings(settings)) throw new Error('請檢查參數範圍、莓果挑戰時間，以及站立角度與屈膝角度是否相差至少 3°。');
+  if (!validateGameSettings(settings)) throw new Error('請檢查參數範圍、音效音量、莓果挑戰時間，以及站立角度與屈膝角度是否相差至少 3°。');
   localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(supportedSettings(settings)));
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(GAME_SETTINGS_CHANGED_EVENT));
 }
 
 export function resetGameSettings(): GameSettings {
   localStorage.removeItem(SETTINGS_STORAGE_KEY);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(GAME_SETTINGS_CHANGED_EVENT));
   return { ...DEFAULT_GAME_SETTINGS };
 }

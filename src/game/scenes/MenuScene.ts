@@ -40,7 +40,7 @@ export class MenuScene extends Phaser.Scene {
       <div class="rabbit-greeting" aria-hidden="true">準備好未？</div>
       <footer class="menu-footer"><span>舒服地活動 · 隨時可以休息</span><span>攝像頭 / 鍵盤</span></footer>`);
     this.ui.on('settings', () => { this.settings = new SettingsPanel(this.ui.root, () => { this.settings = undefined; this.ui.focus('settings'); }); });
-    this.ui.on('start', () => { this.audio.playSfx('click'); this.showSelection(); });
+    this.ui.on('start', () => this.showSelection());
   }
 
   private showSelection() {
@@ -58,11 +58,13 @@ export class MenuScene extends Phaser.Scene {
           <button class="game-card" disabled><span class="card-art">${homeIcon}</span><span class="card-title">阿兔回家</span><span class="card-description">陪阿兔一步步返屋企</span><span class="coming-soon">稍後開放</span></button>
         </div>
       </section><footer class="menu-footer"><span>唔使急，享受每一下活動。</span><span>攝像頭 / 鍵盤</span></footer>`);
-    this.ui.on('berry', () => { this.audio.playSfx('click'); this.scene.start('BerryKick'); });
-    this.ui.on('carrot', () => { this.audio.playSfx('click'); this.scene.start('CarrotPull'); });
+    this.ui.on('berry', () => this.scene.start('BerryKick'));
+    this.ui.on('carrot', () => this.scene.start('CarrotPull'));
     this.ui.on('home', () => this.showHome());
     this.ui.focus('carrot');
   }
+
+  getAudioSnapshot() { return this.audio.snapshot(); }
 
   update(time: number) { this.rabbit?.setPose(0, time, REDUCED_MOTION); }
 }

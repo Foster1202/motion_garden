@@ -52,6 +52,9 @@ export class CarrotPullScene extends Phaser.Scene {
   private soilBack!: Phaser.GameObjects.Image;
   private gameplayRendering = false;
   private disposed = false;
+  private completionShown = false;
+  private grabSoundScore = -1;
+  private successSoundScore = -1;
   private paused = false;
   private trackingSuspended = false;
   private attached = false;
@@ -62,6 +65,8 @@ export class CarrotPullScene extends Phaser.Scene {
 
   create() {
     this.disposed = false;
+    this.completionShown = false;
+    this.grabSoundScore = this.successSoundScore = -1;
     this.gameplayRendering = false;
     this.model = new CarrotRound();
     this.audio = new AudioManager();
@@ -166,6 +171,7 @@ export class CarrotPullScene extends Phaser.Scene {
   private pauseGame() {
     if (this.paused || this.model.state === 'COMPLETE') return;
     this.paused = true;
+    this.audio.pause();
     this.motion.pause?.();
     this.motion.reset();
     this.rabbit.pause();
@@ -181,6 +187,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.motion.reset();
     this.ui.closeModal();
     this.paused = false;
+    if (!this.trackingSuspended) this.audio.resume();
     resumeTweenClock(this.tweens);
     this.scene.resume();
     if (this.rabbit3d?.mode !== '3d' && !this.trackingSuspended) this.rabbit.resume();
@@ -189,6 +196,10 @@ export class CarrotPullScene extends Phaser.Scene {
   }
 
   private complete() {
+    if (this.completionShown) return;
+    this.completionShown = true;
+    this.audio.stopAll();
+    this.audio.playSfx('complete');
     this.motion.pause?.();
     this.motion.reset();
     this.audio.playVoice('complete');
@@ -208,10 +219,14 @@ export class CarrotPullScene extends Phaser.Scene {
     if (!REDUCED_MOTION) this.ui.root.querySelector('#prompt')?.animate([{ opacity: .25, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 320 });
     const activeStep = ['READY', 'BENDING'].includes(state) ? 'bend' : ['GRABBED', 'RETURNING'].includes(state) ? 'stand' : 'collect';
     this.ui.root.querySelectorAll<HTMLElement>('[data-step]').forEach(el => el.classList.toggle('current', el.dataset.step === activeStep));
+    if (state === 'GRABBED' && previous !== 'RETURNING' && this.grabSoundScore !== this.model.score) {
+      this.grabSoundScore = this.model.score;
+      this.audio.playVoice('grabbed');
+      this.audio.playSfx('grab');
+    }
     if (this.rabbit3d?.isGameplay) {
-      if (state === 'GRABBED' && previous !== 'RETURNING') this.audio.playVoice('grabbed');
       if (state === 'SUCCESS') {
-        this.audio.playVoice('success'); this.audio.playSfx('success');
+        this.playHarvestFeedback();
         this.garden.celebrate(RABBIT_FOOT_POSITION.x, 476, REDUCED_MOTION);
       }
       if (state === 'COMPLETE') this.complete();
@@ -221,7 +236,6 @@ export class CarrotPullScene extends Phaser.Scene {
     if (state === 'GRABBED') {
       if (previous === 'RETURNING') this.rabbit.cancelReturn();
       else this.rabbit.playGrab();
-      this.audio.playVoice('grabbed');
     }
     if (state === 'RETURNING') this.rabbit.playReturn();
     if (state === 'SUCCESS') {
@@ -232,8 +246,7 @@ export class CarrotPullScene extends Phaser.Scene {
         this.successPhase = 'pull';
         this.ui.text('#prompt', PROMPTS.SUCCESS[0]);
         this.ui.text('#helper', PROMPTS.SUCCESS[1]);
-        this.audio.playVoice('success');
-        this.audio.playSfx('success');
+        this.playHarvestFeedback();
         if (this.rabbit.fallback) this.attachCarrot();
       }, () => {
         if (this.model.state !== 'SUCCESS' || this.rabbit3d?.mode === '3d' || this.disposed) return;
@@ -256,6 +269,13 @@ export class CarrotPullScene extends Phaser.Scene {
       this.rabbit.playIdle();
       this.complete();
     }
+  }
+
+  private playHarvestFeedback() {
+    if (this.successSoundScore === this.model.score) return;
+    this.successSoundScore = this.model.score;
+    this.audio.playVoice('success');
+    this.audio.playSfx('success');
   }
 
   private finishCelebration(source: 'sprite' | '3d' = 'sprite') {
@@ -302,9 +322,11 @@ export class CarrotPullScene extends Phaser.Scene {
     this.trackingSuspended = suspended;
     this.time.paused = suspended;
     if (suspended) {
+      if (!this.completionShown) this.audio.pause();
       this.rabbit.pause();
       this.tweens.pauseAll();
     } else {
+      if (!this.paused) this.audio.resume();
       resumeTweenClock(this.tweens);
       this.tweens.resumeAll();
       if (!this.paused && this.rabbit3d?.mode !== '3d') this.rabbit.resume();
@@ -356,6 +378,7 @@ export class CarrotPullScene extends Phaser.Scene {
     const sprite = this.rabbit.sprite;
     return {
       state: this.model.state, score: this.model.score, progress: this.model.progress,
+      audio: this.audio.snapshot(),
       paused: this.paused, trackingSuspended: this.trackingSuspended, scenePaused: this.scene.isPaused(), action: this.rabbit.action,
       frame: this.rabbit.frameName, frameIndex: this.rabbit.frameIndex, fallback: this.rabbit.fallback,
       animationPlaying: sprite?.anims.isPlaying, animationPaused: sprite?.anims.isPaused,

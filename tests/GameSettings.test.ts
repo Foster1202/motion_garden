@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_GAME_SETTINGS, getGameSettings, resetGameSettings, saveGameSettings, SETTINGS_STORAGE_KEY, validateGameSettings, type GameSettings } from '../src/game/settings/gameSettings';
+import { DEFAULT_GAME_SETTINGS, GAME_SETTINGS_CHANGED_EVENT, getGameSettings, resetGameSettings, saveGameSettings, SETTINGS_STORAGE_KEY, validateGameSettings, type GameSettings } from '../src/game/settings/gameSettings';
 
 test('manual defaults allow a shallow bend and form valid separated thresholds', () => {
   assert.equal(validateGameSettings(DEFAULT_GAME_SETTINGS), true);
@@ -10,6 +10,8 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundProcessing, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundMode, 'blur');
   assert.equal(DEFAULT_GAME_SETTINGS.berryDurationSeconds, 120);
+  assert.equal(DEFAULT_GAME_SETTINGS.sfxEnabled, true);
+  assert.equal(DEFAULT_GAME_SETTINGS.sfxVolume, 0.6);
 });
 
 test('settings reject nonfinite, missing, excessive and overlapping thresholds', () => {
@@ -22,6 +24,9 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { berryDurationSeconds: 30 }, { berryDurationSeconds: 61 }, { berryDurationSeconds: 0 },
     { berryDurationSeconds: 121 }, { berryDurationSeconds: '60' }, { berryDurationSeconds: NaN },
     { berryDurationSeconds: Infinity }, { berryDurationSeconds: undefined }, { berryDurationSeconds: null },
+    { sfxEnabled: 'true' }, { sfxEnabled: 0 }, { sfxEnabled: null }, { sfxEnabled: undefined },
+    { sfxVolume: -0.01 }, { sfxVolume: 1.01 }, { sfxVolume: '0.6' }, { sfxVolume: null },
+    { sfxVolume: NaN }, { sfxVolume: Infinity }, { sfxVolume: undefined },
   ]) assert.equal(validateGameSettings({ ...DEFAULT_GAME_SETTINGS, ...change }), false);
   assert.equal(validateGameSettings({}), false);
   assert.equal(validateGameSettings(null), false);
@@ -55,8 +60,8 @@ test('persist only supported settings, recover invalid storage, reset defaults',
   }
 });
 
-test('legacy numeric settings retain values and default preview effects off and Berry duration to 120', () => {
-  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, ...legacy } = DEFAULT_GAME_SETTINGS;
+test('legacy numeric settings retain values and add preview, duration and audio defaults', () => {
+  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, sfxEnabled, sfxVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: () => JSON.stringify({ ...legacy, bendingAngle: 155, mocapGain: 1.25, rawPose: [1, 2, 3] }),
@@ -67,6 +72,8 @@ test('legacy numeric settings retain values and default preview effects off and 
     assert.equal(backgroundProcessing, false);
     assert.equal(backgroundMode, 'blur');
     assert.equal(berryDurationSeconds, 120);
+    assert.equal(sfxEnabled, true);
+    assert.equal(sfxVolume, 0.6);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');
@@ -152,5 +159,92 @@ test('unavailable browser storage safely returns defaults', () => {
   finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('legacy settings add audio defaults while preserving existing duration and preview choices', () => {
+  const { sfxEnabled, sfxVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => JSON.stringify({ ...legacy, berryDurationSeconds: 60, bendingAngle: 155,
+      showBodyKeypoints: true, backgroundProcessing: true, backgroundMode: 'gray' }),
+  } });
+  try {
+    assert.deepEqual(getGameSettings(), { ...DEFAULT_GAME_SETTINGS, berryDurationSeconds: 60,
+      bendingAngle: 155, showBodyKeypoints: true, backgroundProcessing: true, backgroundMode: 'gray' });
+    assert.equal(sfxEnabled, true);
+    assert.equal(sfxVolume, 0.6);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('SFX switch and full volume range persist with strict stored validation and reset', () => {
+  const values = new Map<string, string>();
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+  } });
+  try {
+    for (const sfxEnabled of [false, true]) {
+      for (const sfxVolume of [0, 0.05, 0.35, 0.6, 1]) {
+        const settings = { ...DEFAULT_GAME_SETTINGS, sfxEnabled, sfxVolume, bendingAngle: 155 };
+        assert.equal(validateGameSettings(settings), true);
+        saveGameSettings(settings);
+        assert.deepEqual(getGameSettings(), settings);
+      }
+    }
+    for (const invalid of [{ sfxEnabled: 'false' }, { sfxVolume: -1 }, { sfxVolume: 2 },
+      { sfxVolume: '0.6' }, { sfxVolume: null }]) {
+      values.set(SETTINGS_STORAGE_KEY, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, ...invalid }));
+      assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
+      assert.throws(() => saveGameSettings({ ...DEFAULT_GAME_SETTINGS, ...invalid } as GameSettings));
+    }
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, sfxEnabled: false, sfxVolume: 0 });
+    assert.deepEqual(resetGameSettings(), DEFAULT_GAME_SETTINGS);
+    assert.equal(values.has(SETTINGS_STORAGE_KEY), false);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('settings dispatch one update after successful persistence and reset', () => {
+  const values = new Map<string, string>();
+  const storageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const browserEvents = new EventTarget();
+  let notifications = 0;
+  browserEvents.addEventListener(GAME_SETTINGS_CHANGED_EVENT, () => { notifications++; });
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: browserEvents });
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+  } });
+  try {
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, sfxEnabled: false });
+    assert.equal(notifications, 1);
+    assert.equal(getGameSettings().sfxEnabled, false);
+    assert.throws(() => saveGameSettings({ ...DEFAULT_GAME_SETTINGS, sfxVolume: 2 }));
+    assert.equal(notifications, 1);
+    resetGameSettings();
+    assert.equal(notifications, 2);
+    assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+      setItem() { throw new Error('storage blocked'); },
+      removeItem() { throw new Error('storage blocked'); },
+    } });
+    assert.throws(() => saveGameSettings({ ...DEFAULT_GAME_SETTINGS }));
+    assert.throws(() => resetGameSettings());
+    assert.equal(notifications, 2);
+  } finally {
+    if (storageDescriptor) Object.defineProperty(globalThis, 'localStorage', storageDescriptor);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
   }
 });
