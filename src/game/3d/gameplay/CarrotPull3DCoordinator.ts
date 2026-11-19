@@ -1,5 +1,5 @@
 import { MathUtils, Quaternion, Vector3 } from 'three';
-import type { RabbitPose } from '../../mocap/RabbitPose';
+import { neutralRabbitPose, type RabbitPose } from '../../mocap/RabbitPose';
 import type { RoundState } from '../../systems/CarrotRound';
 import type { Rabbit3D } from '../Rabbit3D';
 import type { Carrot3D } from '../Carrot3D';
@@ -70,7 +70,7 @@ export class CarrotPull3DCoordinator {
     rig.setIKEnabled(true);
     rig.resetPose(true);
     rig.setArmRotation('left', CONFIG.reach.raise, CONFIG.reach.elbow, CONFIG.reach.plane);
-    rig.setKneeBend(1);
+    rig.setCarrotReachPose(neutralRabbitPose(), 1, CONFIG.reach.bodyPitch);
     for (let frame = 0; frame < 120; frame++) rig.update(1 / 60);
     this.plantedGrip = tracker.sample().leftGripPosition.clone();
     const plantedShoulder = rig.bones.get('upper_arm.L')!.getWorldPosition(new Vector3());
@@ -116,7 +116,7 @@ export class CarrotPull3DCoordinator {
     }
   }
 
-  /** Mocap stages its pose first; this hook changes only the primary arm request. */
+  /** Mocap stages its pose first; ground reach adds a temporary assisted bow. */
   preparePose(deltaSeconds: number, bendAmount: number, sourcePose?: RabbitPose, roundProgress = 0): void {
     if (this.frozen || !Number.isFinite(deltaSeconds) || deltaSeconds < 0 || !Number.isFinite(bendAmount)) return;
     const step = Math.min(deltaSeconds, .05);
@@ -140,6 +140,7 @@ export class CarrotPull3DCoordinator {
     if (this.phase === 'REACHING') {
       this.reachElapsed += step;
       const blend = smooth(this.reachElapsed / CONFIG.reachSeconds);
+      this.stageReachPose(sourcePose, bendAmount, blend);
       this.stageArm({ raise: MathUtils.lerp(this.reachSource.raise, CONFIG.reach.raise, blend),
         elbow: MathUtils.lerp(this.reachSource.elbow, CONFIG.reach.elbow, blend),
         plane: MathUtils.lerp(this.reachSource.plane, CONFIG.reach.plane, blend) });
@@ -153,6 +154,7 @@ export class CarrotPull3DCoordinator {
       this.pullProgress = Math.max(this.pullProgress, Math.min(desiredPull, this.pullProgress + step / CONFIG.pullSeconds));
     }
     const progress = this.pullProgress;
+    this.stageReachPose(sourcePose, bendAmount, 1 - smooth(progress));
     this.stageArm({
       raise: MathUtils.lerp(CONFIG.reach.raise, CONFIG.lift.raise, progress)
         + MathUtils.clamp((source.raise - CONFIG.reach.raise) * .05, -CONFIG.sourceRaiseContribution, CONFIG.sourceRaiseContribution),
@@ -216,9 +218,9 @@ export class CarrotPull3DCoordinator {
       plantedGrip: this.plantedGrip.toArray(), soilWorldY: this.soilWorldY, soilOcclusion: this.soilOcclusion,
       primaryHand: 'left', primaryDistance: attachment.leftDistance, supportDistance: attachment.rightDistance,
       attachment, attachmentError: attachment.attachmentError, reachBlocked: this.reachBlocked,
-      owner: this.phase === 'REACHING' ? 'Mocap body/legs + assisted primary arm'
+      owner: this.phase === 'REACHING' ? 'Assisted ground reach + mocap support arm/head'
         : this.phase === 'ALIGNING' || this.phase === 'ATTACHED' || this.phase === 'LIFTING'
-          ? 'Mocap body/legs/support arm + bounded primary hold'
+          ? 'Assisted bow + bounded primary hold + mocap support arm/head'
           : this.phase === 'TRANSFERRING' && this.transferElapsed < CONFIG.returnArmSeconds
             ? 'Mocap body/legs/support arm + primary return blend' : 'Mocap',
       primaryArmTarget: { ...this.currentArm }, maximumVisualStep: this.maximumVisualStep,
@@ -245,6 +247,10 @@ export class CarrotPull3DCoordinator {
   private stageArm(pose: { raise: number; elbow: number; plane: number }): void {
     this.currentArm = pose;
     this.rabbit.rig.setArmRotation('left', pose.raise, pose.elbow, pose.plane);
+  }
+
+  private stageReachPose(pose: RabbitPose | undefined, bendAmount: number, blend: number): void {
+    this.rabbit.rig.setCarrotReachPose({ ...(pose ?? neutralRabbitPose()), bendAmount }, blend, CONFIG.reach.bodyPitch);
   }
 
   private stageContactTarget(): void {

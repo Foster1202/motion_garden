@@ -151,6 +151,7 @@ async function resourceSnapshot() {
     return { stats: { ...window.__carrotGameStats, timestamps: undefined },
       carrotModels, spriteRabbitVisible: scene.rabbit.root.visible, spriteCarrotVisible: scene.carrot.root.visible,
       phaserCarrotAlpha: scene.carrot.root.alpha, soilVisible: scene.soil.visible,
+      platformVisible: scene.garden.layers.find(layer => layer.name === 'platform')?.visible,
       textures: game.textures.getTextureKeys().filter(key => key.startsWith('rabbit-three-')),
       geometries: preview.overlay?.renderer.info.memory.geometries,
       gpuTextures: preview.overlay?.renderer.info.memory.textures,
@@ -610,13 +611,17 @@ try {
     check('Existing personal comfortable calibration and standing reference enable READY', profile);
 
     const planted = await visualFacts();
-    assert.equal((await snapshot()).rabbit3d.environment?.soilFrontVisible, true);
+    const environment = (await snapshot()).rabbit3d.environment;
+    assert.equal(environment?.kind, 'ground-soil');
+    assert.equal(environment.visible, true);
+    assert.ok(environment.soilWorldY >= 0 && environment.soilWorldY < .15);
     assert.equal(planted.localClipping, true);
     assert.ok(planted.materials.some(material => material.planes.length > 0));
     assert.equal(planted.orangeBelowSoil, 0);
     report.plantedVisual = planted;
-    check('Actual carrot materials clip planted roots below the raised soil surface', planted);
     report.resources.push(await resourceSnapshot());
+    assert.equal(report.resources[0].platformVisible, false);
+    check('Only the ground patch is visible and actual carrot material hides roots below the soil', planted);
     assert.equal(report.resources[0].carrotModels, 1);
     assert.equal(report.resources[0].spriteCarrotVisible, false);
     assert.equal(report.resources[0].spriteRabbitVisible, false);

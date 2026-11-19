@@ -69,9 +69,11 @@ test('3D coordinator starts READY with one reusable planted carrot and clipped r
   f.dispose();
 });
 
-test('Planted point is measured from actual V3 shallow-knee primary palm', async () => {
+test('Assisted bow puts the real V3 palm within reach of a near-floor planting point', async () => {
   const f = await fixture();
-  close(f.game.plantedGrip, new Vector3(.271323846, 1.137926870, .502471157));
+  assert.ok(f.game.soilWorldY >= 0 && f.game.soilWorldY < .15);
+  assert.ok(f.game.plantedGrip.x > .5 && f.game.plantedGrip.z > .5);
+  assert.ok(Math.abs(f.game.plantedGrip.y - f.game.soilWorldY - CONFIG.soilBelowGrip) < 1e-8);
   close(f.carrot.gripWorld(), f.game.plantedGrip);
   assert.ok(f.game.snapshot().originalTargetDistance > 1);
   assert.ok(f.game.snapshot().maximumArmReach > .7 && f.game.snapshot().maximumArmReach < .8);
@@ -131,7 +133,7 @@ test('GRABBED starts finite assisted reach with exclusive primary arm ownership'
   f.driveUntil(() => f.model.state === 'GRABBED', bending, 1);
   assert.equal(f.game.snapshot().phase, 'REACHING');
   assert.equal(f.game.canAdvanceRound, false);
-  assert.match(f.game.snapshot().owner, /assisted primary arm/);
+  assert.match(f.game.snapshot().owner, /assisted ground reach/i);
   f.dispose();
 });
 
@@ -243,7 +245,7 @@ test('Primary hold retains bounded input contribution instead of freezing the wh
   f.dispose();
 });
 
-test('Body, head, shallow knees and root keep their independent real-time ownership', async () => {
+test('Body and root blend back to player motion as the carrot rises', async () => {
   const f = await fixture(); f.attach();
   const before = f.rabbit.rig.bones.get('body')!.quaternion.clone();
   const source = { ...neutralRabbitPose(), torsoLean: 10, headYaw: 8, lateralOffset: .08 };
@@ -472,18 +474,17 @@ test('Unreachable planting gets a finite safe fallback notification without a fa
   f.dispose();
 });
 
-test('Extreme combined motion follows the real bend hold and reaches one bounded fallback', async () => {
+test('The ground assist stabilizes the grab during extreme combined motion input', async () => {
   const f = await fixture();
   try {
     const source = { ...neutralRabbitPose(), torsoLean: 18, torsoForward: 16,
       lateralOffset: -.45, rightArmElevation: 150 };
-    f.driveUntil(() => f.unavailable === 1, bending, 1, 600, source);
+    f.driveUntil(() => f.game.snapshot().phase === 'ATTACHED', bending, 1, 600, source);
     assert.equal(f.model.state, 'GRABBED');
-    assert.equal(f.game.snapshot().phase, 'UNAVAILABLE');
-    assert.equal(f.game.attachment.state, 'IDLE');
+    assert.ok(f.game.snapshot().contactDistanceAtGrab! <= CONFIG.maximumAlignmentDistance);
+    assert.ok(f.rabbit.rig.ikSnapshot().feet!.maximumContactError < .001);
     assert.equal(f.model.score, 0);
-    for (let frame = 0; frame < 60; frame++) f.frame(standing, 0, source);
-    assert.equal(f.unavailable, 1);
+    assert.equal(f.unavailable, 0);
   } finally { f.dispose(); }
 });
 

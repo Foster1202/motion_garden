@@ -148,6 +148,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.carrot.root.setVisible(!hideSpriteCarrot);
     this.soil.setVisible(!hideSpriteCarrot);
     this.soilBack.setVisible(!this.gameplayRendering);
+    this.garden.layers.find(layer => layer.name === 'platform')?.setVisible(!this.gameplayRendering);
     if (preview && !this.gameplayRendering) {
       this.ui.text('#prompt', '3D 阿兔 · 開發預覽');
       this.ui.text('#helper', DEV_CARROT_GRAB_DEBUG ? '用手動骨骼或鏡頭移動雙手，再以開發按鈕測試抓握。'

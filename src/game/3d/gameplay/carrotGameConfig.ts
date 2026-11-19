@@ -8,7 +8,7 @@ export const CARROT_GAME_CONFIG = {
   returnArmSeconds: .35,
   basketArcHeight: .6,
   soilBelowGrip: .025,
-  reach: { raise: 55, elbow: 0, plane: 140 },
+  reach: { raise: 65, elbow: 0, plane: 90, bodyPitch: 70 },
   lift: { raise: 100, elbow: 0, plane: 130 },
   sourceRaiseContribution: 3,
   sourcePlaneContribution: 2,

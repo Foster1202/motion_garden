@@ -75,7 +75,7 @@ export class Rabbit3DPreview {
   get motionHint() {
     if (!this.isMocapActive) return undefined;
     if (this.mocap?.gameplayReady && this.isGameplay && this.roundState === 'READY' && !this.nearGardenBed) {
-      return '可在花園前後左右活動。回到花槽旁站穩，再慢慢屈膝拔蘿蔔。';
+      return '可在花園前後左右活動。回到蘿蔔旁站穩，再慢慢屈膝拔蘿蔔。';
     }
     return this.mocap?.statusMessage;
   }
@@ -258,8 +258,6 @@ export class Rabbit3DPreview {
         : movement && { ...movement.pose, depthReliable: movement.standing };
       this.worldMotion.update(deltaSeconds, sample, movement?.reference,
         !!movement && (idle || this.roundState === 'BENDING'));
-      const inFront = this.worldMotion.snapshot().offset.z > .15;
-      this.image?.setDepth(inFront ? CARROT_PULL_DEPTHS.soilFront + .2 : CARROT_PULL_DEPTHS.rabbit);
     }
     let preparationMs = 0;
     if (this.coordinator) {

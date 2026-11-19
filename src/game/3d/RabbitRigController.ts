@@ -233,6 +233,16 @@ export class RabbitRigController {
       clamp(sideDegrees, -limits.bodySide, limits.bodySide));
   }
 
+  /** Carrot gameplay can bow the avatar farther while its feet stay in the normal IK solver. */
+  setCarrotReachPose(pose: RabbitPose, amount: number, pitch: number): void {
+    const blend = clamp(amount, 0, 1);
+    this.setRotation('body',
+      MathUtils.lerp(clamp(pose.torsoForward, -this.limits.bodyForward, this.limits.bodyForward), pitch, blend),
+      0, clamp(pose.torsoLean, -this.limits.bodySide, this.limits.bodySide) * (1 - blend));
+    this.setKneeBend(MathUtils.lerp(clamp(pose.bendAmount, 0, 1), 1, blend));
+    this.setRootOffset(pose.lateralOffset * (1 - blend));
+  }
+
   setHeadRotation(yawDegrees: number, pitchDegrees = 0, rollDegrees = 0): void {
     const limits = this.limits;
     this.headRotation.yaw = clamp(yawDegrees, -limits.headYaw, limits.headYaw);

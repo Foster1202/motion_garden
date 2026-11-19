@@ -96,47 +96,41 @@ class DisplayObject {
   visible = true;
   depth = 0;
   destroyed = 0;
-  crop?: number[];
   setOrigin() { return this; }
   setScale() { return this; }
   setDepth(depth: number) { this.depth = depth; return this; }
   setVisible(visible: boolean) { this.visible = visible; return this; }
-  setCrop(...values: number[]) { this.crop = values; return this; }
-  fillStyle() { return this; }
-  fillRoundedRect() { return this; }
-  lineStyle() { return this; }
-  lineBetween() { return this; }
   destroy() { this.destroyed++; }
 }
 
 function sceneFixture() {
   const objects: DisplayObject[] = [];
   const add = () => { const object = new DisplayObject(); objects.push(object); return object; };
-  const scene = { add: { image: add, graphics: add }, textures: { exists: () => true } } as unknown as Phaser.Scene;
+  const scene = { add: { image: add }, textures: { exists: () => true } } as unknown as Phaser.Scene;
   return { scene, objects };
 }
 
-test('raised bed derives placement from the supplied world projection and keeps its front soil layer visible', () => {
+test('ground patch projects to the planting point behind the shared rabbit and carrot render', () => {
   const { scene, objects } = sceneFixture();
-  const bed = new CarrotPull3DEnvironment(scene, {
+  const soil = new CarrotPull3DEnvironment(scene, {
     project: point => ({ x: 894 + point.x * 90, y: 681 - point.y * 90 }),
-    plantedGrip: new Vector3(.27, 1.125, .5), soilWorldY: 1.1,
+    plantedGrip: new Vector3(.27, .125, .5), soilWorldY: .1,
   });
-  const snapshot = bed.snapshot();
-  assert.deepEqual(snapshot.soilScreenPosition, { x: 918.3, y: 582 });
+  const snapshot = soil.snapshot();
+  assert.deepEqual(snapshot.soilScreenPosition, { x: 918.3, y: 672 });
   assert.equal(snapshot.pixelsPerUnit, 90);
-  assert.equal(snapshot.soilFrontVisible, true);
-  assert.equal(objects.filter(object => object.crop?.[1] === 249).length, 1);
-  assert.ok(snapshot.soilBackDepth < 40 && snapshot.soilFrontDepth > 40);
-  bed.setVisible(false);
+  assert.equal(snapshot.visible, true);
+  assert.equal(objects.length, 1);
+  assert.ok(snapshot.soilDepth < 40);
+  soil.setVisible(false);
   assert.ok(objects.every(object => !object.visible));
-  bed.setVisible(true);
-  bed.destroy(); bed.destroy();
+  soil.setVisible(true);
+  soil.destroy(); soil.destroy();
   assert.ok(objects.every(object => object.destroyed === 1));
-  assert.equal(bed.snapshot().soilFrontVisible, false);
+  assert.equal(soil.snapshot().visible, false);
 });
 
-test('raised bed rejects invalid layout before allocating display objects', () => {
+test('ground patch rejects invalid layout before allocating display objects', () => {
   const { scene, objects } = sceneFixture();
   assert.throws(() => new CarrotPull3DEnvironment(scene, {
     project: () => ({ x: NaN, y: 0 }), plantedGrip: new Vector3(), soilWorldY: 1,
