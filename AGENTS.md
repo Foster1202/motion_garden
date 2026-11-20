@@ -81,7 +81,7 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 - Camera previews default to the original image. Settings provide independently persisted body-keypoint and background-processing switches, both off by default, blur/gray modes and legacy numeric-setting migration. One existing inference supplies the 33 landmarks and segmentation mask for Carrot and Berry previews. Normalized coordinates share one CSS mirror, edges are feathered and lightly stabilized, and loss/stall/pause/stop clear old output.
 - Berry Kick uses a timed challenge, default 120 seconds with persisted 60/90/120 options. Every valid trunk hit drops three berries and adds 3, both trees replenish without a harvest cap. Actual continuous GLB leg motion, independent lateral movement, normalized no-calibration detection, foot-bone trunk projection and retraction/cooldown remain. MM:SS HUD, independent game-time +3 popups, overlapping 10-to-1 digits and immediate idempotent results share the game clock. Pause/blur/hidden freeze the round and animations, resume discards stale delta, finish/cleanup clears effects and falling fruit. A/D movement, Q/E extension, release to retract, Esc pause. GLB failure disables scoring with an honest fallback message.
 - Berry visual v2: separately rendered curved leafy trees, raspberry clusters, layered orchard, sand clearing, botanical foreground and woven basket. `npm run build:berry-art` regenerates assets. Rabbit driving, game rules and hitboxes were preserved during art work.
-- AudioManager now loads four original gentle WAV effects and a 2.8-second CC0 crowd cheer/applause completion effect and owns activation, six-source SFX overlap, deduplication, persisted enable/volume controls, gain/limiter output and scene/pause/tracking/visibility cleanup. Voice registration supports latest-wins narration and BGM ducking. BGM registration supports one loop and pause-offset recovery. Seven supplied Cantonese recordings now cover Carrot/Berry instructions, success and completion through scene voice profiles. Voice starts after input/tracking/reference readiness, Berry rewards preserve active instructions with an 8-second cooldown, and explicit pause/input reset cancels pending speech. Independent persisted voice enable/volume defaults on / 80%. SFX ducks to 35% and BGM to 30% during speech. The original eight M4A files and processing manifest are retained. BGM can be supplied through the documented interfaces. See `docs/audio-system.md` and `LICENSES/audio-assets.md`. No account/backend, long-term pose storage, action-quality scoring or clinical efficacy validation.
+- AudioManager now loads four original gentle WAV effects and a 2.8-second CC0 crowd cheer/applause completion effect and owns activation, six-source SFX overlap, deduplication, persisted enable/volume controls, gain/limiter output and scene/pause/tracking/visibility cleanup. Voice registration supports latest-wins narration and BGM ducking. BGM registration supports one loop and pause-offset recovery. Seven supplied Cantonese recordings now cover Carrot/Berry instructions, success and completion through scene voice profiles. Voice starts after input/tracking/reference readiness, Berry rewards preserve active instructions with an 8-second cooldown, and explicit pause/input reset cancels pending speech. Independent persisted voice enable/volume defaults on / 80%. SFX ducks to 35% and BGM to 30% during speech. The original eight M4A files and processing manifest are retained. BGM can be supplied through the documented interfaces. See `docs/audio-system.md` and `THIRD_PARTY_NOTICES.md`. No account/backend, long-term pose storage, action-quality scoring or clinical efficacy validation.
 
 ## Commands and known environment constraints
 
@@ -109,6 +109,16 @@ Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:ra
 None.
 
 ## Verification and handoff history
+
+### 2026-11-20 — 2026-11-20-lead-license-layout — Root licensing and notices
+- Owner / agent — Codex Lead.
+- Branch / base — main / 0b887e2.
+- Request / scope — Replace the LICENSES directory with two root documents and update references.
+- Changes — LICENSE contains the existing PolyForm and CC BY-NC texts and their scope. THIRD_PARTY_NOTICES.md records dependency, MediaPipe and audio provenance. README.md and docs/audio-system.md point to the root files.
+- Validation — PASS `git pull --ff-only`, `git diff --check`, comparisons of both license texts and preserved source URLs/hashes, new relative links and removed-path scan. Runtime checks NOT RUN for this documentation change.
+- Risks / blockers — The existing release task for a complete third-party redistribution notice audit remains open.
+- Next action — None for this task.
+- Delivery — origin/main.
 
 ### 2026-11-20 — 2026-11-20-lead-recorded-voices — Supplied Cantonese game narration
 - Owner / agent — Codex Lead with bounded asset preparation, scene integration and settings/browser QA workers. Lead integrated all results and independent engine review.

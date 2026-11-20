@@ -1,14 +1,22 @@
-# Audio asset provenance
+# Third-party notices
+
+The root [LICENSE](LICENSE) covers original project software, artwork and documentation.
+
+## Dependencies and models
+
+Third-party packages, MediaPipe models/WASM, and any externally sourced material retain their own licenses. This repository license does not relicense them or claim ownership of them. See [package-lock.json](package-lock.json) and [the MediaPipe manifest](public/mediapipe/manifest.json) for dependency/source provenance. A complete redistribution notice audit remains a release task.
+
+## Audio asset provenance
 
 Updated 2026-11-20.
 
 The runtime files in `public/assets/audio/` combine four original procedural effects, a CC0 crowd celebration recording and the supplied Cantonese recordings under `voice/`.
 
-## Original effects
+### Original effects
 
-`click.wav`, `grab.wav`, `success.wav` and `berry.wav` are original procedural compositions generated for Motion Garden by `scripts/generate-audio.py`. Their waveforms use sine harmonics with a smooth attack, exponential decay and release envelope. Attribution is Motion Garden contributors. These four files follow the project's CC BY-NC 4.0 artwork license, with full terms in `CC-BY-NC-4.0.txt`. The generator follows the project's PolyForm Noncommercial 1.0.0 software license. Rights apply to the extent held by contributors.
+`click.wav`, `grab.wav`, `success.wav` and `berry.wav` are original procedural compositions generated for Motion Garden by `scripts/generate-audio.py`. Their waveforms use sine harmonics with a smooth attack, exponential decay and release envelope. Attribution is Motion Garden contributors. These four files follow the project's CC BY-NC 4.0 artwork license, with full terms in the root [LICENSE](LICENSE). The generator follows the project's PolyForm Noncommercial 1.0.0 software license. Rights apply to the extent held by contributors.
 
-## Third-party audio register
+### CC0 crowd recording
 
 `complete.wav` is a 2.8-second edited excerpt of **Crowd.Yay.Applause.25ppl.Short.wav** by **jessepash**, published on Freesound on 2011-12-28. The author describes approximately 25 people cheering with some applause, recorded indoors with a fairly dry sound on a Zoom H4. The author's page explicitly marks the work CC0. Attribution is retained here for provenance. [Original author page](https://freesound.org/people/jessepash/sounds/139972/)
 
@@ -18,7 +26,7 @@ The publicly supplied HQ MP3 preview is saved at `assets/audio-sources/139972_96
 
 Processing uses the source's first 2.8 seconds, mono downmix, resampling to 44100 Hz, a 100 Hz high-pass and 6000 Hz low-pass, DC removal, 35 ms fade-in, 450ms fade-out and peak limiting to 0.23 full scale. The output is signed 16-bit PCM WAV. The saved source supports offline reproduction with Python 3 and FFmpeg by running `python3 scripts/generate-audio.py`. The same command regenerates the four original effects and prints all measurements.
 
-## Runtime measurements
+### Sound effect measurements
 
 | File | Event | Duration | Peak dBFS | RMS dBFS |
 | --- | --- | --- | --- | --- |
@@ -30,12 +38,11 @@ Processing uses the source's first 2.8 seconds, mono downmix, resampling to 4410
 
 All runtime files are mono, 44100 Hz, signed 16-bit little-endian PCM, totaling 396238 bytes. Default SFX gain is 0.6. Six-source bounded overlap and a compressor control summed transients. These measurements describe the digital signal. Playback-device volume also affects perceived loudness.
 
-
-## User-supplied Cantonese voice recordings
+### User-supplied Cantonese voice recordings
 
 The project owner supplied eight M4A files under `assets/audio-sources/` and authorized their preparation, game integration and commit on 2026-11-20. The speaker and recording method were not separately specified. The supplied recordings retain their applicable rights. Their project-use authorization is recorded here independently of the original procedural effects and CC0 crowd recording.
 
-Seven recordings are selected for gameplay. The generic `好叻呀.m4a` remains a source reserve because both selected success recordings already contain encouragement. File labels are taken from the names supplied by the user. The preparation pipeline preserves all eight M4A source hashes. Detailed source/output SHA-256 values, trim coordinates, added padding, applied gain and measurements are recorded in `assets/audio-sources/voice-processing.json`.
+Seven recordings are selected for gameplay. The generic `好叻呀.m4a` remains a source reserve because both selected success recordings already contain encouragement. File labels are taken from the names supplied by the user. The preparation pipeline preserves all eight M4A source hashes. Detailed source/output SHA-256 values, trim coordinates, added padding, applied gain and measurements are recorded in the [voice processing manifest](assets/audio-sources/voice-processing.json).
 
 The processing script uses a 90 Hz high-pass, 8,500 Hz low-pass, adaptive 10 ms activity windows, 80 ms leading and 120 ms trailing signal padding, 5 ms fade-in and 15 ms fade-out. Linear gain targets −20 LUFS, bounded by a 20 dB gain ceiling and 0.65 sample/true peak ceiling. Actual outputs retain speech dynamics and measure −24.01 to −20.64 LUFS. Quiet-window measurements did not establish stationary noise, so the pipeline uses frequency filtering and edge trimming for cleanup. The manifest distinguishes these signal measurements from verified room-noise or speech labels.
 

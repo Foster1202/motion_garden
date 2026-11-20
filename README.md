@@ -6,7 +6,7 @@ Carrot Pull 支援單一鏡頭或鍵盤測試。鏡頭模式按當次個人範�
 
 ## 協作與授權
 
-所有 agent／task 先閱讀並持續更新 [AGENTS.md](AGENTS.md)；完成改動後以簡潔 commit 訊息提交並 push 到 GitHub。軟體採 PolyForm Noncommercial 1.0.0；原創美術及文檔採 CC BY-NC 4.0，見 [授權範圍](LICENSES/README.md)。
+所有 agent／task 先閱讀並持續更新 [AGENTS.md](AGENTS.md)；完成改動後以簡潔 commit 訊息提交並 push 到 GitHub。軟體採 PolyForm Noncommercial 1.0.0；原創美術及文檔採 CC BY-NC 4.0，見 [授權條款](LICENSE)與[第三方聲明](THIRD_PARTY_NOTICES.md)。
 
 目前亦有完整「莓果大豐收」，左右移動、伸腳碰樹，每次收集三顆，限時內可持續收穫。預設120秒，可在首頁設置選擇60／90／120秒，詳見 [遊戲文檔](docs/berry-kick-game.md)。拔蘿蔔的體感模式支援完整即時 3D 五輪遊戲，鍵盤模式使用完整 Sprite 流程。
 
@@ -47,7 +47,7 @@ npm run preview
 
 ## 音效、配音與 BGM
 
-首頁「設置」可獨立儲存音效與語音開關及音量，音效預設60%、語音預設80%，兩項預設開啟。按鈕、抓握／拔出蘿蔔及每次莓果收穫有原創柔和音效。兩個遊戲完成時共用 2.8 秒的 CC0 真人歡呼伴掌聲。暫停、追蹤中斷、重玩及退出會清理相應播放。已接入七段粵語配音，涵蓋兩個遊戲的動作引導、成功鼓勵及完成提示。莓果鼓勵語會等候說明播完並限制重播頻率。語音期間降低音效及 BGM 音量。AudioManager 保留自訂錄音及 BGM 註冊、循環及暫停位置恢復接口。[整合方式與驗證](docs/audio-system.md) [音效來源與授權](LICENSES/audio-assets.md)
+首頁「設置」可獨立儲存音效與語音開關及音量，音效預設60%、語音預設80%，兩項預設開啟。按鈕、抓握／拔出蘿蔔及每次莓果收穫有原創柔和音效。兩個遊戲完成時共用 2.8 秒的 CC0 真人歡呼伴掌聲。暫停、追蹤中斷、重玩及退出會清理相應播放。已接入七段粵語配音，涵蓋兩個遊戲的動作引導、成功鼓勵及完成提示。莓果鼓勵語會等候說明播完並限制重播頻率。語音期間降低音效及 BGM 音量。AudioManager 保留自訂錄音及 BGM 註冊、循環及暫停位置恢復接口。[整合方式與驗證](docs/audio-system.md) [音效來源與授權](THIRD_PARTY_NOTICES.md#audio-asset-provenance)
 
 ## 瀏覽器與權限
 
