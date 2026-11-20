@@ -1,6 +1,7 @@
 import { GAME_SETTINGS_CHANGED_EVENT, getGameSettings } from '../settings/gameSettings';
 
-export type VoiceId = 'ready' | 'bend' | 'grabbed' | 'stand' | 'success' | 'retry' | 'complete';
+export type VoiceId = 'ready' | 'bend' | 'grabbed' | 'stand' | 'success' | 'retry' | 'complete'
+  | 'safety' | 'calibrationStanding' | 'calibrationBend' | 'trackingLost' | 'rest' | 'nextRound';
 export type SfxId = 'grab' | 'success' | 'complete' | 'click' | 'berry';
 export type AudioChannel = 'sfx' | 'voice' | 'bgm';
 export type VoiceProfile = 'carrot' | 'berry';
@@ -8,11 +9,15 @@ export type VoiceProfile = 'carrot' | 'berry';
 export interface VoicePlaybackOptions {
   interrupt?: boolean;
   cooldownMs?: number;
+  allowWhilePaused?: boolean;
 }
 
+const COMMON_VOICES = { safety: 'safety', trackingLost: 'tracking-lost', rest: 'rest', retry: 'retry' };
 const PROFILE_VOICES: Record<VoiceProfile, Partial<Record<VoiceId, string>>> = {
-  carrot: { ready: 'carrot-ready', grabbed: 'carrot-grabbed', success: 'carrot-success', complete: 'carrot-complete' },
-  berry: { ready: 'berry-ready', success: 'berry-success', complete: 'berry-complete' },
+  carrot: { ...COMMON_VOICES, ready: 'carrot-ready', grabbed: 'carrot-grabbed', success: 'carrot-success',
+    complete: 'carrot-complete', calibrationStanding: 'calibration-standing', calibrationBend: 'calibration-bend',
+    nextRound: 'next-carrot' },
+  berry: { ...COMMON_VOICES, ready: 'berry-ready', success: 'berry-success', complete: 'berry-complete' },
 };
 
 const SFX_IDS: readonly SfxId[] = ['click', 'grab', 'success', 'berry', 'complete'];
@@ -219,10 +224,11 @@ export class AudioManager {
     this.stopVoice();
     const token = this.voiceRequest;
     const url = this.voices.get(id);
-    if (!url || !this.voiceEnabled || this.volumes.voice === 0 || this.paused || !this.canPlay()) return false;
+    if (!url || !this.voiceEnabled || this.volumes.voice === 0
+      || (this.paused && !options.allowWhilePaused) || !this.canPlay()) return false;
     this.voiceId = id;
     void this.load(url).then(buffer => {
-      if (token !== this.voiceRequest || this.paused || !this.canPlay()) return;
+      if (token !== this.voiceRequest || (this.paused && !options.allowWhilePaused) || !this.canPlay()) return;
       if (!buffer) { this.voiceId = undefined; return; }
       this.start(buffer, 'voice');
       this.lastVoice.set(id, this.context!.currentTime * 1000);
@@ -259,7 +265,8 @@ export class AudioManager {
     });
   }
 
-  stopVoice(): void {
+  stopVoice(id?: VoiceId): void {
+    if (id !== undefined && id !== this.voiceId) return;
     ++this.voiceRequest;
     this.voiceId = undefined;
     this.stopChannel('voice');

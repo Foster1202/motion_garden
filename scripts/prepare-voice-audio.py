@@ -32,6 +32,13 @@ CLIPS = (
     ('berry-ready', '左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳.m4a'),
     ('berry-success', '好叻呀！莓果跌落嚟喇.m4a'),
     ('berry-complete', '挑戰完成.m4a'),
+    ('safety', '請保持地面清爽旁邊最好有穩固嘅凳.m4a'),
+    ('calibration-standing', '自然企直雙手放鬆保持一陣.m4a'),
+    ('calibration-bend', '舒服咁輕輕踎低唔使夾硬嚟.m4a'),
+    ('tracking-lost', '我睇唔清楚你企返鏡頭中間少少.m4a'),
+    ('rest', '休息一陣先準備好再繼續.m4a'),
+    ('retry', '慢慢嚟，準備好再試一次.m4a'),
+    ('next-carrot', '下一棵蘿蔔準備好啦.m4a'),
 )
 RESERVE = '好叻呀.m4a'
 

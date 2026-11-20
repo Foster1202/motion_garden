@@ -6,9 +6,10 @@ import { CARROT_PULL_DEPTHS, RABBIT_SCALE, CARROT_SCALE, CARRIED_CARROT_ANGLE, S
 import { RabbitCharacter } from '../characters/RabbitCharacter';
 import { Carrot } from '../art/Carrot';
 import { MotionInputController } from '../input/MotionInputController';
-import type { MotionInput } from '../input/MotionInput';
+import type { MotionInput, MotionInputStatus } from '../input/MotionInput';
 import { CarrotRound, type RoundState } from '../systems/CarrotRound';
-import { AudioManager } from '../systems/AudioManager';
+import { AudioManager, type VoiceId } from '../systems/AudioManager';
+import { tryVoiceCue } from '../systems/voiceCue';
 import { resumeTweenClock } from '../systems/pauseTweenClock';
 import { Overlay, sproutIcon, carrotIcon } from '../ui/Overlay';
 import { REDUCED_MOTION, SHOW_KEYBOARD_HINTS } from '../config';
@@ -27,6 +28,10 @@ const PROMPTS: Record<RoundState, [string, string]> = {
   SUCCESS: ['成功拔到蘿蔔啦！', '做得好！慢慢嚟，唔使急。'],
   NEXT_ROUND: ['下一棵蘿蔔準備好喇。', '準備好先再繼續。'],
   COMPLETE: ['完成啦！', '做得好，休息一下啦。'],
+};
+type CalibrationVoicePhase = 'standing' | 'bend' | 'failed';
+const CALIBRATION_VOICES: Record<CalibrationVoicePhase, VoiceId> = {
+  standing: 'calibrationStanding', bend: 'calibrationBend', failed: 'retry',
 };
 const GAME_3D_PROMPTS: Record<RoundState, [string, string]> = {
   READY: ['慢慢屈膝，幫阿兔拔蘿蔔啦！', '舒服地淺屈膝就得，阿兔會幫你捉穩蘿蔔。'],
@@ -56,6 +61,15 @@ export class CarrotPullScene extends Phaser.Scene {
   private grabSoundScore = -1;
   private successSoundScore = -1;
   private instructionVoicePending = true;
+  private safetyVoicePending = true;
+  private restVoiceRequest = 0;
+  private calibrationVoicePhase?: CalibrationVoicePhase;
+  private calibrationVoicePending = false;
+  private voiceInputMode: MotionInputStatus['mode'] = null;
+  private trackingLostAt?: number;
+  private trackingVoiceIssued = false;
+  private retryVoicePending = false;
+  private nextRoundVoicePending = false;
   private paused = false;
   private trackingSuspended = false;
   private attached = false;
@@ -69,6 +83,14 @@ export class CarrotPullScene extends Phaser.Scene {
     this.completionShown = false;
     this.grabSoundScore = this.successSoundScore = -1;
     this.instructionVoicePending = true;
+    this.safetyVoicePending = true;
+    this.restVoiceRequest = 0;
+    this.calibrationVoicePhase = undefined;
+    this.calibrationVoicePending = false;
+    this.voiceInputMode = null;
+    this.trackingLostAt = undefined;
+    this.trackingVoiceIssued = false;
+    this.retryVoicePending = this.nextRoundVoicePending = false;
     this.gameplayRendering = false;
     this.model = new CarrotRound();
     this.audio = new AudioManager('carrot');
@@ -108,7 +130,7 @@ export class CarrotPullScene extends Phaser.Scene {
       <div class="steps" aria-label="拔蘿蔔步驟"><span data-step="bend" class="current"><b>1</b> 淺屈膝</span><i aria-hidden="true">—</i><span data-step="stand"><b>2</b> 企返起身</span><i aria-hidden="true">—</i><span data-step="collect"><b>3</b> 收穫蘿蔔</span></div>
       <div class="hold-indicator" aria-hidden="true"><span id="hold-caption">準備好未？</span><div class="hold-track"><div id="hold-fill"></div></div></div>
       <footer class="game-footer"><div class="keyboard-hints" ${SHOW_KEYBOARD_HINTS ? '' : 'hidden'}><span>測試操作</span><span><kbd>↓</kbd> / <kbd>S</kbd>：屈膝</span><span><kbd>↑</kbd> / <kbd>W</kbd>：站立</span><span><kbd>Esc</kbd>：休息</span></div><p>慢慢嚟，唔使急。</p></footer>`);
-    this.ui.on('pause', () => this.pauseGame());
+    this.ui.on('pause', () => this.pauseGame(true));
     window.addEventListener('keydown', this.onEscape);
     window.addEventListener('blur', this.onBlur);
     document.addEventListener('visibilitychange', this.onVisibility);
@@ -125,18 +147,25 @@ export class CarrotPullScene extends Phaser.Scene {
     this.motion = new MotionInputController(this.ui.root, {
       onFrame: (frame, pose, profile) => this.rabbit3d?.acceptMotionFrame(frame, pose, profile),
       onReset: () => {
-        this.audio.stopVoice();
+        if (this.voiceInputMode !== null || this.audio.snapshot().voiceId !== 'safety') this.audio.stopVoice();
         this.instructionVoicePending = true;
+        this.calibrationVoicePhase = undefined;
+        this.calibrationVoicePending = false;
+        this.trackingLostAt = undefined;
+        this.trackingVoiceIssued = false;
+        this.clearGameplayVoiceCues();
         this.rabbit3d?.resetMotionInput();
       },
       onReferenceReset: () => {
         this.audio.stopVoice();
+        this.clearGameplayVoiceCues();
         this.instructionVoicePending = true;
         this.rabbit3d?.resetMotionReference();
       },
       onStatus: status => {
         this.rabbit3d?.setInputStatus(status);
         this.setTrackingSuspended(status.mode === 'camera' && (!status.ready || status.suspended));
+        this.updateVoiceContext(status);
       },
       isContinuousPreview: () => this.rabbit3d?.isMocapActive ?? false,
       getMotionHint: () => this.rabbit3d?.motionHint,
@@ -173,15 +202,26 @@ export class CarrotPullScene extends Phaser.Scene {
   private readonly onEscape = (event: KeyboardEvent) => {
     if (event.code !== 'Escape' || event.repeat || this.paused) return;
     event.preventDefault();
-    this.pauseGame();
+    this.pauseGame(true);
   };
   private readonly onBlur = () => { if (this.motion?.getStatus?.().ready) this.pauseGame(); };
   private readonly onVisibility = () => { if (document.hidden) this.pauseGame(); };
 
-  private pauseGame() {
+  private pauseGame(explicit = false) {
     if (this.paused || this.model.state === 'COMPLETE') return;
     this.paused = true;
+    this.clearGameplayVoiceCues();
+    this.trackingLostAt = undefined;
+    this.trackingVoiceIssued = false;
     this.audio.pause();
+    const audio = this.audio;
+    const restRequest = ++this.restVoiceRequest;
+    if (explicit && !tryVoiceCue(audio, 'rest', { allowWhilePaused: true })) {
+      void audio.unlock().then(() => {
+        if (this.audio === audio && restRequest === this.restVoiceRequest && this.paused && !this.disposed && !document.hidden)
+          tryVoiceCue(audio, 'rest', { allowWhilePaused: true });
+      });
+    }
     this.motion.pause?.();
     this.motion.reset();
     this.rabbit.pause();
@@ -194,6 +234,8 @@ export class CarrotPullScene extends Phaser.Scene {
   }
 
   private resumeGame() {
+    ++this.restVoiceRequest;
+    this.audio.stopVoice('rest');
     this.motion.reset();
     this.ui.closeModal();
     this.paused = false;
@@ -224,6 +266,8 @@ export class CarrotPullScene extends Phaser.Scene {
     this.ui.root.dataset.roundState = state;
     this.rabbit3d?.setRoundState(state, this.model.progress, this.model.score);
     const retry = previous === 'BENDING' && state === 'READY';
+    if (retry) this.retryVoicePending = true;
+    if (state === 'BENDING') this.clearGameplayVoiceCues();
     const prompts = this.rabbit3d?.isGameplay ? GAME_3D_PROMPTS : PROMPTS;
     this.ui.text('#prompt', retry ? '慢慢嚟，準備好再試一次。' : prompts[state][0]);
     this.ui.text('#helper', prompts[state][1]);
@@ -232,7 +276,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.ui.root.querySelectorAll<HTMLElement>('[data-step]').forEach(el => el.classList.toggle('current', el.dataset.step === activeStep));
     if (state === 'GRABBED' && previous !== 'RETURNING' && this.grabSoundScore !== this.model.score) {
       this.grabSoundScore = this.model.score;
-      this.audio.playVoice('grabbed');
+      this.instructionVoicePending = !tryVoiceCue(this.audio, 'grabbed', { interrupt: true });
       this.audio.playSfx('grab');
     }
     if (this.rabbit3d?.isGameplay) {
@@ -285,6 +329,7 @@ export class CarrotPullScene extends Phaser.Scene {
   private playHarvestFeedback() {
     if (this.successSoundScore === this.model.score) return;
     this.successSoundScore = this.model.score;
+    this.instructionVoicePending = false;
     this.audio.playVoice('success');
     this.audio.playSfx('success');
   }
@@ -299,6 +344,10 @@ export class CarrotPullScene extends Phaser.Scene {
     this.ui.text('#progress-label', `進度：${this.model.score} / ${this.model.target}`);
     this.basket.setScore(this.model.score);
     if (source === 'sprite') this.motion.reset();
+    if (this.model.state !== 'COMPLETE') {
+      this.nextRoundVoicePending = true;
+      this.instructionVoicePending = false;
+    }
     this.stateChanged(previous);
   }
 
@@ -319,16 +368,15 @@ export class CarrotPullScene extends Phaser.Scene {
       return;
     }
     if (this.instructionVoicePending && inputStatus?.ready && !inputStatus.suspended) {
-      const audio = this.audio.snapshot();
-      if (!audio.supported || !audio.voiceEnabled || audio.volumes.voice === 0 || audio.muted) {
-        this.instructionVoicePending = false;
-      } else if (audio.unlocked && audio.contextState === 'running' && !audio.paused && !audio.hidden) {
-        if (this.model.state === 'READY' || this.model.state === 'BENDING') {
-          this.instructionVoicePending = !this.audio.playVoice('ready');
-        } else if (this.model.state === 'GRABBED' || this.model.state === 'RETURNING') {
-          this.instructionVoicePending = !this.audio.playVoice('grabbed');
-        }
+      if (this.model.state === 'READY' || this.model.state === 'BENDING') {
+        this.instructionVoicePending = !tryVoiceCue(this.audio, 'ready');
+      } else if (this.model.state === 'GRABBED' || this.model.state === 'RETURNING') {
+        this.instructionVoicePending = !tryVoiceCue(this.audio, 'grabbed');
       }
+    }
+    if (this.model.state === 'READY') {
+      if (this.retryVoicePending) this.retryVoicePending = !tryVoiceCue(this.audio, 'retry', { cooldownMs: 8000 });
+      if (this.nextRoundVoicePending) this.nextRoundVoicePending = !tryVoiceCue(this.audio, 'nextRound');
     }
     if (!this.rabbit3d?.isGameplay && this.model.state === 'GRABBED') this.ui.text('#helper', inputStatus?.mode === 'camera' ? '慢慢企返起身，唔使急。' : PROMPTS.GRABBED[1]);
     const dt = Math.min(delta, 100);
@@ -338,6 +386,55 @@ export class CarrotPullScene extends Phaser.Scene {
     this.rabbit3d?.setRoundState(this.model.state, this.model.progress, this.model.score);
     if (this.rabbit3d?.isGameplay) this.renderHoldIndicator();
     else this.animateWorld();
+  }
+
+  private clearGameplayVoiceCues() {
+    this.retryVoicePending = this.nextRoundVoicePending = false;
+    this.audio.stopVoice('retry');
+    this.audio.stopVoice('nextRound');
+  }
+
+  private updateVoiceContext(status: MotionInputStatus) {
+    if (this.disposed || this.completionShown || this.paused || document.hidden) return;
+    if (status.mode !== this.voiceInputMode) this.clearGameplayVoiceCues();
+    this.voiceInputMode = status.mode;
+    if (this.safetyVoicePending) {
+      this.safetyVoicePending = status.mode === null
+        && !tryVoiceCue(this.audio, 'safety', { allowWhilePaused: true });
+    }
+    let phase: CalibrationVoicePhase | undefined;
+    if (status.mode === 'camera') {
+      if (status.calibrationState === 'STANDING_INSTRUCTIONS' || status.calibrationState === 'STANDING_SAMPLING') phase = 'standing';
+      if (status.calibrationState === 'BEND_INSTRUCTIONS' || status.calibrationState === 'BEND_SAMPLING') phase = 'bend';
+      if (status.calibrationState === 'FAILED') phase = 'failed';
+    }
+    if (phase !== this.calibrationVoicePhase) {
+      this.clearGameplayVoiceCues();
+      if (this.calibrationVoicePhase) this.audio.stopVoice(CALIBRATION_VOICES[this.calibrationVoicePhase]);
+      this.calibrationVoicePhase = phase;
+      this.calibrationVoicePending = phase !== undefined;
+    }
+    const lost = status.mode === 'camera' && status.cameraStatus === 'running'
+      && (status.personDetected === false || status.trackingState === 'WAITING_FOR_PERSON'
+        || status.trackingState === 'TRACKING_LOST');
+    if (lost) {
+      if (this.trackingLostAt === undefined) {
+        this.clearGameplayVoiceCues();
+        this.trackingLostAt = performance.now();
+        this.audio.stopVoice();
+      }
+      if (!this.trackingVoiceIssued && performance.now() - this.trackingLostAt >= 1500) {
+        this.trackingVoiceIssued = tryVoiceCue(this.audio, 'trackingLost', { allowWhilePaused: true, cooldownMs: 15000 });
+      }
+      return;
+    }
+    if (this.trackingLostAt !== undefined) this.audio.stopVoice('trackingLost');
+    this.trackingLostAt = undefined;
+    this.trackingVoiceIssued = false;
+    if (phase && this.calibrationVoicePending) {
+      this.calibrationVoicePending = !tryVoiceCue(this.audio, CALIBRATION_VOICES[phase],
+        { allowWhilePaused: true, cooldownMs: phase === 'failed' ? 8000 : 0 });
+    }
   }
 
   private setTrackingSuspended(suspended: boolean) {

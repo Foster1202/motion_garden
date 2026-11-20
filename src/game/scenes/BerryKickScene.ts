@@ -9,6 +9,7 @@ import { BerryRabbitView } from '../berry/BerryRabbitView';
 import { TreeTrunk } from '../berry/TreeTrunk';
 import { getGameSettings } from '../settings/gameSettings';
 import { AudioManager } from '../systems/AudioManager';
+import { tryVoiceCue } from '../systems/voiceCue';
 
 interface BerryEffect {
   element: HTMLElement;
@@ -33,6 +34,10 @@ export class BerryKickScene extends Phaser.Scene {
   private failed = false;
   private completeShown = false;
   private readyVoicePending = true;
+  private safetyVoicePending = true;
+  private restVoiceRequest = 0;
+  private trackingLostAt?: number;
+  private trackingVoiceIssued = false;
   private voiceTrackingReliable = false;
   private skipNextDelta = true;
   private feedbackUntil = 0;
@@ -50,6 +55,10 @@ export class BerryKickScene extends Phaser.Scene {
     this.audio = new AudioManager('berry');
     this.dead = this.active = this.paused = this.failed = this.completeShown = false;
     this.readyVoicePending = true;
+    this.safetyVoicePending = true;
+    this.restVoiceRequest = 0;
+    this.trackingLostAt = undefined;
+    this.trackingVoiceIssued = false;
     this.voiceTrackingReliable = false;
     this.skipNextDelta = true;
     this.feedbackUntil = this.popupIndex = 0;
@@ -107,6 +116,7 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui.on('home', () => this.home());
   }
   private begin() {
+    this.safetyVoicePending = false;
     this.ui.closeModal(); this.active = true; this.paused = false; this.skipNextDelta = true;
     this.ui.text('[data-berry-hint]', '準備好啦！我哋一齊收集莓果！');
   }
@@ -126,11 +136,22 @@ export class BerryKickScene extends Phaser.Scene {
   }
   private onBlur = () => { if (this.active && !this.paused && !this.round.complete) this.pause(); };
   private onVisibility = () => { if (document.hidden) this.onBlur(); };
-  private togglePause() { if (!this.active || this.failed || this.completeShown) return; if (this.paused) this.resume(); else this.pause(); }
-  private pause() {
+  private togglePause() { if (!this.active || this.failed || this.completeShown) return; if (this.paused) this.resume(); else this.pause(true); }
+  private pause(explicit = false) {
     if (this.paused || !this.active || this.round.complete) return;
     this.paused = this.round.paused = true; this.inputSource.pause();
+    this.trackingLostAt = undefined;
+    this.trackingVoiceIssued = false;
+    this.voiceTrackingReliable = false;
     this.audio.pause();
+    const audio = this.audio;
+    const restRequest = ++this.restVoiceRequest;
+    if (explicit && !tryVoiceCue(audio, 'rest', { allowWhilePaused: true })) {
+      void audio.unlock().then(() => {
+        if (this.audio === audio && restRequest === this.restVoiceRequest && this.paused && !this.dead && !document.hidden)
+          tryVoiceCue(audio, 'rest', { allowWhilePaused: true });
+      });
+    }
     this.ui.dialog(`<h2 id="dialog-title">休息一陣先</h2><p>準備好先再慢慢嚟。</p>
       <button class="button primary" data-action="resume">繼續玩</button><button class="button secondary" data-action="restart">重新開始</button>
       <button class="button quiet" data-action="home">返回主頁</button>`, () => this.resume());
@@ -138,11 +159,16 @@ export class BerryKickScene extends Phaser.Scene {
   }
   private resume() {
     if (this.dead || this.failed || this.completeShown || document.hidden) return;
+    ++this.restVoiceRequest;
+    this.audio.stopVoice('rest');
     this.ui.closeModal(); this.paused = this.round.paused = false; this.skipNextDelta = true; this.inputSource.resume();
     this.audio.resume();
   }
   private home() { this.scene.start('Menu'); }
   update(_time: number, delta: number) {
+    if (!this.active && this.view && !this.paused && !this.dead && !this.failed && !this.completeShown && this.safetyVoicePending) {
+      this.safetyVoicePending = !tryVoiceCue(this.audio, 'safety');
+    }
     if (!this.active || this.paused || !this.view || this.failed || this.completeShown) return;
     if (document.hidden) { this.pause(); return; }
     if (this.skipNextDelta) { this.skipNextDelta = false; return; }
@@ -159,16 +185,10 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui.text('[data-berry-time]', this.formatTime(this.round.remainingMs));
     this.ui.root.querySelector('[data-berry-timer]')?.setAttribute('data-urgent', String(this.round.remainingMs <= 10000));
     if (this.round.complete) { this.finish(); return; }
+    this.updateTrackingVoice(sample.reliable);
     if (sample.reliable && this.readyVoicePending) {
-      const audio = this.audio.snapshot();
-      if (!audio.supported || !audio.voiceEnabled || audio.volumes.voice === 0 || audio.muted) {
-        this.readyVoicePending = false;
-      } else if (audio.unlocked && audio.contextState === 'running' && !audio.paused && !audio.hidden) {
-        this.readyVoicePending = !this.audio.playVoice('ready');
-      }
+      this.readyVoicePending = !tryVoiceCue(this.audio, 'ready');
     }
-    if (!sample.reliable && this.voiceTrackingReliable) this.audio.stopVoice();
-    this.voiceTrackingReliable = sample.reliable;
     for (const tween of this.tweens.getTweens()) {
       if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
     }
@@ -191,6 +211,21 @@ export class BerryKickScene extends Phaser.Scene {
         : '左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳。');
     this.drawDebug();
   }
+  private updateTrackingVoice(reliable: boolean) {
+    if (!reliable && this.voiceTrackingReliable) this.audio.stopVoice();
+    this.voiceTrackingReliable = reliable;
+    if (this.inputSource.mode !== 'camera' || reliable) {
+      if (this.trackingLostAt !== undefined) this.audio.stopVoice('trackingLost');
+      this.trackingLostAt = undefined;
+      this.trackingVoiceIssued = false;
+      return;
+    }
+    this.trackingLostAt ??= performance.now();
+    if (!this.trackingVoiceIssued && performance.now() - this.trackingLostAt >= 1500) {
+      this.trackingVoiceIssued = tryVoiceCue(this.audio, 'trackingLost', { cooldownMs: 15000 });
+    }
+  }
+
   private showScorePopup() {
     const element = document.createElement('span');
     element.className = 'berry-score-popup'; element.textContent = `🍓 +${C.berriesPerHit}`;

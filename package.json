@@ -12,6 +12,7 @@
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "test": "node node_modules/tsx/dist/cli.mjs --test tests/*.test.ts",
     "prepare:voices": "python3 scripts/prepare-voice-audio.py",
+    "qa:supplementary-voices": "node scripts/qa-supplementary-voices.mjs",
     "qa:voices": "node scripts/qa-voices.mjs",
     "qa:audio": "node scripts/qa-audio.mjs",
     "qa:rabbit3d": "node scripts/qa-rabbit-3d.mjs",

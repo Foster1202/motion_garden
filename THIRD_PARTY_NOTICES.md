@@ -36,13 +36,13 @@ Processing uses the source's first 2.8 seconds, mono downmix, resampling to 4410
 | `berry.wav` | Accepted three-berry harvest | 0.46 s | −17.82 | −28.66 |
 | `complete.wav` | Completed round applause and cheering | 2.80 s | −12.77 | −27.31 |
 
-All runtime files are mono, 44100 Hz, signed 16-bit little-endian PCM, totaling 396238 bytes. Default SFX gain is 0.6. Six-source bounded overlap and a compressor control summed transients. These measurements describe the digital signal. Playback-device volume also affects perceived loudness.
+The five sound-effect files are mono, 44100 Hz, signed 16-bit little-endian PCM, totaling 396238 bytes. Default SFX gain is 0.6. Six-source bounded overlap and a compressor control summed transients. These measurements describe the digital signal. Playback-device volume also affects perceived loudness.
 
 ### User-supplied Cantonese voice recordings
 
-The project owner supplied eight M4A files under `assets/audio-sources/` and authorized their preparation, game integration and commit on 2026-11-20. The speaker and recording method were not separately specified. The supplied recordings retain their applicable rights. Their project-use authorization is recorded here independently of the original procedural effects and CC0 crowd recording.
+The project owner supplied fifteen M4A files under `assets/audio-sources/` and authorized their preparation, game integration and commit on 2026-11-20. The speaker and recording method were not separately specified. The supplied recordings retain their applicable rights. Their project-use authorization is recorded here independently of the original procedural effects and CC0 crowd recording.
 
-Seven recordings are selected for gameplay. The generic `好叻呀.m4a` remains a source reserve because both selected success recordings already contain encouragement. File labels are taken from the names supplied by the user. The preparation pipeline preserves all eight M4A source hashes. Detailed source/output SHA-256 values, trim coordinates, added padding, applied gain and measurements are recorded in the [voice processing manifest](assets/audio-sources/voice-processing.json).
+Fourteen recordings are selected for gameplay. The generic `好叻呀.m4a` remains a source reserve because both selected success recordings already contain encouragement. File labels are taken from the names supplied by the user. The preparation pipeline preserves all fifteen M4A source hashes. Detailed source/output SHA-256 values, trim coordinates, added padding, applied gain and measurements are recorded in the [voice processing manifest](assets/audio-sources/voice-processing.json).
 
 The processing script uses a 90 Hz high-pass, 8,500 Hz low-pass, adaptive 10 ms activity windows, 80 ms leading and 120 ms trailing signal padding, 5 ms fade-in and 15 ms fade-out. Linear gain targets −20 LUFS, bounded by a 20 dB gain ceiling and 0.65 sample/true peak ceiling. Actual outputs retain speech dynamics and measure −24.01 to −20.64 LUFS. Quiet-window measurements did not establish stationary noise, so the pipeline uses frequency filtering and edge trimming for cleanup. The manifest distinguishes these signal measurements from verified room-noise or speech labels.
 
@@ -55,5 +55,12 @@ The processing script uses a 90 Hz high-pass, 8,500 Hz low-pass, adaptive 10 ms 
 | `berry-ready.wav` | `左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳.m4a` | 4.59s | -22.60 | -3.75 |
 | `berry-success.wav` | `好叻呀！莓果跌落嚟喇.m4a` | 2.14s | -20.64 | -3.76 |
 | `berry-complete.wav` | `挑戰完成.m4a` | 1.25s | -24.01 | -3.75 |
+| `safety.wav` | `請保持地面清爽旁邊最好有穩固嘅凳.m4a` | 3.68s | -20.19 | -3.75 |
+| `calibration-standing.wav` | `自然企直雙手放鬆保持一陣.m4a` | 3.96s | -21.81 | -3.77 |
+| `calibration-bend.wav` | `舒服咁輕輕踎低唔使夾硬嚟.m4a` | 3.84s | -21.36 | -3.75 |
+| `tracking-lost.wav` | `我睇唔清楚你企返鏡頭中間少少.m4a` | 3.77s | -21.75 | -3.75 |
+| `rest.wav` | `休息一陣先準備好再繼續.m4a` | 3.35s | -23.59 | -3.74 |
+| `retry.wav` | `慢慢嚟，準備好再試一次.m4a` | 2.84s | -20.27 | -3.75 |
+| `next-carrot.wav` | `下一棵蘿蔔準備好啦.m4a` | 2.34s | -20.00 | -4.28 |
 
-The seven voice WAVs total 1421210 bytes and use mono 44,100 Hz signed 16-bit PCM. Run `npm run prepare:voices` with Python 3 and FFmpeg to reproduce the recordings and manifest. The existing `scripts/generate-audio.py` continues to reproduce the five sound effects. Default runtime speech volume is 80%, with independent persisted voice controls. During speech, SFX gain is multiplied by 0.35 and BGM by 0.3.
+The fourteen voice WAVs total 3518914 bytes and use mono 44,100 Hz signed 16-bit PCM. Run `npm run prepare:voices` with Python 3 and FFmpeg to reproduce the recordings and manifest. The existing `scripts/generate-audio.py` continues to reproduce the five sound effects. Default runtime speech volume is 80%, with independent persisted voice controls. During speech, SFX gain is multiplied by 0.35 and BGM by 0.3.

@@ -379,7 +379,8 @@ try {
       assert.equal(await count('grab'), beforeCarrot.grab + 1);
       await page.locator('[data-action=pause]').click();
       await page.waitForTimeout(90);
-      assert.equal((await audio()).active.length, 0);
+      const resting = await poll(audio, value => value.active.some(event => event.id === 'rest'));
+      assert.ok(resting.active.every(event => event.id === 'rest' && !event.loop));
       assert.equal((await sceneAudio('CarrotPull')).paused, true);
       await dialog().locator('[data-action=resume]').click();
     }
@@ -417,7 +418,8 @@ try {
   await page.keyboard.up('q');
   await page.locator('.berry-hud [data-action=pause]').click();
   await page.waitForTimeout(90);
-  assert.equal((await audio()).active.length, 0);
+  const resting = await poll(audio, value => value.active.some(event => event.id === 'rest'));
+  assert.ok(resting.active.every(event => event.id === 'rest' && !event.loop));
   assert.equal((await sceneAudio('BerryKick')).paused, true);
   const pausedClock = (await sceneSnapshot('BerryKick')).clock;
   await page.waitForTimeout(200);

@@ -584,7 +584,7 @@ test('game profiles preload local recordings without speaking before gameplay re
     const fixture = setupAudio({ profile });
     try {
       await fixture.audio.preload();
-      assert.equal(fixture.fetches.length, profile === 'carrot' ? 9 : 8);
+      assert.equal(fixture.fetches.length, profile === 'carrot' ? 16 : 12);
       assert.equal(fixture.context().sources.length, 0);
       await fixture.audio.unlock();
       fixture.audio.playVoice('ready');
@@ -661,5 +661,57 @@ test('spoken instructions duck effects and silence immediately when narration vo
     assert.equal(fixture.audio.snapshot().voiceId, undefined);
     assert.equal(fixture.context().gains[1].gain.value, .6);
     assert.equal(fixture.audio.playVoice('ready'), false);
+  } finally { fixture.restore(); }
+});
+
+
+test('explicit paused narration works while ordinary cues stay suspended and visibility still silences audio', async () => {
+  const fixture = setupAudio();
+  try {
+    await fixture.audio.preload();
+    await fixture.audio.unlock();
+    await fixture.audio.registerVoice('rest', '/rest.wav');
+    fixture.audio.pause();
+    assert.equal(fixture.audio.playVoice('rest'), false);
+    assert.equal(fixture.audio.playVoice('rest', { allowWhilePaused: true }), true);
+    await settle();
+    assert.equal(fixture.audio.snapshot().paused, true);
+    assert.equal(fixture.audio.snapshot().voiceId, 'rest');
+    assert.equal(fixture.audio.snapshot().active.voice, 1);
+    fixture.documentEvents.hidden = true;
+    fixture.documentEvents.dispatchEvent(new Event('visibilitychange'));
+    assert.equal(fixture.audio.snapshot().active.voice, 0);
+    assert.equal(fixture.audio.playVoice('rest', { allowWhilePaused: true }), false);
+    fixture.documentEvents.hidden = false;
+    fixture.documentEvents.dispatchEvent(new Event('visibilitychange'));
+    fixture.audio.setMuted(true);
+    assert.equal(fixture.audio.playVoice('rest', { allowWhilePaused: true }), false);
+    fixture.audio.setMuted(false);
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, voiceEnabled: false });
+    assert.equal(fixture.audio.playVoice('rest', { allowWhilePaused: true }), false);
+  } finally { fixture.restore(); }
+});
+
+test('conditional voice cancellation preserves a newer cue and invalidates a matching pending load', async () => {
+  const pending = deferred<Response>();
+  const fixture = setupAudio({ respond: url => url === '/lost.wav' ? pending.promise : audioResponse(url) });
+  try {
+    await fixture.audio.preload();
+    await fixture.audio.unlock();
+    const registration = fixture.audio.registerVoice('trackingLost', '/lost.wav');
+    await fixture.audio.registerVoice('ready', '/ready.wav');
+    fixture.audio.playVoice('trackingLost');
+    fixture.audio.stopVoice('trackingLost');
+    pending.resolve(audioResponse('/lost.wav'));
+    await registration;
+    await settle();
+    assert.equal(fixture.audio.snapshot().active.voice, 0);
+    fixture.audio.playVoice('ready');
+    await settle();
+    fixture.audio.stopVoice('trackingLost');
+    assert.equal(fixture.audio.snapshot().voiceId, 'ready');
+    assert.equal(fixture.audio.snapshot().active.voice, 1);
+    fixture.audio.stopVoice('ready');
+    assert.equal(fixture.audio.snapshot().active.voice, 0);
   } finally { fixture.restore(); }
 });

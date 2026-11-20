@@ -15,7 +15,11 @@ const manifest = JSON.parse(readFileSync(new URL('assets/audio-sources/voice-pro
 const hash = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 
 test('selected Cantonese recordings retain source provenance and ship bounded complete mono voice files', () => {
-  const expected = ['berry-complete', 'berry-ready', 'berry-success', 'carrot-complete', 'carrot-grabbed', 'carrot-ready', 'carrot-success'];
+  const expected = [
+    'berry-complete', 'berry-ready', 'berry-success', 'calibration-bend', 'calibration-standing',
+    'carrot-complete', 'carrot-grabbed', 'carrot-ready', 'carrot-success', 'next-carrot',
+    'rest', 'retry', 'safety', 'tracking-lost',
+  ];
   assert.deepEqual(manifest.clips.map(clip => clip.id).sort(), expected);
   assert.deepEqual(readdirSync(new URL('public/assets/audio/voice/', repository)).sort(), expected.map(id => `${id}.wav`));
   for (const clip of manifest.clips) {
