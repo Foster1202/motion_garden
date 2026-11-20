@@ -55,6 +55,7 @@ export class CarrotPullScene extends Phaser.Scene {
   private completionShown = false;
   private grabSoundScore = -1;
   private successSoundScore = -1;
+  private instructionVoicePending = true;
   private paused = false;
   private trackingSuspended = false;
   private attached = false;
@@ -67,9 +68,10 @@ export class CarrotPullScene extends Phaser.Scene {
     this.disposed = false;
     this.completionShown = false;
     this.grabSoundScore = this.successSoundScore = -1;
+    this.instructionVoicePending = true;
     this.gameplayRendering = false;
     this.model = new CarrotRound();
-    this.audio = new AudioManager();
+    this.audio = new AudioManager('carrot');
     this.paused = false;
     this.trackingSuspended = false;
     this.time.paused = false;
@@ -122,8 +124,16 @@ export class CarrotPullScene extends Phaser.Scene {
     }
     this.motion = new MotionInputController(this.ui.root, {
       onFrame: (frame, pose, profile) => this.rabbit3d?.acceptMotionFrame(frame, pose, profile),
-      onReset: () => this.rabbit3d?.resetMotionInput(),
-      onReferenceReset: () => this.rabbit3d?.resetMotionReference(),
+      onReset: () => {
+        this.audio.stopVoice();
+        this.instructionVoicePending = true;
+        this.rabbit3d?.resetMotionInput();
+      },
+      onReferenceReset: () => {
+        this.audio.stopVoice();
+        this.instructionVoicePending = true;
+        this.rabbit3d?.resetMotionReference();
+      },
       onStatus: status => {
         this.rabbit3d?.setInputStatus(status);
         this.setTrackingSuspended(status.mode === 'camera' && (!status.ready || status.suspended));
@@ -135,7 +145,6 @@ export class CarrotPullScene extends Phaser.Scene {
       preview => this.renderModeChanged(preview), () => this.finishCelebration('3d'));
     this.rabbit3d.setRoundState(this.model.state, this.model.progress, this.model.score);
     this.ui.root.dataset.roundState = this.model.state;
-    this.audio.playVoice('ready');
   }
 
   private renderModeChanged(preview: boolean) {
@@ -188,6 +197,7 @@ export class CarrotPullScene extends Phaser.Scene {
     this.motion.reset();
     this.ui.closeModal();
     this.paused = false;
+    this.instructionVoicePending = true;
     if (!this.trackingSuspended) this.audio.resume();
     resumeTweenClock(this.tweens);
     this.scene.resume();
@@ -307,6 +317,18 @@ export class CarrotPullScene extends Phaser.Scene {
       if (this.rabbit3d?.isGameplay) this.renderHoldIndicator();
       else this.animateWorld();
       return;
+    }
+    if (this.instructionVoicePending && inputStatus?.ready && !inputStatus.suspended) {
+      const audio = this.audio.snapshot();
+      if (!audio.supported || !audio.voiceEnabled || audio.volumes.voice === 0 || audio.muted) {
+        this.instructionVoicePending = false;
+      } else if (audio.unlocked && audio.contextState === 'running' && !audio.paused && !audio.hidden) {
+        if (this.model.state === 'READY' || this.model.state === 'BENDING') {
+          this.instructionVoicePending = !this.audio.playVoice('ready');
+        } else if (this.model.state === 'GRABBED' || this.model.state === 'RETURNING') {
+          this.instructionVoicePending = !this.audio.playVoice('grabbed');
+        }
+      }
     }
     if (!this.rabbit3d?.isGameplay && this.model.state === 'GRABBED') this.ui.text('#helper', inputStatus?.mode === 'camera' ? '慢慢企返起身，唔使急。' : PROMPTS.GRABBED[1]);
     const dt = Math.min(delta, 100);

@@ -3,6 +3,17 @@ import { GAME_SETTINGS_CHANGED_EVENT, getGameSettings } from '../settings/gameSe
 export type VoiceId = 'ready' | 'bend' | 'grabbed' | 'stand' | 'success' | 'retry' | 'complete';
 export type SfxId = 'grab' | 'success' | 'complete' | 'click' | 'berry';
 export type AudioChannel = 'sfx' | 'voice' | 'bgm';
+export type VoiceProfile = 'carrot' | 'berry';
+
+export interface VoicePlaybackOptions {
+  interrupt?: boolean;
+  cooldownMs?: number;
+}
+
+const PROFILE_VOICES: Record<VoiceProfile, Partial<Record<VoiceId, string>>> = {
+  carrot: { ready: 'carrot-ready', grabbed: 'carrot-grabbed', success: 'carrot-success', complete: 'carrot-complete' },
+  berry: { ready: 'berry-ready', success: 'berry-success', complete: 'berry-complete' },
+};
 
 const SFX_IDS: readonly SfxId[] = ['click', 'grab', 'success', 'berry', 'complete'];
 const MAX_SFX = 6;
@@ -15,7 +26,7 @@ interface PlayingAudio {
   buffer: AudioBuffer;
 }
 
-/** Scene-owned audio. Transient events are dropped until decoded and unlocked. */
+/** Scene-owned effects, narration and music with explicit playback lifecycles. */
 export class AudioManager {
   private readonly context?: AudioContext;
   private readonly master?: GainNode;
@@ -29,9 +40,12 @@ export class AudioManager {
   private readonly requests = new AbortController();
   private readonly lastSfx = new Map<SfxId, number>();
   private readonly playedSfx: Partial<Record<SfxId, number>> = {};
+  private readonly playedVoices: Partial<Record<VoiceId, number>> = {};
+  private readonly lastVoice = new Map<VoiceId, number>();
   private readonly errors: string[] = [];
   private readonly volumes: Record<AudioChannel, number> = { sfx: .6, voice: .8, bgm: .25 };
   private enabled = true;
+  private voiceEnabled = true;
   private muted = false;
   private paused = false;
   private hidden = typeof document !== 'undefined' && document.hidden;
@@ -44,8 +58,14 @@ export class AudioManager {
   private bgmOffset = 0;
   private preloadPromise: Promise<void> = Promise.resolve();
 
-  constructor() {
+  constructor(profile?: VoiceProfile) {
     this.readSettings();
+    const base = import.meta.env?.BASE_URL ?? '/';
+    if (profile) {
+      for (const [id, file] of Object.entries(PROFILE_VOICES[profile])) {
+        this.voices.set(id as VoiceId, `${base}assets/audio/voice/${file}.wav`);
+      }
+    }
     const AudioContextClass = globalThis.AudioContext
       ?? (globalThis as typeof globalThis & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     try {
@@ -67,7 +87,7 @@ export class AudioManager {
           this.gains.set(channel, gain);
         }
         this.updateGains();
-        this.preloadPromise = this.loadSfx();
+        this.preloadPromise = this.loadAssets();
       }
     } catch { this.errors.push('Audio output unavailable'); }
     if (typeof document !== 'undefined') {
@@ -81,21 +101,24 @@ export class AudioManager {
     }
   }
 
-  /** Decode all bundled effects without starting playback. */
+  /** Preload the scene audio without starting playback. */
   async preload(): Promise<void> {
     await this.preloadPromise;
-    if (!this.destroyed && this.sfx.size < SFX_IDS.length) {
-      this.preloadPromise = this.loadSfx();
+    if (!this.destroyed && (this.sfx.size < SFX_IDS.length || [...this.voices.values()].some(url => !this.buffers.has(url)))) {
+      this.preloadPromise = this.loadAssets();
       await this.preloadPromise;
     }
   }
 
-  private async loadSfx(): Promise<void> {
+  private async loadAssets(): Promise<void> {
     const base = import.meta.env?.BASE_URL ?? '/';
-    await Promise.all(SFX_IDS.map(async id => {
-      const buffer = await this.load(`${base}assets/audio/${id}.wav`);
-      if (buffer && !this.destroyed) this.sfx.set(id, buffer);
-    }));
+    await Promise.all([
+      ...SFX_IDS.map(async id => {
+        const buffer = await this.load(`${base}assets/audio/${id}.wav`);
+        if (buffer && !this.destroyed) this.sfx.set(id, buffer);
+      }),
+      ...[...this.voices.values()].map(url => this.load(url)),
+    ]);
   }
 
   private load(url: string): Promise<AudioBuffer | undefined> {
@@ -153,6 +176,7 @@ export class AudioManager {
   private readonly onSettings = () => {
     this.readSettings();
     if (!this.enabled || this.volumes.sfx === 0) this.stopChannel('sfx');
+    if (!this.voiceEnabled || this.volumes.voice === 0) this.stopVoice();
     this.updateGains();
   };
 
@@ -160,6 +184,8 @@ export class AudioManager {
     const settings = getGameSettings();
     this.enabled = settings.sfxEnabled;
     this.volumes.sfx = settings.sfxVolume;
+    this.voiceEnabled = settings.voiceEnabled;
+    this.volumes.voice = settings.voiceVolume;
   }
 
   private canPlay(): boolean {
@@ -186,17 +212,24 @@ export class AudioManager {
     return this.load(url).then(() => undefined);
   }
 
-  playVoice(id: VoiceId): void {
+  playVoice(id: VoiceId, options: VoicePlaybackOptions = {}): boolean {
+    if (options.interrupt === false && this.voiceId !== undefined) return false;
+    const elapsedMs = (this.context?.currentTime ?? 0) * 1000 - (this.lastVoice.get(id) ?? -Infinity);
+    if (elapsedMs < (options.cooldownMs ?? 0)) return false;
     this.stopVoice();
     const token = this.voiceRequest;
     const url = this.voices.get(id);
-    if (!url || this.paused || !this.canPlay()) return;
+    if (!url || !this.voiceEnabled || this.volumes.voice === 0 || this.paused || !this.canPlay()) return false;
     this.voiceId = id;
     void this.load(url).then(buffer => {
-      if (!buffer || token !== this.voiceRequest || this.paused || !this.canPlay()) return;
+      if (token !== this.voiceRequest || this.paused || !this.canPlay()) return;
+      if (!buffer) { this.voiceId = undefined; return; }
       this.start(buffer, 'voice');
+      this.lastVoice.set(id, this.context!.currentTime * 1000);
+      this.playedVoices[id] = (this.playedVoices[id] ?? 0) + 1;
       this.updateGains();
     });
+    return true;
   }
 
   registerBgm(id: string, url: string): Promise<void> {
@@ -243,6 +276,7 @@ export class AudioManager {
   setVolume(channel: AudioChannel, volume: number): void {
     if (!Number.isFinite(volume)) return;
     this.volumes[channel] = Math.max(0, Math.min(1, volume));
+    if (channel === 'voice' && this.volumes.voice === 0) this.stopVoice();
     this.updateGains();
   }
 
@@ -263,6 +297,8 @@ export class AudioManager {
     for (const [channel, gain] of this.gains) {
       let volume = this.volumes[channel];
       if (channel === 'sfx' && !this.enabled) volume = 0;
+      if (channel === 'voice' && !this.voiceEnabled) volume = 0;
+      if (channel === 'sfx' && this.hasChannel('voice')) volume *= .35;
       if (channel === 'bgm' && this.hasChannel('voice')) volume *= .3;
       this.setGain(gain, volume, now, .025);
     }
@@ -290,7 +326,7 @@ export class AudioManager {
     source.onended = () => {
       this.playing.delete(item);
       source.disconnect();
-      if (channel === 'voice') this.updateGains();
+      if (channel === 'voice') { this.voiceId = undefined; this.updateGains(); }
     };
     this.playing.add(item);
     source.start(0, offset);
@@ -309,6 +345,7 @@ export class AudioManager {
 
   private suspendPlayback(): void {
     ++this.voiceRequest;
+    this.voiceId = undefined;
     ++this.bgmRequest;
     for (const item of this.playing) {
       if (item.channel === 'bgm') this.bgmOffset = (item.offset + this.context!.currentTime - item.startedAt) % item.buffer.duration;
@@ -341,7 +378,8 @@ export class AudioManager {
     for (const item of this.playing) active[item.channel]++;
     return { supported: !!this.context, contextState: this.context?.state ?? 'unavailable',
       unlocked: this.unlocked, paused: this.paused, hidden: this.hidden, destroyed: this.destroyed,
-      muted: this.muted, sfxEnabled: this.enabled, volumes: { ...this.volumes }, active,
+      muted: this.muted, sfxEnabled: this.enabled, voiceEnabled: this.voiceEnabled, voiceId: this.voiceId,
+      registeredVoices: [...this.voices.keys()], playedVoices: { ...this.playedVoices }, volumes: { ...this.volumes }, active,
       loadedSfx: [...this.sfx.keys()], playedSfx: { ...this.playedSfx }, bgmId: this.bgmId,
       bgmOffset: this.bgmOffset, errors: [...this.errors] };
   }
@@ -365,6 +403,7 @@ export class AudioManager {
     this.sfx.clear();
     this.buffers.clear();
     this.voices.clear();
+    this.lastVoice.clear();
     this.music.clear();
     if (this.context) void this.context.close().catch(() => undefined);
   }

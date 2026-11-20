@@ -1,0 +1,498 @@
+{
+  "schema_version": 1,
+  "locale": "yue-HK",
+  "provenance": "User-supplied recordings authorized for Motion Garden integration on 2026-11-20.",
+  "content_labels_basis": "Source filenames supplied by the user. No independent audition or speech transcription was performed.",
+  "toolchain": {
+    "ffmpeg": "ffmpeg version 8.1.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "python": "3.12.0"
+  },
+  "settings": {
+    "sample_rate_hz": 44100,
+    "channels": 1,
+    "pcm_bits": 16,
+    "target_integrated_lufs": -20.0,
+    "max_gain_db": 20.0,
+    "sample_and_true_peak_limit_linear": 0.65,
+    "max_duration_seconds": 6,
+    "filters": "highpass=f=90,lowpass=f=8500",
+    "spectral_denoise": false
+  },
+  "measurement_notes": "RMS and sample peak use decoded mono PCM. Quiet-window P10 and active-window RMS are signal-level estimates, not verified room-noise or speech labels. Values below -120 dBFS are reported as -120. LUFS and true peak use FFmpeg loudnorm analysis only.",
+  "clips": [
+    {
+      "id": "carrot-ready",
+      "label": "慢慢踎低 幫阿兔捉住蘿蔔",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/慢慢踎低 幫阿兔捉住蘿蔔.m4a",
+        "sha256": "eb4b6b60256749e3d58c41bb842fec386f213312840b361c3df29b214aec4c1b",
+        "bytes": 29816,
+        "decoded_mono_metrics": {
+          "frames": 158937,
+          "duration_seconds": 3.604014,
+          "sample_peak_linear": 0.09706587,
+          "peak_dbfs": -20.26,
+          "rms_dbfs": -38.35,
+          "integrated_lufs": -38.21,
+          "true_peak_dbfs": -20.25,
+          "quiet_window_p10_dbfs": -120.0,
+          "active_window_rms_dbfs": -36.36,
+          "activity_threshold_dbfs": -57.08
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -58.27,
+        "detected_activity_start_frame": 43659,
+        "detected_activity_end_frame": 157437,
+        "source_keep_start_frame": 40131,
+        "source_keep_end_frame": 158937,
+        "trimmed_leading_frames": 40131,
+        "trimmed_trailing_frames": 0,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 3792,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -39.28,
+        "requested_gain_db": 19.28,
+        "applied_gain_db": 16.808,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/carrot-ready.wav",
+        "sha256": "ce785690cfbafa5961de0f80a1d96640c59cb14d219b09574b30b14e56b4963f",
+        "bytes": 245240,
+        "metrics": {
+          "frames": 122598,
+          "duration_seconds": 2.78,
+          "sample_peak_linear": 0.64923096,
+          "peak_dbfs": -3.75,
+          "rms_dbfs": -21.52,
+          "integrated_lufs": -22.47,
+          "true_peak_dbfs": -3.74,
+          "quiet_window_p10_dbfs": -55.86,
+          "active_window_rms_dbfs": -20.56,
+          "activity_threshold_dbfs": -41.41
+        }
+      }
+    },
+    {
+      "id": "carrot-grabbed",
+      "label": "捉實啦 慢慢企返起身",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/捉實啦 慢慢企返起身.m4a",
+        "sha256": "d7bcf4dffeab0681797fc2be4050a5344ea6fdbb954c68e572713970f4b4e4df",
+        "bytes": 21869,
+        "decoded_mono_metrics": {
+          "frames": 102489,
+          "duration_seconds": 2.324014,
+          "sample_peak_linear": 0.10017934,
+          "peak_dbfs": -19.98,
+          "rms_dbfs": -38.22,
+          "integrated_lufs": -38.67,
+          "true_peak_dbfs": -19.97,
+          "quiet_window_p10_dbfs": -71.41,
+          "active_window_rms_dbfs": -36.99,
+          "activity_threshold_dbfs": -59.82
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -60.0,
+        "detected_activity_start_frame": 3969,
+        "detected_activity_end_frame": 93051,
+        "source_keep_start_frame": 441,
+        "source_keep_end_frame": 98343,
+        "trimmed_leading_frames": 441,
+        "trimmed_trailing_frames": 4146,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 0,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -39.53,
+        "requested_gain_db": 19.53,
+        "applied_gain_db": 15.788,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/carrot-grabbed.wav",
+        "sha256": "666a50960476fb517f35249de8d00539eb73a4116dddf55126740ae53843c2ef",
+        "bytes": 195848,
+        "metrics": {
+          "frames": 97902,
+          "duration_seconds": 2.22,
+          "sample_peak_linear": 0.64886475,
+          "peak_dbfs": -3.76,
+          "rms_dbfs": -23.26,
+          "integrated_lufs": -23.73,
+          "true_peak_dbfs": -3.75,
+          "quiet_window_p10_dbfs": -55.33,
+          "active_window_rms_dbfs": -22.23,
+          "activity_threshold_dbfs": -45.33
+        }
+      }
+    },
+    {
+      "id": "carrot-success",
+      "label": "成功抆到蘿蔔好叻呀",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/成功抆到蘿蔔好叻呀.m4a",
+        "sha256": "ebd449d5fc69c445a29e72f058c729958170ee44f46031c7de0f6da3fc5479a9",
+        "bytes": 21568,
+        "decoded_mono_metrics": {
+          "frames": 106251,
+          "duration_seconds": 2.40932,
+          "sample_peak_linear": 0.12792103,
+          "peak_dbfs": -17.86,
+          "rms_dbfs": -37.24,
+          "integrated_lufs": -37.01,
+          "true_peak_dbfs": -17.41,
+          "quiet_window_p10_dbfs": -69.33,
+          "active_window_rms_dbfs": -36.25,
+          "activity_threshold_dbfs": -57.07
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -59.25,
+        "detected_activity_start_frame": 3969,
+        "detected_activity_end_frame": 94374,
+        "source_keep_start_frame": 441,
+        "source_keep_end_frame": 99666,
+        "trimmed_leading_frames": 441,
+        "trimmed_trailing_frames": 6585,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 0,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -38.29,
+        "requested_gain_db": 18.29,
+        "applied_gain_db": 16.498,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/carrot-success.wav",
+        "sha256": "15fd75e06ba5146c7eeef23e908ff2389fc3ce11f0ec907fc72f1dc6fe93a36e",
+        "bytes": 198494,
+        "metrics": {
+          "frames": 99225,
+          "duration_seconds": 2.25,
+          "sample_peak_linear": 0.62112427,
+          "peak_dbfs": -4.14,
+          "rms_dbfs": -21.8,
+          "integrated_lufs": -21.8,
+          "true_peak_dbfs": -3.74,
+          "quiet_window_p10_dbfs": -45.07,
+          "active_window_rms_dbfs": -20.88,
+          "activity_threshold_dbfs": -38.0
+        }
+      }
+    },
+    {
+      "id": "carrot-complete",
+      "label": "完成啦",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/完成啦.m4a",
+        "sha256": "4f48afbc615ac416345bc1555618a9e7f42f717e52b79ecca18d9adc7a8b57d1",
+        "bytes": 10759,
+        "decoded_mono_metrics": {
+          "frames": 49803,
+          "duration_seconds": 1.12932,
+          "sample_peak_linear": 0.08352727,
+          "peak_dbfs": -21.56,
+          "rms_dbfs": -39.2,
+          "integrated_lufs": -39.7,
+          "true_peak_dbfs": -21.56,
+          "quiet_window_p10_dbfs": -100.53,
+          "active_window_rms_dbfs": -37.0,
+          "activity_threshold_dbfs": -57.95
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -58.78,
+        "detected_activity_start_frame": 7056,
+        "detected_activity_end_frame": 37044,
+        "source_keep_start_frame": 3528,
+        "source_keep_end_frame": 42336,
+        "trimmed_leading_frames": 3528,
+        "trimmed_trailing_frames": 7467,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 0,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -40.03,
+        "requested_gain_db": 20.03,
+        "applied_gain_db": 18.358,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/carrot-complete.wav",
+        "sha256": "ba0a41fd7611f441cb016d073106333af16c02ad7c7d281b5c60b5290e2f172c",
+        "bytes": 77660,
+        "metrics": {
+          "frames": 38808,
+          "duration_seconds": 0.88,
+          "sample_peak_linear": 0.6494751,
+          "peak_dbfs": -3.75,
+          "rms_dbfs": -21.11,
+          "integrated_lufs": -21.69,
+          "true_peak_dbfs": -3.75,
+          "quiet_window_p10_dbfs": -50.65,
+          "active_window_rms_dbfs": -19.99,
+          "activity_threshold_dbfs": -39.86
+        }
+      }
+    },
+    {
+      "id": "berry-ready",
+      "label": "左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳.m4a",
+        "sha256": "ad7d84910f097617c9b20560b93caf897600cebc86d9fed9b3c0e50d239363cd",
+        "bytes": 49176,
+        "decoded_mono_metrics": {
+          "frames": 234201,
+          "duration_seconds": 5.31068,
+          "sample_peak_linear": 0.85056049,
+          "peak_dbfs": -1.41,
+          "rms_dbfs": -19.48,
+          "integrated_lufs": -20.3,
+          "true_peak_dbfs": -1.4,
+          "quiet_window_p10_dbfs": -50.94,
+          "active_window_rms_dbfs": -17.83,
+          "activity_threshold_dbfs": -38.91
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -38.94,
+        "detected_activity_start_frame": 11466,
+        "detected_activity_end_frame": 205065,
+        "source_keep_start_frame": 7938,
+        "source_keep_end_frame": 210357,
+        "trimmed_leading_frames": 7938,
+        "trimmed_trailing_frames": 23844,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 0,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -20.26,
+        "requested_gain_db": 0.26,
+        "applied_gain_db": -2.342,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/berry-ready.wav",
+        "sha256": "3b27ccb68ac50ec88ce6655f9dc7f50e430bcf85c95006e486aa02420bf1563d",
+        "bytes": 404882,
+        "metrics": {
+          "frames": 202419,
+          "duration_seconds": 4.59,
+          "sample_peak_linear": 0.64968872,
+          "peak_dbfs": -3.75,
+          "rms_dbfs": -21.63,
+          "integrated_lufs": -22.6,
+          "true_peak_dbfs": -3.74,
+          "quiet_window_p10_dbfs": -56.23,
+          "active_window_rms_dbfs": -20.56,
+          "activity_threshold_dbfs": -41.27
+        }
+      }
+    },
+    {
+      "id": "berry-success",
+      "label": "好叻呀！莓果跌落嚟喇",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/好叻呀！莓果跌落嚟喇.m4a",
+        "sha256": "25f7f5921ed0a961d7c7a4266ccae4f4f4743c0bdd9614103f87bddf286ef4e1",
+        "bytes": 26877,
+        "decoded_mono_metrics": {
+          "frames": 117542,
+          "duration_seconds": 2.665351,
+          "sample_peak_linear": 0.67815202,
+          "peak_dbfs": -3.37,
+          "rms_dbfs": -20.66,
+          "integrated_lufs": -20.45,
+          "true_peak_dbfs": -3.37,
+          "quiet_window_p10_dbfs": -56.85,
+          "active_window_rms_dbfs": -18.81,
+          "activity_threshold_dbfs": -40.13
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -40.55,
+        "detected_activity_start_frame": 17640,
+        "detected_activity_end_frame": 103194,
+        "source_keep_start_frame": 14112,
+        "source_keep_end_frame": 108486,
+        "trimmed_leading_frames": 14112,
+        "trimmed_trailing_frames": 9056,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 0,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -20.39,
+        "requested_gain_db": 0.39,
+        "applied_gain_db": -0.252,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/berry-success.wav",
+        "sha256": "313b8085a3135525f44a24b1b3655c12216264b07d6300b4211905cc4dff74f6",
+        "bytes": 188792,
+        "metrics": {
+          "frames": 94374,
+          "duration_seconds": 2.14,
+          "sample_peak_linear": 0.64865112,
+          "peak_dbfs": -3.76,
+          "rms_dbfs": -20.33,
+          "integrated_lufs": -20.64,
+          "true_peak_dbfs": -3.75,
+          "quiet_window_p10_dbfs": -50.41,
+          "active_window_rms_dbfs": -19.31,
+          "activity_threshold_dbfs": -40.41
+        }
+      }
+    },
+    {
+      "id": "berry-complete",
+      "label": "挑戰完成",
+      "status": "runtime",
+      "source": {
+        "path": "assets/audio-sources/挑戰完成.m4a",
+        "sha256": "4b6a781ebbc9ab4d51baab47d284a34b71605819d550949486f1208e416ec292",
+        "bytes": 11707,
+        "decoded_mono_metrics": {
+          "frames": 53567,
+          "duration_seconds": 1.214671,
+          "sample_peak_linear": 0.07550968,
+          "peak_dbfs": -22.44,
+          "rms_dbfs": -39.57,
+          "integrated_lufs": -40.52,
+          "true_peak_dbfs": -22.42,
+          "quiet_window_p10_dbfs": -59.68,
+          "active_window_rms_dbfs": -38.02,
+          "activity_threshold_dbfs": -49.68
+        }
+      },
+      "processing": {
+        "filters": "highpass=f=90,lowpass=f=8500",
+        "spectral_denoise": false,
+        "denoise_reason": "No stationary noise was established by the level/edge analysis. Natural consonants and breaths are retained.",
+        "activity_window_ms": 10,
+        "minimum_adjacent_active_windows": 2,
+        "activity_threshold_dbfs": -50.69,
+        "detected_activity_start_frame": 6615,
+        "detected_activity_end_frame": 52920,
+        "source_keep_start_frame": 3087,
+        "source_keep_end_frame": 53567,
+        "trimmed_leading_frames": 3087,
+        "trimmed_trailing_frames": 0,
+        "added_leading_silence_frames": 0,
+        "added_trailing_silence_frames": 4645,
+        "requested_leading_padding_ms": 80,
+        "requested_trailing_padding_ms": 120,
+        "fade_in_ms": 5,
+        "fade_out_ms": 15,
+        "fade_shape": "linear",
+        "pre_gain_integrated_lufs": -41.83,
+        "requested_gain_db": 21.83,
+        "applied_gain_db": 17.828,
+        "normalization_peak_limited": true
+      },
+      "output": {
+        "path": "public/assets/audio/voice/berry-complete.wav",
+        "sha256": "0aa648e7a9e8431b0cf8a8da3960f237948b4796108255d9ba85815033851a92",
+        "bytes": 110294,
+        "metrics": {
+          "frames": 55125,
+          "duration_seconds": 1.25,
+          "sample_peak_linear": 0.64944458,
+          "peak_dbfs": -3.75,
+          "rms_dbfs": -22.89,
+          "integrated_lufs": -24.01,
+          "true_peak_dbfs": -3.74,
+          "quiet_window_p10_dbfs": -52.01,
+          "active_window_rms_dbfs": -22.22,
+          "activity_threshold_dbfs": -41.24
+        }
+      }
+    }
+  ],
+  "reserves": [
+    {
+      "id": "praise",
+      "label": "好叻呀",
+      "status": "source-reserve",
+      "reason": "Generic praise duplicates wording already present in both selected success recordings.",
+      "source": {
+        "path": "assets/audio-sources/好叻呀.m4a",
+        "sha256": "49784883a3cf89bae8cc7557789b70ee1f2ae27cee27dd55b8b25a16d624c186",
+        "bytes": 7147,
+        "decoded_mono_metrics": {
+          "frames": 49803,
+          "duration_seconds": 1.12932,
+          "sample_peak_linear": 0.07016806,
+          "peak_dbfs": -23.08,
+          "rms_dbfs": -39.96,
+          "integrated_lufs": -39.27,
+          "true_peak_dbfs": -23.08,
+          "quiet_window_p10_dbfs": -114.51,
+          "active_window_rms_dbfs": -37.14,
+          "activity_threshold_dbfs": -60.0
+        }
+      },
+      "output": null
+    }
+  ]
+}

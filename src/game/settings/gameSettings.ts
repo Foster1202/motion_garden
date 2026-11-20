@@ -17,9 +17,13 @@ export interface GameSettings {
   berryDurationSeconds: (typeof C.durationOptions)[number];
   sfxEnabled: boolean;
   sfxVolume: number;
+  voiceEnabled: boolean;
+  voiceVolume: number;
 }
 
-export type NumericGameSetting = Exclude<keyof GameSettings, 'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds' | 'sfxEnabled' | 'sfxVolume'>;
+export type NumericGameSetting = Exclude<keyof GameSettings,
+  'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds'
+  | 'sfxEnabled' | 'sfxVolume' | 'voiceEnabled' | 'voiceVolume'>;
 
 export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   standingAngle: 160, bendingAngle: 150, bendHoldMs: 650, standHoldMs: 500,
@@ -27,7 +31,7 @@ export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   mocapGain: 1, mocapSmoothingAlpha: 0.35, rabbitScale: 1,
   showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
   berryDurationSeconds: C.defaultDurationSeconds,
-  sfxEnabled: true, sfxVolume: 0.6,
+  sfxEnabled: true, sfxVolume: 0.6, voiceEnabled: true, voiceVolume: 0.8,
 });
 
 export const SETTINGS_STORAGE_KEY = 'motion-garden-settings-v1';
@@ -55,6 +59,9 @@ export function validateGameSettings(value: unknown): value is GameSettings {
     && typeof input.sfxEnabled === 'boolean'
     && typeof input.sfxVolume === 'number' && Number.isFinite(input.sfxVolume)
     && input.sfxVolume >= 0 && input.sfxVolume <= 1
+    && typeof input.voiceEnabled === 'boolean'
+    && typeof input.voiceVolume === 'number' && Number.isFinite(input.voiceVolume)
+    && input.voiceVolume >= 0 && input.voiceVolume <= 1
     && C.durationOptions.some(duration => duration === input.berryDurationSeconds);
 }
 
@@ -63,7 +70,8 @@ function supportedSettings(value: GameSettings): GameSettings {
   return { ...numeric, showBodyKeypoints: value.showBodyKeypoints,
     backgroundProcessing: value.backgroundProcessing, backgroundMode: value.backgroundMode,
     berryDurationSeconds: value.berryDurationSeconds,
-    sfxEnabled: value.sfxEnabled, sfxVolume: value.sfxVolume };
+    sfxEnabled: value.sfxEnabled, sfxVolume: value.sfxVolume,
+    voiceEnabled: value.voiceEnabled, voiceVolume: value.voiceVolume };
 }
 
 export function getGameSettings(): GameSettings {
@@ -71,7 +79,8 @@ export function getGameSettings(): GameSettings {
     const stored: unknown = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? 'null');
     if (stored && typeof stored === 'object') {
       const settings = { showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
-        berryDurationSeconds: C.defaultDurationSeconds, sfxEnabled: true, sfxVolume: 0.6, ...stored };
+        berryDurationSeconds: C.defaultDurationSeconds, sfxEnabled: true, sfxVolume: 0.6,
+        voiceEnabled: true, voiceVolume: 0.8, ...stored };
       if (validateGameSettings(settings)) return supportedSettings(settings);
     }
   } catch { /* Storage may be unavailable. */ }
@@ -79,7 +88,7 @@ export function getGameSettings(): GameSettings {
 }
 
 export function saveGameSettings(settings: GameSettings): void {
-  if (!validateGameSettings(settings)) throw new Error('請檢查參數範圍、音效音量、莓果挑戰時間，以及站立角度與屈膝角度是否相差至少 3°。');
+  if (!validateGameSettings(settings)) throw new Error('請檢查參數範圍、音效及語音音量、莓果挑戰時間，以及站立角度與屈膝角度是否相差至少 3°。');
   localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(supportedSettings(settings)));
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(GAME_SETTINGS_CHANGED_EVENT));
 }

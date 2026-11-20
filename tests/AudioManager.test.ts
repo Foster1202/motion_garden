@@ -93,6 +93,7 @@ function audioResponse(url: string, ok = true): Response {
 
 function setupAudio(options: {
   supported?: boolean;
+  profile?: 'carrot' | 'berry';
   respond?: (url: string, attempt: number) => Response | Promise<Response>;
 } = {}) {
   const descriptors = new Map<string, PropertyDescriptor | undefined>();
@@ -126,7 +127,7 @@ function setupAudio(options: {
     attempts.set(url, attempt);
     return options.respond?.(url, attempt) ?? audioResponse(url);
   });
-  const audio = new AudioManager();
+  const audio = new AudioManager(options.profile);
   return {
     audio, events, documentEvents, fetches, values,
     context: () => { assert.ok(context); return context; },
@@ -574,5 +575,91 @@ test('unsupported audio remains safe through the public lifecycle and optional r
     assert.equal(fixture.audio.snapshot().contextState, 'unavailable');
     assert.deepEqual(fixture.audio.snapshot().active, { sfx: 0, voice: 0, bgm: 0 });
     assert.equal(fixture.fetches.length, 0);
+  } finally { fixture.restore(); }
+});
+
+
+test('game profiles preload local recordings without speaking before gameplay requests', async () => {
+  for (const profile of ['carrot', 'berry'] as const) {
+    const fixture = setupAudio({ profile });
+    try {
+      await fixture.audio.preload();
+      assert.equal(fixture.fetches.length, profile === 'carrot' ? 9 : 8);
+      assert.equal(fixture.context().sources.length, 0);
+      await fixture.audio.unlock();
+      fixture.audio.playVoice('ready');
+      await settle();
+      assert.equal(fixture.context().sources.at(-1)!.buffer!.url, `/assets/audio/voice/${profile}-ready.wav`);
+      assert.equal(fixture.audio.snapshot().playedVoices.ready, 1);
+      fixture.context().sources.at(-1)!.finish();
+      assert.equal(fixture.audio.snapshot().voiceId, undefined);
+    } finally { fixture.restore(); }
+  }
+});
+
+test('encouragement preserves pending instructions and only repeats after its actual playback cooldown', async () => {
+  const pending = deferred<Response>();
+  const fixture = setupAudio({ respond: url => url === '/instruction.wav' ? pending.promise : audioResponse(url) });
+  try {
+    await fixture.audio.preload();
+    await fixture.audio.unlock();
+    const registration = fixture.audio.registerVoice('ready', '/instruction.wav');
+    await fixture.audio.registerVoice('success', '/encouragement.wav');
+    assert.equal(fixture.audio.playVoice('ready'), true);
+    assert.equal(fixture.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 }), false);
+    pending.resolve(audioResponse('/instruction.wav'));
+    await registration;
+    await settle();
+    assert.equal(fixture.context().sources.at(-1)!.buffer!.url, '/instruction.wav');
+    fixture.context().sources.at(-1)!.finish();
+    fixture.context().currentTime = 1;
+    assert.equal(fixture.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 }), true);
+    await settle();
+    fixture.context().sources.at(-1)!.finish();
+    fixture.context().currentTime = 5;
+    assert.equal(fixture.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 }), false);
+    fixture.context().currentTime = 9;
+    assert.equal(fixture.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 }), true);
+    await settle();
+    assert.equal(fixture.audio.snapshot().playedVoices.success, 2);
+  } finally { fixture.restore(); }
+});
+
+test('disabling narration cancels pending speech while preserving the sound channel', async () => {
+  const pending = deferred<Response>();
+  const fixture = setupAudio({ respond: url => url === '/pending-voice.wav' ? pending.promise : audioResponse(url) });
+  try {
+    await fixture.audio.preload();
+    await fixture.audio.unlock();
+    const registration = fixture.audio.registerVoice('ready', '/pending-voice.wav');
+    fixture.audio.playVoice('ready');
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, voiceEnabled: false, voiceVolume: .4 });
+    pending.resolve(audioResponse('/pending-voice.wav'));
+    await registration;
+    await settle();
+    assert.equal(fixture.audio.snapshot().voiceId, undefined);
+    assert.equal(fixture.audio.snapshot().active.voice, 0);
+    assert.equal(fixture.audio.playVoice('ready'), false);
+    fixture.audio.playSfx('click');
+    assert.equal(fixture.audio.snapshot().active.sfx, 1);
+    assert.equal(fixture.audio.snapshot().volumes.voice, .4);
+  } finally { fixture.restore(); }
+});
+
+test('spoken instructions duck effects and silence immediately when narration volume reaches zero', async () => {
+  const fixture = setupAudio();
+  try {
+    await fixture.audio.preload();
+    await fixture.audio.unlock();
+    await fixture.audio.registerVoice('ready', '/ready.wav');
+    fixture.audio.playSfx('complete');
+    fixture.audio.playVoice('ready');
+    await settle();
+    assert.equal(fixture.context().gains[1].gain.value, .6 * .35);
+    fixture.audio.setVolume('voice', 0);
+    assert.equal(fixture.audio.snapshot().active.voice, 0);
+    assert.equal(fixture.audio.snapshot().voiceId, undefined);
+    assert.equal(fixture.context().gains[1].gain.value, .6);
+    assert.equal(fixture.audio.playVoice('ready'), false);
   } finally { fixture.restore(); }
 });

@@ -12,6 +12,8 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(DEFAULT_GAME_SETTINGS.berryDurationSeconds, 120);
   assert.equal(DEFAULT_GAME_SETTINGS.sfxEnabled, true);
   assert.equal(DEFAULT_GAME_SETTINGS.sfxVolume, 0.6);
+  assert.equal(DEFAULT_GAME_SETTINGS.voiceEnabled, true);
+  assert.equal(DEFAULT_GAME_SETTINGS.voiceVolume, 0.8);
 });
 
 test('settings reject nonfinite, missing, excessive and overlapping thresholds', () => {
@@ -27,6 +29,9 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { sfxEnabled: 'true' }, { sfxEnabled: 0 }, { sfxEnabled: null }, { sfxEnabled: undefined },
     { sfxVolume: -0.01 }, { sfxVolume: 1.01 }, { sfxVolume: '0.6' }, { sfxVolume: null },
     { sfxVolume: NaN }, { sfxVolume: Infinity }, { sfxVolume: undefined },
+    { voiceEnabled: 'true' }, { voiceEnabled: 0 }, { voiceEnabled: null }, { voiceEnabled: undefined },
+    { voiceVolume: -0.01 }, { voiceVolume: 1.01 }, { voiceVolume: '0.8' }, { voiceVolume: null },
+    { voiceVolume: NaN }, { voiceVolume: Infinity }, { voiceVolume: undefined },
   ]) assert.equal(validateGameSettings({ ...DEFAULT_GAME_SETTINGS, ...change }), false);
   assert.equal(validateGameSettings({}), false);
   assert.equal(validateGameSettings(null), false);
@@ -61,7 +66,7 @@ test('persist only supported settings, recover invalid storage, reset defaults',
 });
 
 test('legacy numeric settings retain values and add preview, duration and audio defaults', () => {
-  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, sfxEnabled, sfxVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, sfxEnabled, sfxVolume, voiceEnabled, voiceVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: () => JSON.stringify({ ...legacy, bendingAngle: 155, mocapGain: 1.25, rawPose: [1, 2, 3] }),
@@ -74,6 +79,8 @@ test('legacy numeric settings retain values and add preview, duration and audio 
     assert.equal(berryDurationSeconds, 120);
     assert.equal(sfxEnabled, true);
     assert.equal(sfxVolume, 0.6);
+    assert.equal(voiceEnabled, true);
+    assert.equal(voiceVolume, 0.8);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');
@@ -246,5 +253,53 @@ test('settings dispatch one update after successful persistence and reset', () =
     else Reflect.deleteProperty(globalThis, 'localStorage');
     if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
     else Reflect.deleteProperty(globalThis, 'window');
+  }
+});
+
+
+test('legacy SFX settings preserve values and add independent voice defaults', () => {
+  const { voiceEnabled, voiceVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => JSON.stringify({ ...legacy, sfxEnabled: false, sfxVolume: 0.25, bendingAngle: 155 }),
+  } });
+  try {
+    assert.deepEqual(getGameSettings(), { ...DEFAULT_GAME_SETTINGS, sfxEnabled: false, sfxVolume: 0.25, bendingAngle: 155 });
+    assert.equal(voiceEnabled, true);
+    assert.equal(voiceVolume, 0.8);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('voice enable and volume persist independently across the supported range', () => {
+  const values = new Map<string, string>();
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+    removeItem: (key: string) => values.delete(key),
+  } });
+  try {
+    for (const voiceEnabled of [false, true]) {
+      for (const voiceVolume of [0, 0.05, 0.35, 0.8, 1]) {
+        const settings = { ...DEFAULT_GAME_SETTINGS, voiceEnabled, voiceVolume, sfxEnabled: false, sfxVolume: 0.25 };
+        saveGameSettings(settings);
+        assert.deepEqual(getGameSettings(), settings);
+      }
+    }
+    for (const invalid of [{ voiceEnabled: 'false' }, { voiceVolume: -1 }, { voiceVolume: 2 },
+      { voiceVolume: '0.8' }, { voiceVolume: null }]) {
+      values.set(SETTINGS_STORAGE_KEY, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, ...invalid }));
+      assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
+      assert.throws(() => saveGameSettings({ ...DEFAULT_GAME_SETTINGS, ...invalid } as GameSettings));
+    }
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, voiceEnabled: false, voiceVolume: 0 });
+    assert.deepEqual(resetGameSettings(), DEFAULT_GAME_SETTINGS);
+    assert.equal(values.has(SETTINGS_STORAGE_KEY), false);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
   }
 });

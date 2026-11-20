@@ -32,6 +32,8 @@ export class BerryKickScene extends Phaser.Scene {
   private dead = false;
   private failed = false;
   private completeShown = false;
+  private readyVoicePending = true;
+  private voiceTrackingReliable = false;
   private skipNextDelta = true;
   private feedbackUntil = 0;
   private lastCountdown = 11;
@@ -45,8 +47,10 @@ export class BerryKickScene extends Phaser.Scene {
       this.load.image(berryKey(name), `${import.meta.env.BASE_URL}assets/berry_kick/${berryFile(name)}`);
   }
   create() {
-    this.audio = new AudioManager();
+    this.audio = new AudioManager('berry');
     this.dead = this.active = this.paused = this.failed = this.completeShown = false;
+    this.readyVoicePending = true;
+    this.voiceTrackingReliable = false;
     this.skipNextDelta = true;
     this.feedbackUntil = this.popupIndex = 0;
     this.lastCountdown = 11;
@@ -155,11 +159,27 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui.text('[data-berry-time]', this.formatTime(this.round.remainingMs));
     this.ui.root.querySelector('[data-berry-timer]')?.setAttribute('data-urgent', String(this.round.remainingMs <= 10000));
     if (this.round.complete) { this.finish(); return; }
+    if (sample.reliable && this.readyVoicePending) {
+      const audio = this.audio.snapshot();
+      if (!audio.supported || !audio.voiceEnabled || audio.volumes.voice === 0 || audio.muted) {
+        this.readyVoicePending = false;
+      } else if (audio.unlocked && audio.contextState === 'running' && !audio.paused && !audio.hidden) {
+        this.readyVoicePending = !this.audio.playVoice('ready');
+      }
+    }
+    if (!sample.reliable && this.voiceTrackingReliable) this.audio.stopVoice();
+    this.voiceTrackingReliable = sample.reliable;
     for (const tween of this.tweens.getTweens()) {
       if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
     }
     this.updateEffects();
-    if (hit) { this.audio.playSfx('berry'); this.trees[hit].harvest(); this.feedbackUntil = this.round.elapsedMs + 1400; this.showScorePopup(); }
+    if (hit) {
+      this.audio.playSfx('berry');
+      this.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 });
+      this.trees[hit].harvest();
+      this.feedbackUntil = this.round.elapsedMs + 1400;
+      this.showScorePopup();
+    }
     const seconds = Math.ceil(this.round.remainingMs / 1000);
     if (seconds <= 10 && seconds < this.lastCountdown) {
       this.lastCountdown = seconds;
