@@ -394,7 +394,8 @@ try {
     window.__supplementaryBerryReliable = false;
     scene.inputSource.mode = 'keyboard';
     scene.inputSource.update = () => ({ leftLegExtensionAmount: 0, rightLegExtensionAmount: 0,
-      lateralOffset: 0, reliable: window.__supplementaryBerryReliable, timestampMs: performance.now() });
+      lateralOffset: 0, lateralReliable: window.__supplementaryBerryReliable,
+      reliable: window.__supplementaryBerryReliable, timestampMs: performance.now() });
     window.__restoreSupplementaryBerryInput = () => { scene.inputSource.mode = mode; scene.inputSource.update = update; };
   });
   const berryTracking = await count('tracking-lost');

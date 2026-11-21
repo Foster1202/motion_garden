@@ -56,12 +56,16 @@ export class MotionRetargeter {
   constructor(private readonly maximumArmPlane = 90, private readonly gardenMovement = false) {}
   /** Berry motion already uses anatomical sides and normalized, mirrored root translation. */
   retargetLegMotion(sample: BerryMotionSample): BerryMotionSample {
-    const valid = sample.reliable && [sample.leftLegExtensionAmount, sample.rightLegExtensionAmount,
-      sample.lateralOffset, sample.timestampMs].every(Number.isFinite) && sample.timestampMs >= 0;
+    const finiteLateral = Number.isFinite(sample.lateralOffset);
+    const lateralReliable = sample.lateralReliable && finiteLateral
+      && Number.isFinite(sample.timestampMs) && sample.timestampMs >= 0;
+    const valid = sample.reliable && lateralReliable
+      && [sample.leftLegExtensionAmount, sample.rightLegExtensionAmount].every(Number.isFinite);
     return {
       leftLegExtensionAmount: valid ? clamp(sample.leftLegExtensionAmount, 0, 1) : 0,
       rightLegExtensionAmount: valid ? clamp(sample.rightLegExtensionAmount, 0, 1) : 0,
-      lateralOffset: valid ? clamp(sample.lateralOffset, -1, 1) : 0,
+      lateralOffset: finiteLateral ? clamp(sample.lateralOffset, -1, 1) : 0,
+      lateralReliable,
       reliable: valid, timestampMs: sample.timestampMs,
     };
   }

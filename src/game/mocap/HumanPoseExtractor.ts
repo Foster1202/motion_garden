@@ -42,7 +42,10 @@ export class HumanPoseExtractor {
   constructor(private readonly allowInwardArms = false) {}
 
   extractLegMotion(frame: PoseFrame): BerryMotionSample { return this.legDetector.update(frame); }
-  resetLegMotion(): void { this.legDetector.reset(); }
+  resetLegMotion(): void { this.legDetector.reset('camera-start'); }
+  suspendLegMotion(reason: 'paused' | 'stale'): BerryMotionSample { return this.legDetector.interrupt(reason); }
+  get hasLegMotionReference() { return this.legDetector.hasReference; }
+  legMotionSnapshot() { return this.legDetector.snapshot(); }
 
   extract(frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile): HumanPose | undefined {
     this.rejection = undefined;

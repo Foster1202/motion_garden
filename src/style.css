@@ -1332,6 +1332,7 @@ kbd {
 .berry-footer { position:absolute; bottom:2%; left:3.5%; right:3.5%; padding:.65cqw 1.1cqw; display:flex; justify-content:space-between; align-items:center; gap:1cqw; background:#fffbeeeb; border:1px solid #e1d6b3; border-radius:1cqw; color:#3c5740; font-size:1.25cqw; box-shadow:0 .15cqw .4cqw #5d512e0a; }
 .berry-footer small { font-size:1.1cqw; }
 .berry-camera { position:absolute; right:2%; bottom:9%; width:13%; border:4px solid #fffbed; border-radius:14px; transform:scaleX(-1); }
+.berry-tracking-debug { position:absolute; top:23%; right:2%; max-width:56%; padding:.65em .9em; background:#fffbeded; color:#294d3a; border-radius:.6em; font:clamp(9px, 1cqw, 15px)/1.4 monospace; white-space:pre-wrap; pointer-events:none; }
 .berry-camera-source { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
 
 .berry-card-image { width:66%; height:66%; object-fit:contain; }

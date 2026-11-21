@@ -10,6 +10,7 @@ export class BerryRabbitView {
   readonly tracker: RabbitFootTracker;
   readonly maxTravel: number;
   rootX = 800;
+  targetRootX: number | null = null;
   fps = 0;
   private frames = 0;
   private elapsed = 0;
@@ -48,11 +49,16 @@ export class BerryRabbitView {
       throw error;
     }
   }
-  update(dt: number, lateral: number, left: number, right: number) {
-    const target = lateral * this.maxTravel;
-    const current = this.rabbit.pivot.position.x * this.rabbit.pixelsPerUnit;
-    const next = current + (target - current) * (1 - Math.exp(-8 * dt));
-    this.rabbit.pivot.position.x = next / this.rabbit.pixelsPerUnit; this.rootX = 800 + next;
+  update(dt: number, lateral: number | undefined, left: number, right: number) {
+    this.targetRootX = null;
+    if (lateral !== undefined) {
+      const target = lateral * this.maxTravel;
+      const current = this.rabbit.pivot.position.x * this.rabbit.pixelsPerUnit;
+      const next = current + (target - current) * (1 - Math.exp(-8 * dt));
+      this.targetRootX = 800 + target;
+      this.rabbit.pivot.position.x = next / this.rabbit.pixelsPerUnit;
+      this.rootX = 800 + next;
+    }
     this.rabbit.rig.setLegExtension('left', left); this.rabbit.rig.setLegExtension('right', right);
     this.rabbit.rig.update(dt); this.renderer.render(this.world, this.camera);
     this.texture.context.clearRect(0, 0, 1200, 675); this.texture.context.drawImage(this.renderer.domElement, 0, 0); this.texture.refresh();

@@ -46,6 +46,9 @@ export class BerryKickScene extends Phaser.Scene {
   private readonly effects = new Set<BerryEffect>();
   private feet?: Record<BerrySide, FootPoint>;
   private debugEnabled = false;
+  private trackingHud?: HTMLPreElement;
+  private trackingLog = false;
+  private nextTrackingLogAt = 0;
   constructor() { super('BerryKick'); }
   preload() {
     for (const name of BERRY_ASSETS) if (!this.textures.exists(berryKey(name)))
@@ -76,6 +79,16 @@ export class BerryKickScene extends Phaser.Scene {
     this.debug = this.add.graphics().setDepth(20);
     this.debugEnabled = new URLSearchParams(location.search).has('berryDebug');
     this.ui = new Overlay(); this.renderHud();
+    const query = new URLSearchParams(location.search);
+    this.trackingHud = undefined;
+    this.trackingLog = import.meta.env.DEV && query.get('berryTrackingLog') === '1';
+    this.nextTrackingLogAt = 0;
+    if (import.meta.env.DEV && query.get('berryTrackingDebug') === '1') {
+      this.trackingHud = document.createElement('pre');
+      this.trackingHud.className = 'berry-tracking-debug';
+      this.trackingHud.hidden = true;
+      this.ui.root.append(this.trackingHud);
+    }
     this.inputSource = new BerryKickInput(() => this.togglePause(), message => {
       if (this.dead || this.failed || this.completeShown) return;
       this.pause(); this.ui.closeModal(); this.ui.dialog(`<h2 id="dialog-title">相機暫停咗</h2><p>${message}</p>
@@ -140,6 +153,7 @@ export class BerryKickScene extends Phaser.Scene {
   private pause(explicit = false) {
     if (this.paused || !this.active || this.round.complete) return;
     this.paused = this.round.paused = true; this.inputSource.pause();
+    this.updateTrackingDiagnostics(true);
     this.trackingLostAt = undefined;
     this.trackingVoiceIssued = false;
     this.voiceTrackingReliable = false;
@@ -176,8 +190,8 @@ export class BerryKickScene extends Phaser.Scene {
     if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
     const dt = Math.min(deltaMs, 100) / 1000;
     const sample = this.inputSource.update(dt);
-    this.feet = this.view.update(dt, sample.lateralOffset, sample.reliable ? sample.leftLegExtensionAmount : 0,
-      sample.reliable ? sample.rightLegExtensionAmount : 0);
+    this.feet = this.view.update(dt, sample.lateralReliable ? sample.lateralOffset : undefined,
+      sample.reliable ? sample.leftLegExtensionAmount : 0, sample.reliable ? sample.rightLegExtensionAmount : 0);
     this.shadow.x = this.view.rootX;
     const hit = this.round.update(deltaMs, { left: sample.leftLegExtensionAmount, right: sample.rightLegExtensionAmount,
       feet: this.feet, reliable: sample.reliable, rootX: this.view.rootX });
@@ -185,7 +199,7 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui.text('[data-berry-time]', this.formatTime(this.round.remainingMs));
     this.ui.root.querySelector('[data-berry-timer]')?.setAttribute('data-urgent', String(this.round.remainingMs <= 10000));
     if (this.round.complete) { this.finish(); return; }
-    this.updateTrackingVoice(sample.reliable);
+    this.updateTrackingVoice(sample.lateralReliable);
     if (sample.reliable && this.readyVoicePending) {
       this.readyVoicePending = !tryVoiceCue(this.audio, 'ready');
     }
@@ -206,11 +220,52 @@ export class BerryKickScene extends Phaser.Scene {
       this.showCountdown(seconds);
     }
     this.ui.text('[data-berry-controls]', this.inputSource.mode === 'camera' ? '攝像頭體感 · 左右小幅移動，再輕輕伸腳' : 'A / D 左右移動 · Q / E 伸腳 · 放開收腳 · Esc 暫停');
-    this.ui.text('[data-berry-hint]', !sample.reliable ? '我睇唔清楚你，企返鏡頭中間少少。'
-      : this.round.elapsedMs < this.feedbackUntil ? '好叻呀！莓果跌落嚟喇！'
+    this.ui.text('[data-berry-hint]', !sample.lateralReliable ? this.cameraTrackingHint()
+      : !sample.reliable ? '請畀鏡頭睇到雙腳，先可以收集莓果。'
+        : this.round.elapsedMs < this.feedbackUntil ? '好叻呀！莓果跌落嚟喇！'
         : '左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳。');
     this.drawDebug();
+    this.updateTrackingDiagnostics();
   }
+  private cameraTrackingHint() {
+    return this.inputSource.hasCameraReference
+      ? '我睇唔清楚你，等鏡頭重新睇清楚就可以繼續。'
+      : '企喺鏡頭中間，雙腳放穩，等阿兔準備好。';
+  }
+
+  private trackingSnapshot() {
+    const tracking = this.inputSource.trackingSnapshot();
+    return {
+      ...tracking,
+      rootX: this.view?.rootX ?? null,
+      targetRootX: tracking.reliable ? this.view?.targetRootX ?? null : null,
+      fps: this.view?.fps ?? 0,
+    };
+  }
+
+  private updateTrackingDiagnostics(force = false) {
+    if (!this.trackingHud && !this.trackingLog) return;
+    const camera = this.inputSource.mode === 'camera';
+    if (this.trackingHud) this.trackingHud.hidden = !camera;
+    const now = performance.now();
+    if (!camera || (!force && now < this.nextTrackingLogAt)) return;
+    this.nextTrackingLogAt = now + 200;
+    const tracking = this.trackingSnapshot();
+    if (this.trackingLog) console.debug('[Berry tracking]', tracking);
+    if (this.trackingHud) {
+      const number = (value: number | null | undefined, digits: number) => value?.toFixed(digits) ?? '–';
+      this.trackingHud.textContent = [
+        `Tracking ${tracking.status} · reference ${tracking.referenceState}`,
+        `Center ${number(tracking.current?.center, 3)} / ref ${number(tracking.reference?.center, 3)}`,
+        `Scale ${number(tracking.current?.scale, 3)} / ref ${number(tracking.reference?.scale, 3)}`,
+        `Direction ${tracking.current?.direction ?? '–'} / ref ${tracking.reference?.direction ?? '–'}`,
+        `Offset ${number(tracking.lateralOffset, 3)} · rootX ${number(tracking.rootX, 1)}`,
+        `Frame age ${number(tracking.frameAgeMs, 0)} ms · pose/3D FPS ${number(tracking.poseFps, 1)}/${number(tracking.fps, 1)}`,
+        `Reset ${tracking.resetReason} · ${tracking.rejection ?? 'valid'}`,
+      ].join('\n');
+    }
+  }
+
   private updateTrackingVoice(reliable: boolean) {
     if (!reliable && this.voiceTrackingReliable) this.audio.stopVoice();
     this.voiceTrackingReliable = reliable;
@@ -266,6 +321,7 @@ export class BerryKickScene extends Phaser.Scene {
   private finish() {
     if (this.completeShown) return;
     this.completeShown = true; this.active = false; this.inputSource.pause();
+    if (this.trackingHud) this.trackingHud.hidden = true;
     this.audio.stopAll();
     this.audio.playSfx('complete');
     this.audio.playVoice('complete');
@@ -295,6 +351,7 @@ export class BerryKickScene extends Phaser.Scene {
   }
   snapshot() { return { ...this.round.snapshot(), active: this.active, failed: this.failed, completeShown: this.completeShown,
     renderMode: this.view ? '3d' : 'fallback', feet: this.feet, zones: this.round.zones, rootX: this.view?.rootX,
+    tracking: this.inputSource.mode === 'camera' ? this.trackingSnapshot() : null,
     audio: this.audio.snapshot(), fps: this.view?.fps ?? 0, mode: this.inputSource.mode, maxTravel: this.view?.maxTravel, effectCount: this.effects.size }; }
   private cleanup() {
     this.dead = true; this.active = false; this.request?.abort(); this.request = undefined;
