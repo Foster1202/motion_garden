@@ -10,6 +10,7 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundProcessing, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundMode, 'blur');
   assert.equal(DEFAULT_GAME_SETTINGS.berryDurationSeconds, 120);
+  assert.equal(DEFAULT_GAME_SETTINGS.appleDurationSeconds, 120);
   assert.equal(DEFAULT_GAME_SETTINGS.sfxEnabled, true);
   assert.equal(DEFAULT_GAME_SETTINGS.sfxVolume, 0.6);
   assert.equal(DEFAULT_GAME_SETTINGS.voiceEnabled, true);
@@ -26,6 +27,8 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { berryDurationSeconds: 30 }, { berryDurationSeconds: 61 }, { berryDurationSeconds: 0 },
     { berryDurationSeconds: 121 }, { berryDurationSeconds: '60' }, { berryDurationSeconds: NaN },
     { berryDurationSeconds: Infinity }, { berryDurationSeconds: undefined }, { berryDurationSeconds: null },
+    { appleDurationSeconds: 60 }, { appleDurationSeconds: 150 }, { appleDurationSeconds: '180' },
+    { appleDurationSeconds: NaN }, { appleDurationSeconds: undefined }, { appleDurationSeconds: null },
     { sfxEnabled: 'true' }, { sfxEnabled: 0 }, { sfxEnabled: null }, { sfxEnabled: undefined },
     { sfxVolume: -0.01 }, { sfxVolume: 1.01 }, { sfxVolume: '0.6' }, { sfxVolume: null },
     { sfxVolume: NaN }, { sfxVolume: Infinity }, { sfxVolume: undefined },
@@ -126,6 +129,29 @@ test('Berry duration choices persist, reject unsupported storage and reset to 12
     saveGameSettings({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds: 60 });
     assert.equal(resetGameSettings().berryDurationSeconds, 120);
     assert.equal(values.has(SETTINGS_STORAGE_KEY), false);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('Apple duration migrates independently, persists all choices and resets to 120', () => {
+  let stored: string | null = null;
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: () => stored, setItem: (_key: string, value: string) => { stored = value; },
+    removeItem: () => { stored = null; },
+  } });
+  try {
+    stored = JSON.stringify({ ...DEFAULT_GAME_SETTINGS, appleDurationSeconds: undefined, berryDurationSeconds: 60 });
+    assert.equal(getGameSettings().appleDurationSeconds, 120);
+    assert.equal(getGameSettings().berryDurationSeconds, 60);
+    for (const appleDurationSeconds of [90, 120, 180] as const) {
+      saveGameSettings({ ...getGameSettings(), appleDurationSeconds });
+      assert.equal(getGameSettings().appleDurationSeconds, appleDurationSeconds);
+      assert.equal(getGameSettings().berryDurationSeconds, 60);
+    }
+    assert.equal(resetGameSettings().appleDurationSeconds, 120);
   } finally {
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');

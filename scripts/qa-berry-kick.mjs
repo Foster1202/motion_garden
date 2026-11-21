@@ -338,7 +338,8 @@ try {
   assert.equal(await page.locator('[data-berry-effects],.berry-camera').count(), 0);
   await page.locator('[data-action=start]').click();
   assert.equal(await page.locator('[data-action=carrot]').count(), 1);
-  assert.equal(await page.locator('.game-card[disabled]').count(), 2);
+  assert.equal(await page.locator('[data-action=apple]').isEnabled(), true);
+  assert.equal(await page.locator('.game-card[disabled]').count(), 1);
   check('Replay resets score/timer/effects; Home removes Berry UI and keeps other menu games');
 
   await page.route('**/rabbit_realtime.glb', route => route.abort());

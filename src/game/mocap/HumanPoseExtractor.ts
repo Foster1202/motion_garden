@@ -34,6 +34,18 @@ export interface HumanPose {
   timestampMs: number;
 }
 
+export interface ArmReachPose {
+  leftRaise: number | null;
+  rightRaise: number | null;
+  centerX: number;
+  shoulderWidth: number;
+  torsoHeight: number;
+  torsoLean: number;
+  orientation: number;
+  trackingConfidence: number;
+  timestampMs: number;
+}
+
 export class HumanPoseExtractor {
   private readonly legDetector = new LegExtensionDetector();
   private rejection?: string;
@@ -46,6 +58,41 @@ export class HumanPoseExtractor {
   suspendLegMotion(reason: 'paused' | 'stale'): BerryMotionSample { return this.legDetector.interrupt(reason); }
   get hasLegMotionReference() { return this.legDetector.hasReference; }
   legMotionSnapshot() { return this.legDetector.snapshot(); }
+
+  /** Projected torso and wrist heights for reaching games with rigid arms. */
+  extractArmReach(frame: PoseFrame, threshold: number = CONFIG.confidenceThreshold): ArmReachPose | undefined {
+    const { landmarks: points, timestampMs } = frame;
+    const width = frame.imageWidth ?? 1;
+    const height = frame.imageHeight ?? 1;
+    if (!points || !Number.isFinite(timestampMs) || timestampMs < 0 || !(threshold > 0 && threshold <= 1)
+      || !Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) return;
+
+    const confidence = Math.min(...[11, 12, 23, 24].map(index => landmarkConfidence(points[index])));
+    if (confidence < threshold) return;
+    const [leftShoulder, rightShoulder, leftHip, rightHip] = [11, 12, 23, 24].map(index => points[index]);
+    const aspect = width / height;
+    const shoulderX = (leftShoulder.x + rightShoulder.x) / 2;
+    const hipX = (leftHip.x + rightHip.x) / 2;
+    const shoulderSpan = leftShoulder.x - rightShoulder.x;
+    const hipSpan = leftHip.x - rightHip.x;
+    const torsoHeight = (leftHip.y + rightHip.y - leftShoulder.y - rightShoulder.y) / 2;
+    const torsoLean = MathUtils.radToDeg(Math.atan2((shoulderX - hipX) * aspect, torsoHeight));
+    if (torsoHeight < .055 || Math.abs(torsoLean) > 45 || Math.sign(shoulderSpan) !== Math.sign(hipSpan)
+      || Math.abs(shoulderSpan) * aspect < torsoHeight * .20 || Math.abs(hipSpan) * aspect < torsoHeight * .12) return;
+
+    const wristRaise = (shoulder: PoseLandmark, wrist: PoseLandmark | undefined): number | null => {
+      if (!wrist || landmarkConfidence(wrist) < threshold) return null;
+      const drop = (wrist.y - shoulder.y) / torsoHeight;
+      const lateral = (wrist.x - shoulder.x) * aspect / torsoHeight;
+      if (Math.hypot(drop, lateral) > 2.2) return null;
+      return MathUtils.clamp(1 - drop * 1.7, 0, 1);
+    };
+    return {
+      leftRaise: wristRaise(leftShoulder, points[15]), rightRaise: wristRaise(rightShoulder, points[16]),
+      centerX: (hipX * 3 + shoulderX) / 4, shoulderWidth: Math.abs(shoulderSpan), torsoHeight, torsoLean,
+      orientation: Math.sign(shoulderSpan), trackingConfidence: confidence, timestampMs,
+    };
+  }
 
   extract(frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile): HumanPose | undefined {
     this.rejection = undefined;

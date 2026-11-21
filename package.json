@@ -27,6 +27,7 @@
     "qa:person-preview": "node scripts/qa-person-preview.mjs",
     "qa:berry": "node scripts/qa-berry-kick.mjs",
     "qa:berry-camera": "node scripts/qa-berry-camera.mjs",
+    "qa:apple": "node scripts/qa-apple-harvest.mjs",
     "build:berry-art": "bash model/scripts/build_berry_art.sh"
   },
   "dependencies": {

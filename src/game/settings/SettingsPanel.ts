@@ -1,5 +1,6 @@
 import { DEFAULT_GAME_SETTINGS, GAME_SETTING_LIMITS, getGameSettings, saveGameSettings, type GameSettings, type NumericGameSetting } from './gameSettings';
 import { BERRY_CONFIG as C } from '../berry/berryConfig';
+import { APPLE_CONFIG } from '../apple/appleConfig';
 
 const FIELDS: readonly [NumericGameSetting, string, string, number][] = [
   ['standingAngle', '站立觸發角度（°）', '膝角達到此值即視為企直。', 1],
@@ -22,6 +23,7 @@ export class SettingsPanel {
   private readonly backgroundMode = document.createElement('select');
   private readonly backgroundModeLabel = document.createElement('label');
   private readonly berryDuration = document.createElement('select');
+  private readonly appleDuration = document.createElement('select');
   private readonly sfxEnabled = document.createElement('input');
   private readonly sfxVolume = document.createElement('input');
   private readonly sfxVolumeOutput = document.createElement('output');
@@ -77,22 +79,22 @@ export class SettingsPanel {
       audio.append(enabledLabel, volumeLabel);
     }
     fields.append(audio);
-    const durationLabel = document.createElement('label');
-    const durationCaption = document.createElement('span');
-    durationCaption.textContent = '莓果挑戰時間';
-    this.berryDuration.name = 'berryDurationSeconds';
-    for (const duration of C.durationOptions) {
-      const option = document.createElement('option');
-      option.value = String(duration);
-      option.textContent = `${duration} 秒`;
-      this.berryDuration.append(option);
+    for (const [select, key, title, durations, hint] of [
+      [this.berryDuration, 'berryDurationSeconds', '莓果挑戰時間', C.durationOptions, '選擇每局莓果大豐收的限時，時間內可持續收集莓果。'],
+      [this.appleDuration, 'appleDurationSeconds', '摘蘋果挑戰時間', APPLE_CONFIG.durationOptions, '選擇每局摘蘋果的限時，放入籃子的蘋果會計入分數。'],
+    ] as const) {
+      const label = document.createElement('label');
+      const caption = document.createElement('span');
+      caption.textContent = title;
+      select.name = key;
+      for (const duration of durations) select.add(new Option(`${duration} 秒`, String(duration)));
+      const help = document.createElement('small');
+      help.id = `settings-help-${key}`;
+      help.textContent = hint;
+      select.setAttribute('aria-describedby', help.id);
+      label.append(caption, select, help);
+      fields.append(label);
     }
-    const durationHint = document.createElement('small');
-    durationHint.id = 'settings-help-berry-duration';
-    durationHint.textContent = '選擇每局莓果大豐收的限時，時間內可持續收集莓果。';
-    this.berryDuration.setAttribute('aria-describedby', durationHint.id);
-    durationLabel.append(durationCaption, this.berryDuration, durationHint);
-    fields.append(durationLabel);
     const preview = document.createElement('fieldset');
     preview.className = 'game-settings-preview';
     const legend = document.createElement('legend');
@@ -169,6 +171,7 @@ export class SettingsPanel {
         backgroundProcessing: this.backgroundProcessing.checked,
         backgroundMode: this.backgroundMode.value as GameSettings['backgroundMode'],
         berryDurationSeconds: Number(this.berryDuration.value) as GameSettings['berryDurationSeconds'],
+        appleDurationSeconds: Number(this.appleDuration.value) as GameSettings['appleDurationSeconds'],
         sfxEnabled: this.sfxEnabled.checked,
         sfxVolume: this.sfxVolume.valueAsNumber,
         voiceEnabled: this.voiceEnabled.checked,
@@ -189,6 +192,7 @@ export class SettingsPanel {
     this.backgroundProcessing.checked = settings.backgroundProcessing;
     this.backgroundMode.value = settings.backgroundMode;
     this.berryDuration.value = String(settings.berryDurationSeconds);
+    this.appleDuration.value = String(settings.appleDurationSeconds);
     this.sfxEnabled.checked = settings.sfxEnabled;
     this.sfxVolume.value = String(settings.sfxVolume);
     this.voiceEnabled.checked = settings.voiceEnabled;

@@ -54,12 +54,13 @@ export class MenuScene extends Phaser.Scene {
         <div class="game-cards">
           <button class="game-card available" data-action="carrot"><span class="card-art">${carrotIcon}</span><span class="card-title">拔蘿蔔</span><span class="card-description">淺屈膝，再慢慢企起身</span><span class="card-link">開始玩 <span aria-hidden="true">→</span></span></button>
           <button class="game-card available" data-action="berry"><span class="card-art"><img class="berry-card-image" src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt=""></span><span class="card-title">莓果大豐收</span><span class="card-description">左右伸腿，收集莓果！</span><span class="card-link">開始玩 →</span></button>
-          <button class="game-card" disabled><span class="card-art">${appleIcon}</span><span class="card-title">摘蘋果</span><span class="card-description">同阿兔伸伸手</span><span class="coming-soon">稍後開放</span></button>
+          <button class="game-card available" data-action="apple"><span class="card-art">${appleIcon}</span><span class="card-title">摘蘋果</span><span class="card-description">伸手摘蘋果，再送返籃子</span><span class="card-link">開始玩 →</span></button>
           <button class="game-card" disabled><span class="card-art">${homeIcon}</span><span class="card-title">阿兔回家</span><span class="card-description">陪阿兔一步步返屋企</span><span class="coming-soon">稍後開放</span></button>
         </div>
       </section><footer class="menu-footer"><span>唔使急，享受每一下活動。</span><span>攝像頭 / 鍵盤</span></footer>`);
     this.ui.on('berry', () => this.scene.start('BerryKick'));
     this.ui.on('carrot', () => this.scene.start('CarrotPull'));
+    this.ui.on('apple', () => this.scene.start('AppleHarvest'));
     this.ui.on('home', () => this.showHome());
     this.ui.focus('carrot');
   }

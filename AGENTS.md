@@ -1,6 +1,6 @@
 # Motion Garden — agent handoff and working agreement
 
-Updated 2026-11-21. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
+Updated 2026-11-22. This is the shared entry point for every agent/task working in this repository. Read it before changes; verify live code rather than treating historical notes as current evidence.
 
 ## Mandatory workflow
 
@@ -69,7 +69,8 @@ Use every field; write `None` or `Not applicable` where appropriate. Keep entrie
 
 - Shared Overlay binds and focuses actions within the current dialog, replaces duplicate handlers and closes earlier dialogs. Berry intro, pause, fallback and completion Home buttons use their own dialog bindings.
 - Vite + TypeScript + Phaser 3, 1600×900 logical world with FIT scaling. Traditional Hong Kong Chinese UI.
-- Menu offers Carrot Pull and Berry Kick; Apple Harvest and Rabbit Goes Home remain disabled.
+- Menu offers Carrot Pull, Berry Kick and Apple Harvest. Rabbit Goes Home remains disabled.
+- Apple Harvest is a timed 3D orchard challenge with persisted 90/120/180-second settings (default 120). A random screen-side target highlights the tree, with a cap of three consecutive prompts. A complete low–high–low wrist gesture within the target tree zone picks one apple. The rigid-arm rabbit carries it by the palm until a fresh gesture in the center basket zone releases it. The score and next target update when the 440ms game-time transfer reaches the basket before expiry. Webcam uses a session-only neutral reference, mirrored torso translation and independent wrist-height signals. A/D or arrows move, Q/E raise and key release lowers. Pause freezes game and effects, and loss resets incomplete gestures. Switch-to-keyboard, camera failure, completion and shutdown release the camera session.
 - Carrot Pull now offers production camera-driven realtime 3D gameplay after existing personal calibration/reference. The original CarrotRound owns shallow-bend/standing holds and the single five-carrot score path. A ground-level soil patch replaces the old raised planter and wooden platform. An assisted bow brings the primary hand to the ground, then the actual palm lifts the clipped root through the soil and transfers it to the basket. Keyboard retains complete Sprite gameplay. WebGL/GLB or unreachable assisted contact visibly falls back to Sprite. Independent DEV bone/grab previews remain available. See `docs/task-4d2-full-3d-carrot-pull.md`.
 - Carrot gameplay and development preview load `rabbit_carrot.glb`. Its rigid single-piece arms, materials and Rest bone transforms come from Berry's canonical V2 export. The V3 body and leg skinning supply planted-foot IK. The shoulders steer the entire arm through 0–90° side and forward raises. Small mirrored medial seating during motion joins the original arm to the torso. Forearm and distal hand bones carry fixed local transforms. Explicit `rabbitRig=v2` or `rabbitRig=v3` selects a historical articulated model in the development preview.
 - Task4D-1 adds the original Task2E carrot as a separate149KB GLB, measured final-bone palm tracking and independent six-state grab/attachment. DEV `rabbitRig=v3&carrotGrabDebug=1` enables the historical two-handed prototype with explicit grab/release/reset/placement, proximity/debug controls, optional bounded145° inward arm planes and signed inward mocap through the existing solver/slew. Manual85–90°raise/0–10°elbow/145°plane holds the upper carrot root; local acceptance uses the explicit placement fixture because ground pickup exceeds the shallow stance reach. Same Three scene/texture,640×700 crop, duplicate Sprite carrot/front soil lip hidden only in this preview. Task4D-2 adds production gameplay separately while retaining this prototype. Geometry/Chrome/manual-pose tests pass. Human/device acceptance remains pending. See `docs/task-4d1-3d-carrot-grabbing.md`.
@@ -94,7 +95,7 @@ Use `npm run dev -- --port 5175 --strictPort` when needed. `scripts/dev.mjs` han
 
 `npm run build:carrot3d` exports the saved Task2E carrot without saving its source scene. `sync:assets` includes the required `model/dist/carrot3d/carrot_realtime.glb` runtime copy.
 
-Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:berry-camera`. Set `QA_URL` explicitly and `QA_OUTPUT` to an absolute temporary directory. Existing scripts use installed Chrome/Playwright; most default to 5173 while Berry defaults to 5175 and V3 to5177. Check script defaults. Readiness checks must await actual snapshots; the installed Playwright runtime treats async `waitForFunction` predicate Promises as immediately truthy. Never accept Xcode licenses on the user's behalf.
+Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:rabbit3d`, `qa:mocap`, `qa:mocap-engine`, `qa:berry`, `qa:berry-camera`, `qa:apple`. Set `QA_URL` explicitly and `QA_OUTPUT` to an absolute temporary directory. Existing scripts use installed Chrome/Playwright; most default to 5173 while Berry defaults to 5175 and V3 to5177. Check script defaults. Readiness checks must await actual snapshots; the installed Playwright runtime treats async `waitForFunction` predicate Promises as immediately truthy. Never accept Xcode licenses on the user's behalf.
 
 ## Open work / next ideas (not authorization)
 
@@ -111,6 +112,16 @@ Browser suites: `qa:carrot-game`, `qa:carrot-grab`, `qa:ik`, `qa:rig-v3`, `qa:ra
 None.
 
 ## Verification and handoff history
+
+### 2026-11-22 — 2026-11-22-lead-apple-harvest — Open Apple Harvest
+- Owner / agent — Codex Lead with round/input, orchard and Playwright workers.
+- Branch / base — main / `5ddf564`. Clean and current after `git pull --ff-only`.
+- Request / scope — Open the third game in the menu with a complete 3D pick, carry and basket challenge. Preserve the gameplay of Carrot Pull and Berry Kick.
+- Changes — Added `src/game/apple/` and `src/game/scenes/AppleHarvestScene.ts` for orchard art, single-piece rabbit arm control, localized UI, rules and lifecycle. The independent round clock drives the 440ms deposit and scores at arrival. Apple alone uses the new shoulder/wrist extraction and retargeting methods. The menu and settings expose 90/120/180 seconds, and the Apple audio profile reuses existing Cantonese guidance and effects. Updated `README.md`, focused unit tests, `scripts/qa-apple-harvest.mjs` and the Berry QA menu-card assertion.
+- Validation — PASS `npm run typecheck`, `npm test` (439), `npm run build`, `npm run qa:apple` (18 Chrome Playwright checks, 1512×982 and 600×800), `npm run qa:berry`, `npm run qa:berry-camera`, and `npm run qa:carrot-game`. Apple keyboard played a full 90-second round, and all three duration choices were exercised. Synthetic camera checks covered mirrored sides, hidden elbows, gesture cancellation after interruptions, and resource release. A separate compiled-build Playwright smoke passed one keyboard deposit and real MediaPipe WASM with a person-free virtual camera. QA evidence is generated into `QA_OUTPUT` as `browser-report.json` and eight screenshots.
+- Risks / blockers — NOT RUN human webcam, Safari/Firefox, and target hardware acceptance. The Berry camera regression emitted its Canvas2D readback performance warning and no app errors.
+- Next action — Human webcam trial on the intended hardware when authorized.
+- Delivery — GitHub `origin/main`.
 
 ### 2026-11-21 — 2026-11-21-lead-berry-targets — Randomized Berry target trees
 - Owner / agent — Codex Lead with bounded round, Playwright and read-only review workers.

@@ -1,7 +1,7 @@
 import type { BerryMotionSample } from './LegExtensionDetector';
 import { validateMotionRange } from '../settings/motionRange';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
-import type { HumanPose } from './HumanPoseExtractor';
+import type { ArmReachPose, HumanPose } from './HumanPoseExtractor';
 import { MOCAP_CONFIG as CONFIG } from './mocapConfig';
 import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 
@@ -61,6 +61,21 @@ export class MotionRetargeter {
     this.armElevationLimit = shoulderOnly && Number.isFinite(maximumArmElevation)
       ? clamp(maximumArmElevation, 0, CONFIG.limits.arm.max) : CONFIG.limits.arm.max;
   }
+
+  retargetArmReach(human: ArmReachPose, reference: Pick<ArmReachPose, 'centerX' | 'shoulderWidth' | 'torsoLean'>) {
+    const armLimit = Math.min(this.armElevationLimit, 90);
+    const pose: RabbitPose = {
+      ...neutralRabbitPose(human.timestampMs),
+      leftArmElevation: (human.leftRaise ?? 0) * armLimit,
+      rightArmElevation: (human.rightRaise ?? 0) * armLimit,
+      torsoLean: clamp(human.torsoLean - reference.torsoLean, -CONFIG.limits.torsoLean, CONFIG.limits.torsoLean),
+      trackingConfidence: human.trackingConfidence,
+    };
+    // The preview is mirrored. Anatomical shoulder labels stay unchanged.
+    const x = clamp(-(human.centerX - reference.centerX) / (1.25 * reference.shoulderWidth), -1, 1);
+    return { pose, x };
+  }
+
   /** Berry motion already uses anatomical sides and normalized, mirrored root translation. */
   retargetLegMotion(sample: BerryMotionSample): BerryMotionSample {
     const finiteLateral = Number.isFinite(sample.lateralOffset);
