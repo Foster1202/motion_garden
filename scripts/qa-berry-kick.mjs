@@ -10,12 +10,13 @@ const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 const report = {
   status: 'RUNNING', url, browser: browser.version(),
   browserRoute: 'Browser plugin not available; existing Playwright and installed Chrome',
-  flow: 'Home settings → Berry keyboard → unlimited harvests → pause/recovery → ten-second countdown → timed results → replay/home',
-  timing: 'The 60-second round runs through normal Phaser updates at timeScale 1. Cosmetic overlap fixtures are identified separately.',
-  checks: [], errors: [], diagnostics: [], fps: [],
+  flow: 'Home settings → random target → wrong tree feedback → accepted target harvests → pause/recovery → countdown → results → replay/home',
+  timing: 'The 60-second round uses normal Phaser updates at timeScale 1. A real Round receives a deterministic RNG before input selection; cosmetic overlap fixtures are identified separately.',
+  checks: [], errors: [], warnings: [], diagnostics: [], fps: [],
 };
 page.on('pageerror', error => report.errors.push(String(error)));
 page.on('console', message => {
+  if (message.type() === 'warning') report.warnings.push(message.text());
   if (message.type() !== 'error') return;
   if (message.text().includes('net::ERR_FAILED')) report.diagnostics.push(message.text());
   else report.errors.push(message.text());
@@ -49,6 +50,25 @@ const settings = async duration => {
   await panel.locator('[type=submit]').click();
   assert.equal(await panel.count(), 0);
 };
+const moveTo = async side => {
+  const key = side === 'left' ? 'a' : 'd';
+  await page.keyboard.down(key);
+  await wait(value => side === 'left' ? value.rootX < 505 : value.rootX > 1095);
+  await page.keyboard.up(key);
+  await page.waitForTimeout(220);
+};
+const verifyTarget = async side => {
+  assert.equal((await snapshot()).target, side);
+  assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), side);
+  assert.match(await page.locator('[data-berry-target-label]').innerText(), side === 'left' ? /左/ : /右/);
+  await page.waitForTimeout(350);
+  const glows = await page.evaluate(async () => {
+    const trees = (await import('/src/main.ts')).game.scene.getScene('BerryKick').trees;
+    return { left: trees.left.targetGlow.alpha, right: trees.right.targetGlow.alpha };
+  });
+  assert.ok(glows[side] > .98, `Target ${side} glow is ${glows[side]}`);
+  assert.ok(glows[side === 'left' ? 'right' : 'left'] < .02);
+};
 const cosmeticState = () => page.evaluate(async () => {
   const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
   return {
@@ -56,6 +76,9 @@ const cosmeticState = () => page.evaluate(async () => {
       text: element.textContent, style: element.getAttribute('style'),
       times: element.getAnimations().map(animation => animation.currentTime),
     })),
+    targetAnimations: [...document.querySelector('[data-berry-target]').getAnimations()].map(animation => animation.currentTime),
+    target: scene.round.target,
+    glows: { left: scene.trees.left.targetGlow.alpha, right: scene.trees.right.targetGlow.alpha },
     fruit: scene.children.list.filter(child => child.texture?.key === 'berry-berry' && !child.parentContainer)
       .map(child => ({ x: child.x, y: child.y, alpha: child.alpha, scaleX: child.scaleX })),
   };
@@ -110,6 +133,21 @@ try {
   assert.equal(await page.locator('[data-berry-left],[data-berry-right],.berry-progress').count(), 0);
   assert.match(await page.locator('.berry-score').innerText(), /收集\s+0/);
   assert.ok(!(await page.locator('.berry-score').innerText()).includes('/'));
+  await page.evaluate(async () => {
+    const { BerryKickRound } = await import('/src/game/berry/BerryKickRound.ts');
+    const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
+    const draws = [0, 0, 0, 1, 1, 1, 0];
+    window.__berryTargetDraws = 0;
+    window.__berryContacts = [];
+    // A seeded real round makes repeated and forced targets reproducible through actual controls.
+    scene.round = new BerryKickRound(scene.round.zones, 60, () => draws[window.__berryTargetDraws++] ?? .25);
+    const update = scene.round.update.bind(scene.round);
+    scene.round.update = (...args) => {
+      const contact = update(...args);
+      if (contact) window.__berryContacts.push({ ...contact, target: scene.round.target, draws: window.__berryTargetDraws });
+      return contact;
+    };
+  });
   await dialog().locator('[data-action=keyboard]').click();
   await wait(value => value.active && value.renderMode === '3d');
   await page.evaluate(() => {
@@ -130,25 +168,47 @@ try {
     observer.observe(document.getElementById('game-ui'), { childList: true, subtree: true });
     window.__berryObserver = observer;
   });
+  await verifyTarget('left');
   await page.screenshot({ path: `${output}/garden-1920.png` });
   await hold('q', 800);
   assert.equal((await snapshot()).score, 0);
   await page.waitForTimeout(450);
-  await hold('a', 1800);
-  await page.waitForTimeout(400);
-  await hold('e', 600);
+  await moveTo('right');
+  await hold('q', 600);
   assert.equal((await snapshot()).score, 0);
   await page.waitForTimeout(400);
-  check('60-second HUD, removed per-tree caps, center extension and wrong-foot rejection');
+  check('60-second HUD, removed caps, center extension and wrong-foot rejection');
 
-  for (let harvest = 1; harvest <= 4; harvest++) {
-    await page.keyboard.down('q');
-    const value = await wait(state => state.score === harvest * 3);
+  await page.keyboard.down('e');
+  await page.waitForFunction(() => window.__berryContacts.some(contact => contact.kind === 'wrong-tree'));
+  await page.waitForTimeout(100);
+  assert.match(await page.locator('[data-berry-hint]').innerText(), /左/);
+  assert.ok(await page.locator('[data-berry-target]').evaluate(element => element.getAnimations().length) > 0);
+  await page.screenshot({ path: `${output}/wrong-right-tree.png` });
+  await page.waitForTimeout(1300);
+  assert.equal((await snapshot()).score, 0);
+  assert.equal(await page.evaluate(() => window.__berryContacts.length), 1);
+  assert.equal(await page.evaluate(() => window.__berryTargetDraws), 1);
+  assert.equal((await cosmeticState()).fruit.length, 0);
+  assert.equal(await page.locator('.berry-score-popup').count(), 0);
+  await verifyTarget('left');
+  await page.keyboard.up('e');
+  await page.waitForTimeout(350);
+  check('Actual wrong-tree collision gives one gentle cue while held, with no berries, RNG draw or target change');
+
+  const targetSequence = ['left', 'left', 'left', 'right', 'right', 'right', 'left', 'right'];
+  for (let index = 0; index < targetSequence.length; index++) {
+    const side = targetSequence[index];
+    assert.equal((await snapshot()).target, side);
+    await moveTo(side);
+    const key = side === 'left' ? 'q' : 'e';
+    await page.keyboard.down(key);
+    const value = await wait(state => state.score === (index + 1) * 3);
     report.fps.push(value.fps);
-    assert.ok(value.feet.left.x >= value.zones.left.x && value.feet.left.x <= value.zones.left.x + value.zones.left.width);
+    assert.ok(value.feet[side].x >= value.zones[side].x && value.feet[side].x <= value.zones[side].x + value.zones[side].width);
     await page.locator('.berry-score-popup').waitFor();
     assert.match(await page.locator('.berry-score-popup').last().innerText(), /🍓\s*\+3/);
-    if (harvest === 1) {
+    if (index === 0) {
       await page.waitForTimeout(100);
       await page.screenshot({ path: `${output}/berries-falling.png` });
       await page.locator('.berry-hud [data-action=pause]').click();
@@ -163,35 +223,26 @@ try {
       await page.waitForTimeout(80);
       assert.notDeepEqual(await cosmeticState(), frozen);
       await page.waitForTimeout(1250);
-      assert.equal((await snapshot()).score, 3);
-      check('Long pause freezes rule clock, popup WAAPI time and three falling berries; resume continues smoothly');
-    } else {
-      await page.waitForTimeout(1150);
-      assert.equal((await snapshot()).score, harvest * 3);
+      check('Pause freezes target, halo, game clock, popup and three falling berries; resume continues');
+    } else await page.waitForTimeout(1000);
+    assert.equal((await snapshot()).score, (index + 1) * 3);
+    await page.keyboard.up(key);
+    await page.waitForTimeout(400);
+    const next = index === targetSequence.length - 1 ? 'left' : targetSequence[index + 1];
+    await verifyTarget(next);
+    if (index === 2 || index === 5) {
+      assert.equal(await page.evaluate(() => window.__berryTargetDraws), index === 2 ? 3 : 5);
+      await page.screenshot({ path: `${output}/forced-target-${next}.png` });
     }
-    await page.keyboard.up('q');
-    await page.waitForTimeout(500);
-  }
-  assert.equal((await snapshot()).counts.left, 4);
-  assert.equal((await snapshot()).complete, false);
-  check('Four actual same-tree harvests yield 12 berries; held leg and cooldown prevent duplicates; tree replenishes');
-
-  await page.setViewportSize({ width: 1512, height: 982 });
-  await page.waitForTimeout(250);
-  await page.screenshot({ path: `${output}/garden-1512.png` });
-  await hold('d', 3100);
-  await page.waitForTimeout(400);
-  for (let harvest = 1; harvest <= 4; harvest++) {
-    await page.keyboard.down('e');
-    const value = await wait(state => state.score === 12 + harvest * 3);
-    assert.ok(value.feet.right.x >= value.zones.right.x && value.feet.right.x <= value.zones.right.x + value.zones.right.width);
-    await page.keyboard.up('e');
-    await page.waitForTimeout(1150);
   }
   assert.deepEqual((await snapshot()).counts, { left: 4, right: 4 });
   assert.equal((await snapshot()).score, 24);
   assert.equal((await snapshot()).complete, false);
-  check('Both trees support more than three harvests with real projected foot contact and no six-hit completion');
+  report.contacts = await page.evaluate(() => window.__berryContacts);
+  check('Eight accepted target hits preserve +3 scoring, repeats, max-three target streak, both halo directions and unlimited totals');
+  await page.setViewportSize({ width: 1512, height: 982 });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: `${output}/garden-1512.png` });
 
   await page.evaluate(async () => {
     const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
@@ -216,7 +267,10 @@ try {
     const paused = await snapshot();
     await page.waitForTimeout(700);
     assert.equal((await snapshot()).clock, paused.clock);
-    if (event === 'visibilitychange') await page.evaluate(() => Reflect.deleteProperty(document, 'hidden'));
+    if (event === 'visibilitychange') await page.evaluate(() => {
+      Reflect.deleteProperty(document, 'hidden');
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
     await dialog().locator('[data-action=resume]').click();
     await page.waitForTimeout(100);
   }
@@ -247,9 +301,11 @@ try {
   await page.setViewportSize({ width: 1512, height: 982 });
   await wait(value => value.remainingMs <= 8500 && value.remainingMs > 8000, 3000);
   await page.screenshot({ path: `${output}/countdown-9.png` });
-  await page.keyboard.down('e');
+  const finalTarget = (await snapshot()).target;
+  const finalKey = finalTarget === 'left' ? 'q' : 'e';
+  await page.keyboard.down(finalKey);
   await wait(value => value.completeShown, 15000);
-  await page.keyboard.up('e');
+  await page.keyboard.up(finalKey);
   const complete = await snapshot();
   assert.equal(complete.remainingMs, 0);
   assert.equal(complete.elapsedMs, 60000);

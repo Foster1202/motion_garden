@@ -3,12 +3,37 @@ import { BERRY_CONFIG as C, BERRY_FRUIT_ANCHORS, berryKey, type BerrySide, type 
 export class TreeTrunk {
   readonly root: Phaser.GameObjects.Container;
   readonly zone: TreeTrunkHitZone;
+  private readonly targetGlow: Phaser.GameObjects.Image;
   private readonly fruit: Phaser.GameObjects.Image[] = [];
   private readonly falling = new Set<Phaser.GameObjects.Image>();
   constructor(private readonly scene: Phaser.Scene, readonly side: BerrySide) {
     const x = C.tree[side];
     this.root = scene.add.container(x, C.tree.y).setDepth(3);
-    this.root.add(scene.add.image(0, 0, berryKey(`tree_${side}`)).setOrigin(.5, 1).setDisplaySize(C.tree.width, C.tree.height));
+    const treeKey = berryKey(`tree_${side}`);
+    const glowKey = berryKey(`target-glow-${side}`);
+    const { width, height } = C.tree;
+    const padding = 32;
+    if (!scene.textures.exists(glowKey)) {
+      const texture = scene.textures.createCanvas(glowKey, width + 2 * padding, height + 2 * padding)!;
+      const source = scene.textures.get(treeKey).getSourceImage() as HTMLImageElement;
+      const context = texture.context;
+      context.shadowColor = '#ffc347';
+      context.shadowBlur = 22;
+      context.drawImage(source, padding, padding, width, height);
+      context.shadowColor = '#fff09a';
+      context.shadowBlur = 7;
+      context.drawImage(source, padding, padding, width, height);
+      // Retain the glow outside the tree silhouette.
+      context.shadowBlur = 0;
+      context.shadowColor = 'transparent';
+      context.globalCompositeOperation = 'destination-out';
+      context.drawImage(source, padding, padding, width, height);
+      context.globalCompositeOperation = 'source-over';
+      texture.refresh();
+    }
+    this.targetGlow = scene.add.image(0, padding, glowKey).setOrigin(.5, 1).setName(glowKey).setAlpha(0);
+    this.root.add(this.targetGlow);
+    this.root.add(scene.add.image(0, 0, treeKey).setOrigin(.5, 1).setDisplaySize(width, height));
     this.zone = { x: x - C.tree.width * .045, y: C.tree.y - C.tree.height * .55, width: C.tree.width * .09, height: C.tree.height * .52 };
     for (let i = 0; i < 9; i++) {
       const [u, v] = BERRY_FRUIT_ANCHORS[side][i];
@@ -16,6 +41,15 @@ export class TreeTrunk {
       const fruit = scene.add.image((u - .5) * C.tree.width, (v - 1) * C.tree.height,
         berryKey('berry')).setDisplaySize(size, size).setAngle((i % 3 - 1) * 8);
       this.root.add(fruit); this.fruit.push(fruit);
+    }
+  }
+  setTarget(active: boolean, transitionMs = 0) {
+    this.scene.tweens.killTweensOf(this.targetGlow);
+    const alpha = active ? 1 : 0;
+    if (transitionMs > 0) {
+      this.scene.tweens.add({ targets: this.targetGlow, alpha, duration: transitionMs, ease: 'Sine.easeInOut' });
+    } else {
+      this.targetGlow.setAlpha(alpha);
     }
   }
   harvest() {

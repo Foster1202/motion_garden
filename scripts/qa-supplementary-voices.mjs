@@ -373,7 +373,12 @@ try {
   await poll(audio, value => value.active.some(event => event.id === 'safety'));
   await page.waitForTimeout(150);
   assert.equal(await count('safety'), berrySafety);
+  const beforeObsoleteReady = await count('berry-ready');
   await selectKeyboard('BerryKick');
+  await page.waitForTimeout(250);
+  assert.equal(await count('berry-ready'), beforeObsoleteReady);
+  // Audio-only playback verifies that explicit rest still cancels an active legacy recording.
+  await page.evaluate(async () => (await import('/src/main.ts')).game.scene.getScene('BerryKick').audio.playVoice('ready'));
   await poll(audio, value => value.active.some(event => event.id === 'berry-ready'));
   const berryRest = await count('rest');
   await pauseButton('BerryKick').click();
@@ -384,7 +389,7 @@ try {
   await dialog().locator('[data-action=resume]').click();
   await page.waitForTimeout(120);
   assert.equal((await audio()).active.some(event => event.id === 'rest'), false);
-  check('Berry intro shares safety once; explicit pause narrates rest and Resume cancels it without replaying the first instruction');
+  check('Berry intro shares safety once and keeps obsolete ready speech silent; explicit rest cancels an audio-only legacy fixture and Resume cancels rest');
 
   // The Berry fixture supplies reliability states through its normal update method.
   await page.evaluate(async () => {

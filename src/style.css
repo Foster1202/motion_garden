@@ -1305,18 +1305,25 @@ kbd {
 .game-cards { grid-template-columns: repeat(4, 1fr); }
 /* Berry orchard visual theme; gameplay geometry stays in logical coordinates. */
 .berry-hud { position:absolute; inset:3% 4% auto; display:flex; align-items:center; gap:1.05cqw; color:#294d3a; }
+.berry-hud-controls { margin-left:auto; display:flex; align-items:center; gap:.85cqw; }
 .berry-title { padding:.65cqw 1.4cqw .8cqw; background:linear-gradient(120deg,#fffcf1f5,#fff5dce6); border:1px solid #d5b77e; border-radius:1.2cqw; box-shadow:0 .3cqw .8cqw #63502b12,inset 0 0 0 3px #ffffff72; }
 .berry-hud h1 { font-size:2.5cqw; line-height:1.2; letter-spacing:.06em; }
 .berry-eyebrow { display:block; font-size:.95cqw; letter-spacing:.2em; color:#69774e; margin-bottom:.15cqw; }
-.berry-score { display:flex; align-items:center; gap:.55cqw; padding:.65em 1.1em; background:linear-gradient(#fffdf4,#fff6df); border:1px solid #d9bc87; border-radius:1.2cqw; box-shadow:0 .25cqw .6cqw #63502b15,inset 0 0 0 3px #fff9; font-size:2cqw; white-space:nowrap; }
+.berry-score { display:flex; align-items:center; gap:.55cqw; padding:.65em .8em; background:linear-gradient(#fffdf4,#fff6df); border:1px solid #d9bc87; border-radius:1.2cqw; box-shadow:0 .25cqw .6cqw #63502b15,inset 0 0 0 3px #fff9; font-size:1.9cqw; white-space:nowrap; }
 .berry-score img { width:2.5cqw; height:2.5cqw; object-fit:contain; }
 .berry-score b { color:#9b3543; font-variant-numeric:tabular-nums; }
-.berry-hud .button { font-size:1.5cqw; min-height:0; border:1px solid #d3bc91; background:#fff9e9f2; border-radius:1.1cqw; box-shadow:0 .2cqw .5cqw #63502b12; }
+.berry-hud .button { font-size:1.5cqw; min-height:0; padding:.8em .9em; white-space:nowrap; border:1px solid #d3bc91; background:#fff9e9f2; border-radius:1.1cqw; box-shadow:0 .2cqw .5cqw #63502b12; }
 .berry-hud .button:hover { background:#fffef7; transform:translateY(-1px); }
-.berry-timer { margin-left:auto; min-width:12cqw; display:flex; flex-direction:column; align-items:center; padding:.45cqw 1.3cqw; border:2px solid #aac49a; border-radius:1.3cqw; background:linear-gradient(#faffee,#e7f0ce); box-shadow:0 .3cqw .6cqw #53623b18,inset 0 0 0 3px #fff8; }
+.berry-timer { min-width:10.8cqw; display:flex; flex-direction:column; align-items:center; padding:.45cqw 1cqw; border:2px solid #aac49a; border-radius:1.3cqw; background:linear-gradient(#faffee,#e7f0ce); box-shadow:0 .3cqw .6cqw #53623b18,inset 0 0 0 3px #fff8; }
 .berry-timer span { font-size:1.05cqw; font-weight:700; letter-spacing:.12em; }
 .berry-timer strong { font-size:3cqw; line-height:1.1; font-variant-numeric:tabular-nums; }
 .berry-timer[data-urgent=true] { color:#a73c46; border-color:#d7998e; background:linear-gradient(#fff9e8,#fbe4d8); }
+.berry-target { position:absolute; left:50%; translate:-50% 0; display:grid; justify-items:center; gap:.02cqw; width:9.6cqw; padding:.35cqw .7cqw .5cqw; color:#775026; background:linear-gradient(#fff8d9,#f8dda1); border:2px solid #d9ab5b; border-radius:1.45cqw; box-shadow:0 .3cqw .75cqw #72532b23,inset 0 0 0 3px #fff6d9a8; pointer-events:none; }
+.berry-target[hidden] { display:none; }
+.berry-target > span { font-size:1.05cqw; font-weight:750; letter-spacing:.1em; }
+.berry-target-direction { display:flex; align-items:center; gap:.55cqw; font-size:3.15cqw; line-height:1.12; text-shadow:0 .12cqw #fff8df; }
+.berry-target-arrow { order:1; font-size:.87em; }
+.berry-target[data-side=left] .berry-target-arrow { order:-1; transform:scaleX(-1); }
 .berry-effects { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
 .berry-score-popup { position:absolute; top:25%; z-index:2; font-size:3.6cqw; line-height:1.3; font-weight:900; color:#ad3f52; white-space:nowrap; -webkit-text-stroke:.25cqw #fffcdf; paint-order:stroke fill; text-shadow:0 .3cqw 0 #e7ba83,0 .4cqw .5cqw #61462b25; will-change:transform,opacity; }
 .berry-countdown-digit { position:absolute; top:21%; left:50%; font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif; font-size:8.4cqw; font-weight:950; line-height:1.15; color:#e99755; -webkit-text-stroke:.6cqw #fff9dc; paint-order:stroke fill; text-shadow:0 .55cqw 0 #bd7055,0 .8cqw 1cqw #6e40202a; will-change:transform,opacity; }

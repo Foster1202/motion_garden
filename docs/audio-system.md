@@ -1,18 +1,18 @@
 # 遊戲音效與後續配音／BGM
 
-更新於 2026-11-20。
+更新於 2026-11-21。
 
 ## 使用方式
 
 首頁「設置」提供獨立的「音效開關／音效音量」及「語音開關／語音音量」，預設均開啟，音效60%、語音80%。儲存後即時套用，重新載入亦會保留。取消會放棄當次修改，恢復預設需按儲存才生效。舊版 localStorage 會補上音效預設值並保留已有設定。
 
-五個音效包含四個原創短音，以及 2.8 秒的真人歡呼伴掌聲完成提示。完成提示使用 jessepash 的 CC0 錄音，經裁剪、頻率處理、淡入淡出及峰值限制。來源、檔案規格與數位響度列於音效授權文檔。已接入使用者提供的十四段粵語配音，BGM 預設音量25%，可按下方接口加入音樂。[音效授權文檔](../THIRD_PARTY_NOTICES.md#audio-asset-provenance)
+五個音效包含四個原創短音，以及 2.8 秒的真人歡呼伴掌聲完成提示。完成提示使用 jessepash 的 CC0 錄音，經裁剪、頻率處理、淡入淡出及峰值限制。來源、檔案規格與數位響度列於音效授權文檔。收錄使用者提供的十四段粵語配音，BGM 預設音量25%，可按下方接口加入音樂。[音效授權文檔](../THIRD_PARTY_NOTICES.md#audio-asset-provenance)
 
 ## 管理與事件
 
 每個場景持有一個 `AudioManager`。建立時預載及解碼五個音效 WAV 及該遊戲的配音，首次可信任的 pointer／keyboard 互動會恢復 AudioContext。場景切換後可沿用瀏覽器已授予的使用者互動資格，後續互動亦可重試恢復。尚未完成解碼或解鎖的短音事件直接略過。`preload()` 可等待解碼完成，並重試先前載入失敗的音效。
 
-UI 按鈕在 `#game-ui` 內共用 capture click listener，滑鼠及鍵盤啟動均只觸發一次。拔蘿蔔在每棵首次 GRABBED 播放抓握音，Sprite 在實際 pull 回調播放收穫音，正式 3D 在 SUCCESS 轉換播放收穫音。每棵分數標記防止重入或回退重播。拔蘿蔔的初次引導等待玩家選好輸入模式、完成相機動作設定及穩定參考後播放。明確繼續／重設輸入會按當前步驟重新引導。莓果只在 `BerryKickRound` 接受命中並加三分時播放一次收集音。莓果玩法說明在開局後第一個可靠輸入才播放，成功鼓勵會保留正在播放的說明，並與上一段成功語音至少相隔8秒。兩個遊戲在唯一完成入口清理先前聲源並播放各自的完成配音及共同掌聲。
+UI 按鈕在 `#game-ui` 內共用 capture click listener，滑鼠及鍵盤啟動均只觸發一次。拔蘿蔔在每棵首次 GRABBED 播放抓握音，Sprite 在實際 pull 回調播放收穫音，正式 3D 在 SUCCESS 轉換播放收穫音。每棵分數標記防止重入或回退重播。拔蘿蔔的初次引導等待玩家選好輸入模式、完成相機動作設定及穩定參考後播放。明確繼續／重設輸入會按當前步驟重新引導。莓果只在 `BerryKickRound` 確認目標樹命中並加三分時播放一次收集音。開局對話框以文字解釋隨機目標，原先提到兩邊都可收集的錄音保留作存檔。成功鼓勵保留正在播放的配音，與上一段成功語音至少相隔8秒。兩個遊戲在唯一完成入口清理先前聲源並播放各自的完成配音及共同掌聲。
 
 同一音效 45ms 內去重，UI 按鈕為 80ms。每次播放使用獨立 BufferSource，最多六個短音同時播放。達上限時停止最早的短音。輸出經各頻道 gain、master gain 及 compressor 到 destination。
 
@@ -20,7 +20,7 @@ UI 按鈕在 `#game-ui` 內共用 capture click listener，滑鼠及鍵盤啟動
 
 載入／解碼失敗及不支援 Web Audio 的環境會安全略過播放。`snapshot()` 提供解鎖狀態、頻道音量、活躍聲源、累計短音次數及有界錯誤摘要，供既有場景 debug snapshot 與 QA 使用。
 
-## 已接入的粵語錄音
+## 收錄的粵語錄音
 
 原始 M4A 保留於 `assets/audio-sources/`。以下文案依使用者提供的檔名記錄，聲音處理只調整音頻訊號。`assets/audio-sources/voice-processing.json` 記錄每段原檔／輸出雜湊、裁剪位置、響度與處理參數。
 
@@ -30,7 +30,7 @@ UI 按鈕在 `#game-ui` 內共用 capture click listener，滑鼠及鍵盤啟動
 | 蘿蔔捉穩／起身 | `捉實啦 慢慢企返起身.m4a` | `carrot-grabbed.wav` |
 | 蘿蔔成功拔出 | `成功抆到蘿蔔好叻呀.m4a` | `carrot-success.wav` |
 | 蘿蔔五棵完成 | `完成啦.m4a` | `carrot-complete.wav` |
-| 莓果開局玩法 | `左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳.m4a` | `berry-ready.wav` |
+| 莓果原開局玩法（存檔） | `左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳.m4a` | `berry-ready.wav` |
 | 莓果收集鼓勵 | `好叻呀！莓果跌落嚟喇.m4a` | `berry-success.wav` |
 | 莓果限時完成 | `挑戰完成.m4a` | `berry-complete.wav` |
 | 兩個遊戲的安全提示 | `請保持地面清爽旁邊最好有穩固嘅凳.m4a` | `safety.wav` |
@@ -55,11 +55,11 @@ npm run prepare:voices
 
 ## 可補錄的語句
 
-兩個遊戲的主要活動及輔助提示已有配音。鏡頭啟動失敗仍以文字提供恢復方法，可補錄「鏡頭暫時未能開啟，可以揀鍵盤試玩。」以補上這項提示。
+兩個遊戲的收穫及輔助提示均有配音。鏡頭啟動失敗仍以文字提供恢復方法，可補錄「鏡頭暫時未能開啟，可以揀鍵盤試玩。」以補上這項提示。
 
 ## 加入配音
 
-將自己的錄音加入 `public/assets/audio/voice/`，在對應場景持有的 AudioManager 註冊。`registerVoice()` 回傳的 Promise 在載入嘗試完成後結束，錯誤可由 snapshot 查閱。現有 ready／grabbed／success／complete 事件已有場景呼叫，其餘 ID 可用於後續說明事件。錄音應在事件發生前完成註冊，並在使用者選擇輸入模式／開始說明時播放 ready。
+將自己的錄音加入 `public/assets/audio/voice/`，在對應場景持有的 AudioManager 註冊。`registerVoice()` 回傳的 Promise 在載入嘗試完成後結束，錯誤可由 snapshot 查閱。拔蘿蔔 ready／grabbed 及兩個遊戲的 success／complete 事件由場景呼叫，其餘 ID 可用於後續說明事件。錄音應在事件發生前完成註冊，並在使用者選擇輸入模式／開始說明時播放 ready。
 
 ```ts
 const audio = new AudioManager('carrot');

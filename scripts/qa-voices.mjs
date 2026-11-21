@@ -162,9 +162,15 @@ const waitVoiceEnded = id => poll(audio, value => {
 }, 20000);
 const voiceCounts = async () => Object.fromEntries(await Promise.all(voiceIds.map(async id => [id, await count(id)])));
 const berryHit = async targetScore => {
-  await page.keyboard.down('q');
+  const side = (await sceneSnapshot('BerryKick')).target;
+  const movement = side === 'left' ? 'a' : 'd';
+  const kick = side === 'left' ? 'q' : 'e';
+  await page.keyboard.down(movement);
+  await poll(() => sceneSnapshot('BerryKick'), value => side === 'left' ? value.rootX < 505 : value.rootX > 1095);
+  await page.keyboard.up(movement);
+  await page.keyboard.down(kick);
   await poll(() => sceneSnapshot('BerryKick'), value => value.score === targetScore);
-  await page.keyboard.up('q');
+  await page.keyboard.up(kick);
   await page.waitForTimeout(550);
 };
 
@@ -333,18 +339,27 @@ try {
   await enter('BerryKick');
   await page.waitForTimeout(180);
   assert.equal(await count('berry-ready'), 0);
+  await page.evaluate(async () => {
+    const { BerryKickRound } = await import('/src/game/berry/BerryKickRound.ts');
+    const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
+    const draws = [0, 0, 1, 1];
+    let index = 0;
+    // Seed real targets to keep movement inside the existing reward cooldown assertions.
+    scene.round = new BerryKickRound(scene.round.zones, scene.round.durationMs / 1000, () => draws[index++] ?? .25);
+  });
   await dialog().locator('[data-action=keyboard]').click();
+  await poll(() => sceneSnapshot('BerryKick'), value => value.active);
+  await page.waitForTimeout(250);
+  assert.equal(await count('berry-ready'), 0);
+  // Audio-only fixture retains instruction protection coverage for the registered legacy recording.
+  await page.evaluate(async () => (await import('/src/main.ts')).game.scene.getScene('BerryKick').audio.playVoice('ready'));
   await poll(audio, value => value.active.some(event => event.id === 'berry-ready'));
-  await page.keyboard.down('a');
-  await page.waitForTimeout(1800);
-  await page.keyboard.up('a');
-  assert.ok((await audio()).active.some(event => event.id === 'berry-ready'));
   await berryHit(3);
   assert.equal(await count('berry-success'), 0);
   await waitVoiceEnded('berry-ready');
   const berryIntro = (await audio()).starts.filter(event => event.id === 'berry-ready').at(-1);
   assert.equal(berryIntro.stopped, false);
-  check('Berry ready voice waits for reliable active gameplay and the first accepted +3 hit preserves the full spoken instruction');
+  check('Berry leaves obsolete ready narration silent; an audio-only legacy recording fixture remains uninterrupted by an accepted target hit');
 
   await berryHit(6);
   await poll(() => count('berry-success'), value => value === 1);
@@ -390,11 +405,15 @@ try {
   await page.waitForTimeout(120);
   assert.equal(await count('berry-ready'), beforeBerryReplay);
   await dialog().locator('[data-action=keyboard]').click();
+  await page.waitForTimeout(250);
+  assert.equal(await count('berry-ready'), beforeBerryReplay);
+  // Replay also stays silent until this explicit audio-only playback fixture.
+  await page.evaluate(async () => (await import('/src/main.ts')).game.scene.getScene('BerryKick').audio.playVoice('ready'));
   await poll(() => count('berry-ready'), value => value === beforeBerryReplay + 1);
   await page.locator('.berry-hud [data-action=home]').click();
   await homeReady();
   assert.equal((await audio()).active.filter(isVoice).length, 0);
-  check('Berry restart creates a fresh instruction after selection and Home stops its active recording');
+  check('Berry replay keeps obsolete instructions silent and Home stops an explicitly played audio-only recording fixture');
 
   await page.evaluate(async () => {
     const { getGameSettings, saveGameSettings } = await import('/src/game/settings/gameSettings.ts');

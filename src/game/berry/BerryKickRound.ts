@@ -3,6 +3,10 @@ export type BerryState = 'READY' | 'MOVING' | 'LEG_EXTENDING' | 'TREE_HIT' | 'BE
 export interface BerryRoundInput {
   left: number; right: number; feet: Record<BerrySide, FootPoint>; reliable: boolean; rootX: number;
 }
+export interface BerryContact {
+  kind: 'harvest' | 'wrong-tree';
+  side: BerrySide;
+}
 export class BerryKickRound {
   readonly counts = { left: 0, right: 0 };
   private readonly armed = { left: false, right: false };
@@ -10,12 +14,17 @@ export class BerryKickRound {
   private clock = 0;
   private lastHitAt = -Infinity;
   private isPaused = false;
+  private currentTarget: BerrySide;
+  private targetStreak = 1;
   readonly durationMs: number;
   state: BerryState = 'READY';
-  constructor(readonly zones: Record<BerrySide, TreeTrunkHitZone>, durationSeconds: number = C.defaultDurationSeconds) {
+  constructor(readonly zones: Record<BerrySide, TreeTrunkHitZone>, durationSeconds: number = C.defaultDurationSeconds,
+    private readonly random: () => number = Math.random) {
     const duration = C.durationOptions.some(option => option === durationSeconds) ? durationSeconds : C.defaultDurationSeconds;
     this.durationMs = duration * 1000;
+    this.currentTarget = this.random() < .5 ? 'left' : 'right';
   }
+  get target() { return this.currentTarget; }
   get score() { return (this.counts.left + this.counts.right) * C.berriesPerHit; }
   get elapsedMs() { return this.clock; }
   get remainingMs() { return this.durationMs - this.clock; }
@@ -26,7 +35,7 @@ export class BerryKickRound {
     this.isPaused = value;
     this.armed.left = this.armed.right = false;
   }
-  update(deltaMs: number, input: BerryRoundInput): BerrySide | undefined {
+  update(deltaMs: number, input: BerryRoundInput): BerryContact | undefined {
     if (this.paused || this.complete) return undefined;
     if (!Number.isFinite(deltaMs) || deltaMs <= 0) {
       this.armed.left = this.armed.right = false; return undefined;
@@ -47,8 +56,15 @@ export class BerryKickRound {
       const correctPosition = side === 'left' ? input.rootX < 720 : input.rootX > 880;
       if (this.armed[side] && input[side] >= C.extensionThreshold
         && this.clock >= this.nextHit[side] && correctPosition && footInTrunk(input.feet[side], this.zones[side])) {
-        this.counts[side]++; this.armed[side] = false; this.nextHit[side] = this.clock + C.cooldownMs;
-        this.lastHitAt = this.clock; this.state = 'TREE_HIT'; return side;
+        this.armed[side] = false; this.nextHit[side] = this.clock + C.cooldownMs;
+        if (side !== this.target) {
+          this.state = 'RECOVERY';
+          return { kind: 'wrong-tree', side };
+        }
+        this.counts[side]++;
+        this.lastHitAt = this.clock; this.state = 'TREE_HIT';
+        this.advanceTarget();
+        return { kind: 'harvest', side };
       }
     }
     const elapsed = this.clock - this.lastHitAt;
@@ -57,7 +73,14 @@ export class BerryKickRound {
         : Math.abs(input.rootX - 800) > 30 ? 'MOVING' : 'READY';
     return undefined;
   }
+  private advanceTarget() {
+    let next: BerrySide;
+    if (this.targetStreak >= C.maxTargetStreak) next = this.target === 'left' ? 'right' : 'left';
+    else next = this.random() < .5 ? 'left' : 'right';
+    this.targetStreak = next === this.target ? this.targetStreak + 1 : 1;
+    this.currentTarget = next;
+  }
   snapshot() { return { score: this.score, counts: { ...this.counts }, state: this.state, paused: this.paused,
     armed: { ...this.armed }, clock: this.clock, durationMs: this.durationMs, elapsedMs: this.elapsedMs,
-    remainingMs: this.remainingMs, complete: this.complete }; }
+    remainingMs: this.remainingMs, complete: this.complete, target: this.target }; }
 }

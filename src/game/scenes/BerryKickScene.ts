@@ -12,11 +12,13 @@ import { AudioManager } from '../systems/AudioManager';
 import { tryVoiceCue } from '../systems/voiceCue';
 
 interface BerryEffect {
-  element: HTMLElement;
+  element?: HTMLElement;
   animation: Animation;
   startedAt: number;
   duration: number;
 }
+
+const TARGET_LABEL = { left: '左', right: '右' } as const;
 
 export class BerryKickScene extends Phaser.Scene {
   private ui!: Overlay;
@@ -33,14 +35,14 @@ export class BerryKickScene extends Phaser.Scene {
   private dead = false;
   private failed = false;
   private completeShown = false;
-  private readyVoicePending = true;
   private safetyVoicePending = true;
   private restVoiceRequest = 0;
   private trackingLostAt?: number;
   private trackingVoiceIssued = false;
   private voiceTrackingReliable = false;
   private skipNextDelta = true;
-  private feedbackUntil = 0;
+  private feedback?: { kind: 'harvest' | 'wrong-tree'; until: number };
+  private targetBadge!: HTMLElement;
   private lastCountdown = 11;
   private popupIndex = 0;
   private readonly effects = new Set<BerryEffect>();
@@ -57,14 +59,14 @@ export class BerryKickScene extends Phaser.Scene {
   create() {
     this.audio = new AudioManager('berry');
     this.dead = this.active = this.paused = this.failed = this.completeShown = false;
-    this.readyVoicePending = true;
     this.safetyVoicePending = true;
     this.restVoiceRequest = 0;
     this.trackingLostAt = undefined;
     this.trackingVoiceIssued = false;
     this.voiceTrackingReliable = false;
     this.skipNextDelta = true;
-    this.feedbackUntil = this.popupIndex = 0;
+    this.feedback = undefined;
+    this.popupIndex = 0;
     this.lastCountdown = 11;
     this.feet = undefined;
     this.effects.clear();
@@ -107,7 +109,7 @@ export class BerryKickScene extends Phaser.Scene {
       if (this.dead || signal.aborted) { rabbit.dispose(); return; }
       try { this.view = new BerryRabbitView(this, rabbit, () => this.modelFailure()); }
       catch (error) { rabbit.dispose(); throw error; }
-      this.ui.dialog(`<h2 id="dialog-title">準備好啦！</h2><p>${this.round.durationMs / 1000} 秒內，每次踢中樹幹就收集 3 顆莓果，左右兩邊都可以繼續收集！<br>舒服地慢慢伸腳，可在旁邊放穩固椅子作支撐。</p>
+      this.ui.dialog(`<h2 id="dialog-title">準備好啦！</h2><p>${this.round.durationMs / 1000} 秒內，跟住箭嘴去發光嘅目標樹旁，伸腳掂中樹幹就有 3 顆莓果。得分後先收返隻腳，再跟下一個目標。<br>舒服地慢慢伸腳，可在旁邊放穩固椅子作支撐，唔使踢任何真實物件。</p>
         <button class="button primary" data-action="camera">開啟攝像頭</button>
         <button class="button secondary" data-action="keyboard">鍵盤試玩</button>
         <button class="button quiet" data-action="home">返回主頁</button>`);
@@ -131,17 +133,40 @@ export class BerryKickScene extends Phaser.Scene {
   private begin() {
     this.safetyVoicePending = false;
     this.ui.closeModal(); this.active = true; this.paused = false; this.skipNextDelta = true;
-    this.ui.text('[data-berry-hint]', '準備好啦！我哋一齊收集莓果！');
+    this.updateTarget();
+    this.ui.text('[data-berry-hint]', this.targetHint());
   }
   private renderHud() {
     this.ui.render(`<header class="berry-hud"><div class="berry-title"><span class="berry-eyebrow">動態花園</span><h1>莓果大豐收</h1></div>
-      <div class="berry-timer" data-berry-timer><span>剩餘時間</span><strong data-berry-time role="timer">${this.formatTime(this.round.remainingMs)}</strong></div>
+      <div class="berry-target" data-berry-target hidden><span>目標樹</span><strong class="berry-target-direction"><span class="berry-target-arrow" aria-hidden="true">➜</span><span data-berry-target-label></span></strong></div>
+      <div class="berry-hud-controls"><div class="berry-timer" data-berry-timer><span>剩餘時間</span><strong data-berry-time role="timer">${this.formatTime(this.round.remainingMs)}</strong></div>
       <div class="berry-score" aria-live="polite"><img src="${import.meta.env.BASE_URL}assets/berry_kick/berry.png" alt="">收集 <b data-berry-score>0</b></div>
-      <button class="button secondary" data-action="pause">暫停</button><button class="button quiet" data-action="home">主頁</button></header>
+      <button class="button secondary" data-action="pause">暫停</button><button class="button quiet" data-action="home">主頁</button></div></header>
       <div class="berry-effects" data-berry-effects aria-hidden="true"></div>
       <p class="berry-hint" data-berry-hint role="status"></p>
       <footer class="berry-footer"><span data-berry-controls>A / D 左右移動 · Q / E 伸腳 · 放開收腳 · Esc 暫停</span><small>舒服地小幅伸腳，隨時可以休息</small></footer>`);
+    this.targetBadge = this.ui.root.querySelector<HTMLElement>('[data-berry-target]')!;
     this.ui.on('pause', () => this.togglePause()); this.ui.on('home', () => this.home());
+  }
+  private updateTarget(transitionMs = 0) {
+    const target = this.round.target;
+    if (this.targetBadge.dataset.side !== target) {
+      this.targetBadge.dataset.side = target;
+      this.ui.text('[data-berry-target-label]', TARGET_LABEL[target]);
+      this.trees.left.setTarget(target === 'left', transitionMs);
+      this.trees.right.setTarget(target === 'right', transitionMs);
+    }
+    this.targetBadge.hidden = false;
+  }
+  private targetHint() {
+    return `慢慢移去${TARGET_LABEL[this.round.target]}邊嘅發光樹，伸腳掂下樹幹，再收返隻腳。`;
+  }
+  private pulseTarget(wrongTree: boolean) {
+    this.addEffect(this.targetBadge, 320, this.round.elapsedMs, [
+      { transform: 'scale(1)' },
+      { transform: `scale(${wrongTree ? 1.13 : 1.08})`, offset: .38 },
+      { transform: 'scale(1)' },
+    ], false);
   }
   private formatTime(milliseconds: number) {
     const seconds = Math.ceil(milliseconds / 1000);
@@ -200,19 +225,21 @@ export class BerryKickScene extends Phaser.Scene {
     this.ui.root.querySelector('[data-berry-timer]')?.setAttribute('data-urgent', String(this.round.remainingMs <= 10000));
     if (this.round.complete) { this.finish(); return; }
     this.updateTrackingVoice(sample.lateralReliable);
-    if (sample.reliable && this.readyVoicePending) {
-      this.readyVoicePending = !tryVoiceCue(this.audio, 'ready');
-    }
     for (const tween of this.tweens.getTweens()) {
       if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
     }
     this.updateEffects();
-    if (hit) {
+    if (hit?.kind === 'harvest') {
       this.audio.playSfx('berry');
       this.audio.playVoice('success', { interrupt: false, cooldownMs: 8000 });
-      this.trees[hit].harvest();
-      this.feedbackUntil = this.round.elapsedMs + 1400;
+      this.trees[hit.side].harvest();
+      this.feedback = { kind: hit.kind, until: this.round.elapsedMs + 1400 };
       this.showScorePopup();
+      this.updateTarget(220);
+      this.pulseTarget(false);
+    } else if (hit?.kind === 'wrong-tree') {
+      this.feedback = { kind: hit.kind, until: this.round.elapsedMs + 1100 };
+      this.pulseTarget(true);
     }
     const seconds = Math.ceil(this.round.remainingMs / 1000);
     if (seconds <= 10 && seconds < this.lastCountdown) {
@@ -220,10 +247,12 @@ export class BerryKickScene extends Phaser.Scene {
       this.showCountdown(seconds);
     }
     this.ui.text('[data-berry-controls]', this.inputSource.mode === 'camera' ? '攝像頭體感 · 左右小幅移動，再輕輕伸腳' : 'A / D 左右移動 · Q / E 伸腳 · 放開收腳 · Esc 暫停');
+    const feedback = this.feedback && this.round.elapsedMs < this.feedback.until ? this.feedback.kind : undefined;
     this.ui.text('[data-berry-hint]', !sample.lateralReliable ? this.cameraTrackingHint()
       : !sample.reliable ? '請畀鏡頭睇到雙腳，先可以收集莓果。'
-        : this.round.elapsedMs < this.feedbackUntil ? '好叻呀！莓果跌落嚟喇！'
-        : '左右兩邊都可以！慢慢伸腳掂下樹幹，再收返隻腳。');
+        : feedback === 'wrong-tree' ? `請去${TARGET_LABEL[this.round.target]}邊嘅樹！`
+          : feedback === 'harvest' ? `好叻呀！下一個目標係${TARGET_LABEL[this.round.target]}邊。`
+            : this.targetHint());
     this.drawDebug();
     this.updateTrackingDiagnostics();
   }
@@ -304,17 +333,17 @@ export class BerryKickScene extends Phaser.Scene {
       { transform: 'translate(-50%, -12px) scale(1.04)', opacity: 0, offset: 1 },
     ]);
   }
-  private addEffect(element: HTMLElement, duration: number, startedAt: number, frames: Keyframe[]) {
-    this.ui.root.querySelector('[data-berry-effects]')!.append(element);
+  private addEffect(element: HTMLElement, duration: number, startedAt: number, frames: Keyframe[], temporary = true) {
+    if (temporary) this.ui.root.querySelector('[data-berry-effects]')!.append(element);
     const animation = element.animate(frames, { duration, fill: 'both', easing: 'ease-out' });
     animation.pause(); animation.currentTime = Math.max(0, this.round.elapsedMs - startedAt);
-    this.effects.add({ element, animation, startedAt, duration });
+    this.effects.add({ element: temporary ? element : undefined, animation, startedAt, duration });
   }
   private updateEffects() {
     for (const effect of this.effects) {
       const elapsed = this.round.elapsedMs - effect.startedAt;
       if (elapsed >= effect.duration) {
-        effect.animation.cancel(); effect.element.remove(); this.effects.delete(effect);
+        effect.animation.cancel(); effect.element?.remove(); this.effects.delete(effect);
       } else effect.animation.currentTime = elapsed;
     }
   }
@@ -337,8 +366,10 @@ export class BerryKickScene extends Phaser.Scene {
   }
   private clearAnimations() {
     this.tweens.killAll();
-    for (const effect of this.effects) { effect.animation.cancel(); effect.element.remove(); }
+    for (const effect of this.effects) { effect.animation.cancel(); effect.element?.remove(); }
     this.effects.clear();
+    this.targetBadge.hidden = true;
+    this.trees.left.setTarget(false); this.trees.right.setTarget(false);
     this.trees.left.clearHarvests(); this.trees.right.clearHarvests();
   }
   private drawDebug() {

@@ -10,9 +10,12 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true,
 const page = await browser.newPage({ viewport: { width: 1512, height: 982 } });
 const report = { status: 'RUNNING', browser: browser.version(),
   input: 'Virtual webcam and synthetic MediaPipe landmarks; real scheduler, extractor, retargeter, rig, projection and round. NOT human webcam validation.',
-  checks: [], errors: [], trackingTrace: [] };
+  checks: [], errors: [], warnings: [], trackingTrace: [] };
 page.on('pageerror', error => report.errors.push(String(error)));
-page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()); });
+page.on('console', message => {
+  if (message.type() === 'error') report.errors.push(message.text());
+  if (message.type() === 'warning') report.warnings.push(message.text());
+});
 const snapshot = () => page.evaluate(async () => (await import('/src/main.ts')).game.scene.getScene('BerryKick').snapshot());
 const fixture = values => page.evaluate(values => Object.assign(window.__berryFixture, values), values);
 const wait = async predicate => {
@@ -41,6 +44,22 @@ const enter = async () => {
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=berry]').click();
   await page.locator('[data-action=camera]').waitFor();
+  await page.evaluate(async () => {
+    const { BerryKickRound } = await import('/src/game/berry/BerryKickRound.ts');
+    const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
+    const draws = [0, 1, 0];
+    window.__cameraTargetDraws = 0;
+    window.__cameraContacts = [];
+    // Seed the real rule model before input selection, retaining the camera and collision pipeline.
+    scene.round = new BerryKickRound(scene.round.zones, scene.round.durationMs / 1000,
+      () => draws[window.__cameraTargetDraws++] ?? .75);
+    const update = scene.round.update.bind(scene.round);
+    scene.round.update = (...args) => {
+      const contact = update(...args);
+      if (contact) window.__cameraContacts.push(contact);
+      return contact;
+    };
+  });
 };
 try {
   const debugUrl = new URL(url);
@@ -162,6 +181,7 @@ try {
     const sample = await snapshot();
     assert.deepEqual(sample.tracking.reference, reference, 'Reference changed during continuous movement');
     assert.equal(sample.score, 0);
+    assert.equal(sample.target, 'left');
     const bucket = Math.min(3, Math.floor((Date.now() - start) / (stressTimeMs / 4)));
     const interval = intervals[bucket] ??= { samples: 0, reliableSamples: 0, minRootX: 800, maxRootX: 800, minLateral: 0, maxLateral: 0 };
     const lateral = sample.tracking.lateralOffset;
@@ -277,17 +297,31 @@ try {
   await page.screenshot({ path: `${output}/camera-tracking-hud.png` });
   check('The existing scheduler stops when video frames stop advancing; stale input freezes movement and fresh frames recover');
 
-  await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
+  await fixture({ shift: -.13, left: 0 }); await wait(s => s.rootX > 1060);
+  await fixture({ right: .07 });
+  await page.waitForFunction(() => window.__cameraContacts.some(contact => contact.kind === 'wrong-tree'));
+  assert.match(await page.locator('[data-berry-hint]').innerText(), /左/);
+  await page.waitForTimeout(1300);
+  assert.equal((await snapshot()).score, 0);
+  assert.equal((await snapshot()).target, 'left');
+  assert.equal(await page.evaluate(() => window.__cameraContacts.length), 1);
+  assert.equal(await page.evaluate(() => window.__cameraTargetDraws), 1);
+  await page.screenshot({ path: `${output}/camera-wrong-right.png` });
+  check('Camera projected contact on the wrong tree retains the target and RNG state and produces one feedback event while held');
+  await fixture({ right: 0, shift: .13 }); await wait(s => s.rootX < 540);
   assert.equal((await snapshot()).score, 0);
   await fixture({ left: .07 }); const left = await wait(s => s.score === 3);
   assert.ok(left.feet.left.x >= left.zones.left.x && left.feet.left.x <= left.zones.left.x + left.zones.left.width);
   await page.waitForTimeout(1300); assert.equal((await snapshot()).score, 3);
+  assert.equal((await snapshot()).target, 'right');
+  assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'right');
   await page.screenshot({ path: `${output}/camera-left-contact.png` });
   check('Synthetic left extension drives actual left bone and projected contact; held extension cannot repeat');
   await fixture({ left: 0 }); await page.waitForTimeout(650);
   await fixture({ shift: -.13 }); await wait(s => s.rootX > 1060);
   await fixture({ right: .07 }); const right = await wait(s => s.score === 6);
   assert.equal(right.counts.left, 1); assert.equal(right.counts.right, 1);
+  assert.equal(right.target, 'left');
   assert.ok(right.feet.right.x >= right.zones.right.x && right.feet.right.x <= right.zones.right.x + right.zones.right.width);
   check('Synthetic right extension uses same independent right-foot geometric scoring');
 
@@ -296,6 +330,8 @@ try {
   await page.waitForTimeout(700);
   const sustainedLoss = await snapshot();
   assert.equal(sustainedLoss.score, 6); assert.equal(sustainedLoss.armed.right, false);
+  assert.equal(sustainedLoss.target, right.target);
+  assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), right.target);
   closeTo(sustainedLoss.rootX, lostPose.rootX, 1, 'Missing person freeze');
   assert.deepEqual(sustainedLoss.tracking.reference, reference);
   trackingTrace('missing person', sustainedLoss);
@@ -312,6 +348,7 @@ try {
   await fixture({ left: 0 }); await page.locator('[data-action=resume]').click();
   const resumed = await settled(1);
   assert.equal(resumed.score, 6);
+  assert.equal(resumed.target, paused.target);
   assert.deepEqual(resumed.tracking.reference, reference);
   trackingTrace('explicit pause resumed off-center', resumed);
   check('Tracking loss suppresses scoring and freezes movement; pause freezes inference and time; both retain the established reference');
@@ -376,6 +413,8 @@ try {
   assert.deepEqual(videoDimensions, [640, 480]);
   const mirroredNeutral = await settled(0);
   assert.equal(mirroredNeutral.tracking.reference.direction, -reference.direction);
+  assert.equal(mirroredNeutral.target, 'left');
+  assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'left');
   await fixture({ shift: .10 });
   const mirroredLeft = await settled(-1);
   closeTo(mirroredLeft.rootX, earlyLeft.rootX, 12, 'Mirrored 4:3 left position');
