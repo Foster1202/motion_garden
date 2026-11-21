@@ -123,7 +123,7 @@ const installFixture = () => page.evaluate(async () => {
 });
 
 try {
-  await page.goto(`${base}?rabbit3dDebug=1&mocapDebug=1`);
+  await page.goto(`${base}?rabbitRig=v3&rabbit3dDebug=1&mocapDebug=1`);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await page.waitForSelector('.mocap-debug');
@@ -391,7 +391,7 @@ try {
     closed: resources.stats.closed, textures: resources.textures, renderer: resources.renderer };
   check('Single model, ordered inference, stopped webcam and disposed Three/debug resources', report.resources);
 
-  await page.goto(`${base}?rabbit3dDebug=1`);
+  await page.goto(`${base}?rabbitRig=v3&rabbit3dDebug=1`);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await wait(s => s.rabbit3d.status === 'ready');

@@ -39,7 +39,7 @@ export class HumanPoseExtractor {
   private rejection?: string;
   get lastRejection(): string | undefined { return this.rejection; }
   private reject(reason: string): undefined { this.rejection = reason; return undefined; }
-  constructor(private readonly allowInwardArms = false) {}
+  constructor(private readonly allowInwardArms = false, private readonly shoulderOnly = false) {}
 
   extractLegMotion(frame: PoseFrame): BerryMotionSample { return this.legDetector.update(frame); }
   resetLegMotion(): void { this.legDetector.reset('camera-start'); }
@@ -102,21 +102,22 @@ export class HumanPoseExtractor {
     if (torsoDown.y <= 0 || projectedTorsoLength < height * 0.02 || shoulderWidth < width * 0.025) return this.reject('torso-degenerate-geometry');
     const projectedDown = new Vector3(torsoDown.x, torsoDown.y, 0).normalize();
     const arm = (shoulderIndex: number, elbowIndex: number, wristIndex: number) => {
-      const armConfidence = confidence([shoulderIndex, elbowIndex, wristIndex]);
+      const requiredIndices = this.shoulderOnly ? [shoulderIndex, elbowIndex] : [shoulderIndex, elbowIndex, wristIndex];
+      const armConfidence = confidence(requiredIndices);
       if (armConfidence < CONFIG.confidenceThreshold) return { confidence: 0 };
-      const useDepth = depthAvailable && [shoulderIndex, elbowIndex, wristIndex].every(index => Number.isFinite(points[index].z));
+      const useDepth = depthAvailable && requiredIndices.every(index => Number.isFinite(points[index].z));
       const point = (index: number) => new Vector3(points[index].x * width, points[index].y * height,
         useDepth ? points[index].z! * width : 0);
       const upper = point(elbowIndex).sub(point(shoulderIndex));
-      const lower = point(wristIndex).sub(point(elbowIndex));
-      if (upper.length() < torsoLength * 0.05 || lower.length() < torsoLength * 0.05) return { confidence: 0 };
+      const lower = this.shoulderOnly ? undefined : point(wristIndex).sub(point(elbowIndex));
+      if (upper.length() < torsoLength * 0.05 || (lower && lower.length() < torsoLength * 0.05)) return { confidence: 0 };
       const armDown = useDepth ? down : new Vector3(torsoDown.x, torsoDown.y, 0).normalize();
       const elevation = MathUtils.radToDeg(upper.angleTo(armDown));
       // Normalized landmark z uses image-width scale, and is only a bounded visual cue.
       const forwardReach = useDepth ? Math.max(0, upper.dot(forward)) : 0;
       let plane = forwardReach > torsoLength * 0.03
         ? MathUtils.radToDeg(Math.atan2(forwardReach, Math.abs(upper.dot(sideways)))) : 0;
-      if (this.allowInwardArms) {
+      if (this.allowInwardArms && !this.shoulderOnly) {
         const shoulderSide = new Vector3((points[shoulderIndex].x - shoulders.x) * width,
           (points[shoulderIndex].y - shoulders.y) * height, 0).dot(sideways);
         const outward = upper.dot(sideways) * Math.sign(shoulderSide);
@@ -124,13 +125,14 @@ export class HumanPoseExtractor {
         plane = MathUtils.radToDeg(Math.atan2(forwardReach, outward));
       }
       const projectedUpper = new Vector3(upper.x, upper.y, 0);
-      const projectedLower = new Vector3(lower.x, lower.y, 0);
+      const projectedLower = lower && new Vector3(lower.x, lower.y, 0);
       const projectedLength = projectedUpper.length() / projectedTorsoLength;
       const projectedElevation = projectedLength >= .05
         ? MathUtils.radToDeg(projectedUpper.angleTo(projectedDown)) : undefined;
-      const projectedBend = projectedLength >= .05 && projectedLower.length() >= projectedTorsoLength * .05
-        ? MathUtils.radToDeg(projectedUpper.angleTo(projectedLower)) : undefined;
-      return { elevation, plane, bend: MathUtils.radToDeg(upper.angleTo(lower)), confidence: armConfidence,
+      const projectedBend = this.shoulderOnly ? 0
+        : projectedLength >= .05 && projectedLower && projectedLower.length() >= projectedTorsoLength * .05
+          ? MathUtils.radToDeg(projectedUpper.angleTo(projectedLower)) : undefined;
+      return { elevation, plane, bend: lower ? MathUtils.radToDeg(upper.angleTo(lower)) : 0, confidence: armConfidence,
         projectedElevation, projectedBend, projectedLength };
     };
     // Anatomical IDs remain unchanged by the mirrored webcam element.

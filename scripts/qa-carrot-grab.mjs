@@ -32,7 +32,7 @@ async function waitForSnapshot(predicate, timeoutMs = 15000) {
   }
   throw new Error(`Snapshot timeout ${JSON.stringify(await snapshot())}`);
 }
-async function enter(search = '?rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1') {
+async function enter(search = '?rabbitRig=v3&rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1') {
   await page.goto(`${base}${search}`);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
@@ -536,7 +536,7 @@ try {
     check('Repeated Sprite switching and home teardown remove prototype UI and textures without duplicate models', cleanup);
 
     await page.route('**/assets/carrot3d/carrot_realtime.glb', route => route.fulfill({ status: 404, body: 'deliberate carrot QA failure' }));
-    await page.goto(`${base}?rabbit3dDebug=1&carrotGrabDebug=1`);
+    await page.goto(`${base}?rabbitRig=v3&rabbit3dDebug=1&carrotGrabDebug=1`);
     await page.locator('[data-action=start]').click();
     await page.locator('[data-action=carrot]').click();
     await page.locator('[data-input-action=keyboard]').click();
@@ -552,7 +552,7 @@ try {
       await new Promise(resolve => setTimeout(resolve, 1200));
       await route.continue().catch(() => {});
     });
-    await page.goto(`${base}?rabbit3dDebug=1&carrotGrabDebug=1`);
+    await page.goto(`${base}?rabbitRig=v3&rabbit3dDebug=1&carrotGrabDebug=1`);
     await page.locator('[data-action=start]').click();
     await page.locator('[data-action=carrot]').click();
     await page.locator('[data-input-action=keyboard]').click();
@@ -562,7 +562,7 @@ try {
     await page.unroute('**/assets/carrot3d/carrot_realtime.glb');
     check('Shutdown during delayed carrot fetch cannot attach late model or debug listeners');
 
-    value = await enter('?rabbit3dDebug=1');
+    value = await enter('?rabbitRig=v3&rabbit3dDebug=1');
     assert.equal(value.rabbit3d.grab, undefined);
     assert.equal(value.carrot.visible, true);
     assert.equal(await page.locator('.carrot-grab-debug').count(), 0);

@@ -29,6 +29,14 @@ export class RabbitHandTracker {
       const bone = rabbit.rig.bones.get(`hand.${side}`);
       const forearm = rabbit.rig.bones.get(`forearm.${side}`);
       if (!bone || !forearm) throw new Error(`Rabbit is missing hand chain ${side}`);
+      if (rabbit.rig.armControl === 'shoulder') {
+        const { palm_offset: offset, palm_radius: radius } = bone.userData;
+        if (!Array.isArray(offset) || offset.length !== 3 || !offset.every(Number.isFinite)
+          || !Number.isFinite(radius) || radius <= 0) throw new Error(`Invalid Rabbit palm metadata ${side}`);
+        offsets[side].fromArray(offset);
+        radii.push(radius);
+        continue;
+      }
       const bounds = new Box3();
       rabbit.model.traverse(object => {
         if (!(object instanceof SkinnedMesh)) return;
@@ -65,7 +73,8 @@ export class RabbitHandTracker {
     this.HandGripOffset = offsets;
     this.palmRadius = Math.max(...radii);
     if (!Number.isFinite(this.palmRadius) || this.palmRadius <= 0) throw new Error('Rabbit has invalid palm dimensions');
-    this.measurementSource = measured === 2 ? 'hand-weighted skin bounds' : 'forearm-length fallback';
+    this.measurementSource = rabbit.rig.armControl === 'shoulder' ? 'canonical-v2 hand-weighted skin bounds'
+      : measured === 2 ? 'hand-weighted skin bounds' : 'forearm-length fallback';
   }
 
   /** Call only after RabbitRigController.update has committed its final IK pose. */

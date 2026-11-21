@@ -39,6 +39,7 @@ export interface MotionReferenceSnapshot {
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const finite = (value: number | undefined): value is number => value !== undefined && Number.isFinite(value);
 const armKeys = ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend'] as const;
+const shoulderKeys = ['leftArmElevation', 'rightArmElevation'] as const;
 const depthKeys = ['torsoForward', 'headYaw', 'headPitch'] as const;
 const projectedKeys = {
   leftArmElevation: 'leftArmProjectedElevation', rightArmElevation: 'rightArmProjectedElevation',
@@ -53,7 +54,13 @@ function median(values: number[]): number {
 }
 
 export class MotionRetargeter {
-  constructor(private readonly maximumArmPlane = 90, private readonly gardenMovement = false) {}
+  private readonly armElevationLimit: number;
+
+  constructor(private readonly maximumArmPlane = 90, private readonly gardenMovement = false,
+    private readonly shoulderOnly = false, maximumArmElevation = CONFIG.limits.arm.max) {
+    this.armElevationLimit = shoulderOnly && Number.isFinite(maximumArmElevation)
+      ? clamp(maximumArmElevation, 0, CONFIG.limits.arm.max) : CONFIG.limits.arm.max;
+  }
   /** Berry motion already uses anatomical sides and normalized, mirrored root translation. */
   retargetLegMotion(sample: BerryMotionSample): BerryMotionSample {
     const finiteLateral = Number.isFinite(sample.lateralOffset);
@@ -166,8 +173,9 @@ export class MotionRetargeter {
       const elevation = `${side}ArmElevation` as const;
       const elbow = `${side}ElbowBend` as const;
       const plane = `${side}ArmPlane` as const;
+      if (this.shoulderOnly) target[elbow] = 0;
       const reliable = human[`${side}ArmConfidence`] >= CONFIG.confidenceThreshold
-        && finite(human[elevation]) && finite(human[elbow]);
+        && finite(human[elevation]) && (this.shoulderOnly || finite(human[elbow]));
       if (reliable) {
         this.lastReliableArm[side] = human.timestampMs;
         const projected = `${side}ArmProjectedElevation` as const;
@@ -177,9 +185,9 @@ export class MotionRetargeter {
           && finite(referenceProjected) && referenceProjected >= 0 && referenceProjected <= 180
           ? currentProjected - referenceProjected : 0;
         const depthChange = human[elevation]! - reference[elevation];
-        target[elevation] = clamp(Math.max(depthChange, projectedChange), 0, CONFIG.limits.arm.max);
-        target[plane] = clamp(human[plane] ?? 0, 0, this.maximumArmPlane);
-        target[elbow] = clamp(human[elbow]! - reference[elbow], 0, CONFIG.limits.elbow.max);
+        target[elevation] = clamp(Math.max(depthChange, projectedChange), 0, this.armElevationLimit);
+        target[plane] = clamp(human[plane] ?? 0, 0, this.shoulderOnly ? 90 : this.maximumArmPlane);
+        target[elbow] = this.shoulderOnly ? 0 : clamp(human[elbow]! - reference[elbow], 0, CONFIG.limits.elbow.max);
       } else if (human.timestampMs - (this.lastReliableArm[side] ?? reference.timestampMs) > CONFIG.temporal.neutralAfterMs) {
         target[elevation] = 0;
         target[plane] = 0;
@@ -198,7 +206,8 @@ export class MotionRetargeter {
       && human.activeKneeAngle >= 0 && human.activeKneeAngle <= 180 && Math.abs(human.torsoLean) < 80
       && human.centerX >= 0 && human.centerX <= 1 && human.bodyScale >= 0.025 && human.bodyScale <= 1
       && (human.torsoScale === undefined || (finite(human.torsoScale) && human.torsoScale >= .02))
-      && armKeys.every(key => human[key] === undefined || (finite(human[key]) && human[key]! >= 0 && human[key]! <= 180))
+      && (this.shoulderOnly ? shoulderKeys : armKeys)
+        .every(key => human[key] === undefined || (finite(human[key]) && human[key]! >= 0 && human[key]! <= 180))
       && (['leftArmPlane', 'rightArmPlane'] as const).every(key => {
         const value = human[key];
         return value === undefined || (Number.isFinite(value) && value >= 0
@@ -232,7 +241,8 @@ export class MotionRetargeter {
       conditions.push({ name: `${side}-projected-upper-length-min`, value: length, limit: CONFIG.reference.minimumProjectedArmLength,
         pass: length === undefined || length >= CONFIG.reference.minimumProjectedArmLength });
     }
-    for (const key of armKeys) {
+    const referenceKeys = this.shoulderOnly ? shoulderKeys : armKeys;
+    for (const key of referenceKeys) {
       const value = referenceAngle(human, key);
       const limit = key.includes('Elbow') ? CONFIG.reference.relaxedElbowDegrees : CONFIG.reference.relaxedArmDegrees;
       conditions.push({ name: `${projectedKeys[key]}-max`, value, limit, pass: finite(value) && value <= limit });
@@ -248,7 +258,7 @@ export class MotionRetargeter {
           limit: CONFIG.reference.scaleSpreadFraction },
         { name: 'torso-spread-max', value: Math.abs(human.torsoLean - median(this.samples.map(sample => sample.pose.torsoLean))),
           limit: CONFIG.reference.angularSpreadDegrees },
-        ...armKeys.map(key => ({ name: `${projectedKeys[key]}-spread-max`,
+        ...referenceKeys.map(key => ({ name: `${projectedKeys[key]}-spread-max`,
           value: Math.abs(referenceAngle(human, key)! - median(this.samples.map(sample => referenceAngle(sample.pose, key)!))),
           limit: CONFIG.reference.angularSpreadDegrees })),
       ];
@@ -278,7 +288,8 @@ export class MotionRetargeter {
       torsoLean: value('torsoLean'),
       torsoForward: value('torsoForward'), headYaw: value('headYaw'), headPitch: value('headPitch'),
       leftArmElevation: value('leftArmElevation'), rightArmElevation: value('rightArmElevation'),
-      leftElbowBend: value('leftElbowBend'), rightElbowBend: value('rightElbowBend'),
+      leftElbowBend: this.shoulderOnly ? 0 : value('leftElbowBend'),
+      rightElbowBend: this.shoulderOnly ? 0 : value('rightElbowBend'),
       leftArmProjectedElevation: optionalValue('leftArmProjectedElevation'),
       rightArmProjectedElevation: optionalValue('rightArmProjectedElevation'), timestampMs: human.timestampMs,
     };

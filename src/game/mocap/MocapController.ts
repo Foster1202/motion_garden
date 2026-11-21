@@ -12,7 +12,7 @@ import { neutralRabbitPose, type RabbitPose } from './RabbitPose';
 import { RABBIT_INWARD_ARM_MAX_PLANE } from '../3d/rabbit3dConfig';
 
 type MocapRig = Pick<RabbitRigController, 'setArmRotation' | 'setBodyLean' | 'setKneeBend' | 'setRootOffset'>
-  & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation' | 'applyPose' | 'version'>>;
+  & Partial<Pick<RabbitRigController, 'bones' | 'setHeadRotation' | 'applyPose' | 'version' | 'armControl' | 'limits'>>;
 export type MocapTrackingState = 'disabled' | 'waiting' | 'acquiring-reference' | 'tracking' | 'holding'
   | 'returning-neutral' | 'reference-required' | 'disposed';
 
@@ -65,6 +65,8 @@ export class MocapController {
   private readonly extractor: HumanPoseExtractor;
   private readonly retargeter: MotionRetargeter;
   private readonly smoother: MotionSmoother;
+  private readonly shoulderOnly: boolean;
+  private readonly maximumArmElevation: number;
   private readonly initialBoneRotations = new Map<string, Quaternion>();
   private initialRootX?: number;
   private enabled = false;
@@ -104,10 +106,14 @@ export class MocapController {
 
   constructor(private readonly rig: MocapRig, private readonly now = () => performance.now(), allowInwardArms = false,
     private readonly gardenMovement = false) {
-    const inward = allowInwardArms && rig.version === 'v3';
+    this.shoulderOnly = rig.armControl === 'shoulder';
+    const armMaximum = rig.limits?.arm.max;
+    this.maximumArmElevation = armMaximum !== undefined && Number.isFinite(armMaximum)
+      ? MathUtils.clamp(armMaximum, 0, MOCAP_CONFIG.limits.arm.max) : MOCAP_CONFIG.limits.arm.max;
+    const inward = allowInwardArms && rig.version === 'v3' && !this.shoulderOnly;
     const maximumPlane = inward ? RABBIT_INWARD_ARM_MAX_PLANE : 90;
-    this.extractor = new HumanPoseExtractor(inward);
-    this.retargeter = new MotionRetargeter(maximumPlane, gardenMovement);
+    this.extractor = new HumanPoseExtractor(inward, this.shoulderOnly);
+    this.retargeter = new MotionRetargeter(maximumPlane, gardenMovement, this.shoulderOnly, this.maximumArmElevation);
     this.smoother = new MotionSmoother(rig.version === 'v3', maximumPlane);
     this.initialRootX = rig.bones?.get('root')?.position.x;
     for (const [name, bone] of rig.bones ?? []) {
@@ -229,7 +235,9 @@ export class MocapController {
     if (recent) {
       const seconds = (frame.timestampMs - this.lastReliableTimestamp!) / 1000;
       const maximumArmChange = Math.max(35, 540 * seconds);
-      for (const key of ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend'] as const) {
+      const keys = this.shoulderOnly ? ['leftArmElevation', 'rightArmElevation'] as const
+        : ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend'] as const;
+      for (const key of keys) {
         if (human[key] !== undefined && this.raw![key] !== undefined
           && Math.abs(human[key]! - this.raw![key]!) > maximumArmChange) {
           fail('angle-jump'); return;
@@ -239,13 +247,15 @@ export class MocapController {
     this.raw = human;
     this.movementStanding = human.activeKneeAngle >= profile.standingThreshold;
     const anatomical = this.retargeter.update(human, profile);
-    // The front-facing rabbit shares the visual sides of the mirrored webcam.
-    const mapped = anatomical && this.gardenMovement ? { ...anatomical,
-      leftArmElevation: anatomical.rightArmElevation, rightArmElevation: anatomical.leftArmElevation,
-      leftElbowBend: anatomical.rightElbowBend, rightElbowBend: anatomical.leftElbowBend,
-      leftArmPlane: anatomical.rightArmPlane, rightArmPlane: anatomical.leftArmPlane,
-      lateralOffset: 0,
-    } : anatomical;
+    let mapped = anatomical;
+    if (anatomical && this.gardenMovement) {
+      mapped = { ...anatomical, lateralOffset: 0 };
+      if (!this.shoulderOnly) Object.assign(mapped, {
+        leftArmElevation: anatomical.rightArmElevation, rightArmElevation: anatomical.leftArmElevation,
+        leftElbowBend: anatomical.rightElbowBend, rightElbowBend: anatomical.leftElbowBend,
+        leftArmPlane: anatomical.rightArmPlane, rightArmPlane: anatomical.leftArmPlane,
+      });
+    }
     const reference = this.retargeter.snapshot;
     if (!mapped && reference.referenceReady && !reference.requiresReset) {
       fail('invalid-retargeted-pose');
@@ -301,6 +311,10 @@ export class MocapController {
     target = { ...target };
     for (const key of ['leftArmElevation', 'rightArmElevation', 'leftElbowBend', 'rightElbowBend',
       'torsoLean', 'torsoForward', 'headYaw', 'headPitch', 'bendAmount', 'lateralOffset'] as const) target[key] *= gain;
+    if (this.shoulderOnly) {
+      target.leftArmElevation = MathUtils.clamp(target.leftArmElevation, 0, this.maximumArmElevation);
+      target.rightArmElevation = MathUtils.clamp(target.rightArmElevation, 0, this.maximumArmElevation);
+    }
     const smoothed = this.smoother.update(target, step);
     if (this.rig.applyPose) this.rig.applyPose(smoothed);
     else {
@@ -363,7 +377,7 @@ export class MocapController {
       diagnosticStage = 'F-bones-changed-awaiting-render';
     }
     return {
-      mirrored: this.gardenMovement,
+      mirrored: this.gardenMovement && !this.shoulderOnly,
       enabled: this.enabled, paused: this.paused, trackingState: this.trackingState,
       raw: this.raw ? { ...this.raw } : undefined, mapped: this.mapped ? { ...this.mapped } : undefined,
       smoothed: this.smoother.pose, referenceReady: reference.referenceReady, reference: this.retargeter.reference,

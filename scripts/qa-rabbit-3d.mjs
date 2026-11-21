@@ -18,7 +18,7 @@ const waitSnapshot = async predicate => {
   while (Date.now() < end) { const value = await snapshot(); if (predicate(value)) return value; await page.waitForTimeout(80); }
   throw new Error(`Snapshot timeout: ${JSON.stringify(await snapshot())}`);
 };
-const enter = async (url = `${base}?rabbit3dDebug=1`) => {
+const enter = async (url = `${base}?rabbitRig=v3&rabbit3dDebug=1`) => {
   await page.goto(url);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();

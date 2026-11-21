@@ -3,10 +3,11 @@ import type { RabbitPose } from '../mocap/RabbitPose';
 import { RabbitPoseBuffer } from './ik/RabbitPoseBuffer';
 import { RabbitLegIK } from './ik/RabbitLegIK';
 import { RabbitArmIK } from './ik/RabbitArmIK';
+import { RabbitShoulderArm } from './ik/RabbitShoulderArm';
 import {
   RABBIT_3D_CONFIG, RABBIT_REQUIRED_BONES,
   rabbitRigProfile, rabbitRaiseLimit, type RabbitBoneName, type RabbitRaiseLimitCurve,
-  type RabbitRigLimits, type RabbitRigVersion, type RabbitSide,
+  type RabbitArmControl, type RabbitRigLimits, type RabbitRigVersion, type RabbitSide, RABBIT_INWARD_ARM_MAX_PLANE,
 } from './rabbit3dConfig';
 
 interface RestBone {
@@ -32,6 +33,7 @@ const sanitizedName = (name: string) => name.replace(/[.\[\]:/]/g, '');
 export class RabbitRigController {
   readonly bones = new Map<RabbitBoneName, Bone>();
   readonly version: RabbitRigVersion;
+  readonly armControl: RabbitArmControl;
   readonly limits: RabbitRigLimits;
   readonly elbowLimitsByRaise: RabbitRaiseLimitCurve;
   readonly headLimitsByRaise: RabbitRaiseLimitCurve;
@@ -52,6 +54,7 @@ export class RabbitRigController {
   private readonly poseBuffer: RabbitPoseBuffer;
   private readonly legIK: RabbitLegIK;
   private readonly armIK = new Map<'L' | 'R', RabbitArmIK>();
+  private readonly shoulderArms = new Map<'L' | 'R', RabbitShoulderArm>();
   private readonly armRequests = { L: { raise: 0, elbow: 0, plane: 0 }, R: { raise: 0, elbow: 0, plane: 0 } };
   private readonly handTargets = new Map<'L' | 'R', Vector3>();
   private readonly targetScratch = new Vector3();
@@ -61,6 +64,7 @@ export class RabbitRigController {
   constructor(private readonly model: Object3D) {
     const profile = rabbitRigProfile(model);
     this.version = profile.version;
+    this.armControl = profile.armControl;
     this.limits = profile.limits;
     this.elbowLimitsByRaise = profile.elbowLimitsByRaise;
     this.headLimitsByRaise = profile.headLimitsByRaise;
@@ -93,8 +97,12 @@ export class RabbitRigController {
       const upperArm = point(`forearm.${side}`).sub(point(`upper_arm.${side}`));
       const lowerArm = point(`hand.${side}`).sub(point(`forearm.${side}`));
       this.lowerArmDirections.set(side, lowerArm.clone().normalize());
-      this.armIK.set(side, new RabbitArmIK(upperArm, lowerArm, side === 'L' ? 1 : -1,
-        this.elbowLimitsByRaise, this.limits));
+      const sign = side === 'L' ? 1 : -1;
+      if (this.armControl === 'shoulder') {
+        this.shoulderArms.set(side, new RabbitShoulderArm(upperArm.add(lowerArm), sign, this.limits.arm.max));
+      } else {
+        this.armIK.set(side, new RabbitArmIK(upperArm, lowerArm, sign, this.elbowLimitsByRaise, this.limits));
+      }
       this.legSegments.push({ upper: knee.clone().sub(hip), lower: ankle.sub(knee) });
     }
     this.bodyRestOrientation.copy(model.getWorldQuaternion(new Quaternion()).invert())
@@ -119,15 +127,16 @@ export class RabbitRigController {
   }
 
   get armInwardEnabled(): boolean { return this.inwardEnabled; }
+  private get maximumArmPlane(): number { return this.inwardEnabled ? RABBIT_INWARD_ARM_MAX_PLANE : 90; }
 
   /** Opt-in V3 extension for the carrot prototype; other callers retain the original planes. */
   setArmInwardEnabled(enabled: boolean): void {
     if (this.disposed) return;
-    this.inwardEnabled = enabled && this.version === 'v3';
+    this.inwardEnabled = enabled && this.version === 'v3' && this.armControl === 'articulated';
     this.armIK.forEach(solver => solver.setInwardEnabled(this.inwardEnabled));
     for (const side of ['L', 'R'] as const) {
       const request = this.armRequests[side];
-      request.plane = Math.min(request.plane, this.armIK.get(side)!.maximumPlane);
+      request.plane = Math.min(request.plane, this.maximumArmPlane);
       this.targetArmRotation(side, request.raise, request.elbow, request.plane);
     }
   }
@@ -154,7 +163,9 @@ export class RabbitRigController {
     const undoBody = this.bodyRestOrientation.clone().multiply(body);
     const hands = Object.fromEntries([...this.armResults].filter(() => this.ikWeight > 0).map(([side, result]) => {
       const request = this.armRequests[side];
-      const target = this.handTargets.get(side) ?? this.armIK.get(side)!.forward(request.raise, request.elbow, request.plane, new Vector3());
+      const target = this.handTargets.get(side) ?? (this.shoulderArms.get(side)?.forward(
+        request.raise, request.plane, new Vector3())
+        ?? this.armIK.get(side)!.forward(request.raise, request.elbow, request.plane, new Vector3()));
       const shoulder = this.model.worldToLocal(this.bones.get(`upper_arm.${side}`)!.getWorldPosition(new Vector3()));
       const position = this.model.worldToLocal(this.bones.get(`hand.${side}`)!.getWorldPosition(new Vector3()))
         .sub(shoulder).applyQuaternion(undoBody);
@@ -174,8 +185,9 @@ export class RabbitRigController {
     if (this.disposed) return;
     const part = suffix(side);
     Object.assign(this.armRequests[part], { raise: clamp(upperDegrees, this.limits.arm.min, this.limits.arm.max),
-      elbow: clamp(forearmDegrees, 0, this.limits.forearm.max), plane: clamp(planeDegrees, 0, this.armIK.get(part)!.maximumPlane) });
+      elbow: clamp(forearmDegrees, 0, this.limits.forearm.max), plane: clamp(planeDegrees, 0, this.maximumArmPlane) });
     this.handTargets.delete(part);
+    if (this.armControl === 'shoulder') this.armResults.delete(part);
     this.targetArmRotation(side, upperDegrees, forearmDegrees, planeDegrees);
   }
 
@@ -189,14 +201,17 @@ export class RabbitRigController {
       forearmDegrees = constrained.elbow;
       planeDegrees = constrained.plane;
     }
-    const plane = radians(clamp(planeDegrees, 0, this.armIK.get(part)!.maximumPlane));
+    const plane = radians(clamp(planeDegrees, 0, this.maximumArmPlane));
     const upper = this.rest.get(`upper_arm.${part}`)!;
     const axis = upper.axes.z.clone().multiplyScalar(sign * Math.cos(plane))
       .addScaledVector(upper.axes.x, -Math.sin(plane)).normalize();
     this.armElevations[part] = clamp(upperDegrees, limits.arm.min, limits.arm.max);
     const elevation = radians(this.armElevations[part]);
     upper.targetQuaternion.copy(upper.quaternion).multiply(new Quaternion().setFromAxisAngle(axis, elevation)).normalize();
-    if (this.version === 'v3') {
+    if (this.armControl === 'shoulder') {
+      const forearm = this.rest.get(`forearm.${part}`)!;
+      forearm.targetQuaternion.copy(forearm.quaternion);
+    } else if (this.version === 'v3') {
       // The V3 mesh supports a fixed anatomical hinge carried by its upper arm.
       this.setRotation(`forearm.${part}`, -clamp(forearmDegrees, limits.forearm.min,
         this.maximumElbowBend(this.armElevations[part], planeDegrees)), 0, 0);
@@ -350,7 +365,19 @@ export class RabbitRigController {
     const previousWeight = this.ikWeight;
     const step = Math.min(deltaSeconds, .05);
     this.ikWeight = MathUtils.clamp(this.ikWeight + (this.ikEnabled ? 1 : -1) * step / .2, 0, 1);
-    if (this.ikWeight > 0) {
+    if (this.armControl === 'shoulder') {
+      for (const [side, solver] of this.shoulderArms) {
+        const request = this.armRequests[side];
+        const target = this.handTargets.get(side);
+        if (target) {
+          const solution = solver.solve(target, request.raise, request.plane);
+          this.armResults.set(side, solution);
+          this.targetArmRotation(side, solution.raise, 0, solution.plane);
+        } else if (this.armResults.delete(side)) {
+          this.targetArmRotation(side, request.raise, 0, request.plane);
+        }
+      }
+    } else if (this.ikWeight > 0) {
       for (const side of ['L', 'R'] as const) {
         const solver = this.armIK.get(side)!;
         const request = this.armRequests[side];
@@ -418,6 +445,20 @@ export class RabbitRigController {
       const upper = this.rest.get(`upper_arm.${side}`)!;
       let elevation = angle(upper);
       let plane = 0;
+      if (this.armControl === 'shoulder') {
+        // Seat the original rounded shoulder against the torso as the rigid mesh lifts.
+        const work = this.poseBuffer.bones.get(upper.name)!;
+        const delta = upper.quaternion.clone().invert().multiply(work.quaternion);
+        const axis = this.targetScratch.set(delta.x, delta.y, delta.z);
+        const direction = Math.atan2(Math.abs(axis.dot(upper.axes.x)), Math.abs(axis.dot(upper.axes.z)));
+        const raise = Math.max(0, elevation - .001);
+        const sideInset = Math.min(.044, raise * .0028);
+        const forwardInset = Math.min(.044, raise * .00072);
+        const inset = MathUtils.lerp(sideInset, forwardInset, Math.sin(direction) ** 16);
+        const inward = (side === 'L' ? -1 : 1) * inset;
+        axis.copy(upper.axes.x).applyQuaternion(upper.quaternion);
+        work.position.copy(upper.position).addScaledVector(axis, inward);
+      }
       if (this.inwardEnabled) {
         const work = this.poseBuffer.bones.get(upper.name)!;
         const delta = upper.quaternion.clone().invert().multiply(work.quaternion).normalize();

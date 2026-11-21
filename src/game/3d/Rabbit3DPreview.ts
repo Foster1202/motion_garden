@@ -430,6 +430,7 @@ export class Rabbit3DPreview {
       rootClamped: this.overlay?.rabbit.rig.ikSnapshot().feet?.rootClamped, debug: !!this.debug,
       controlSource: this.mode === 'sprite' ? 'sprite' : this.mocapEnabled ? 'mocap' : 'manual',
       rigVersion: this.overlay?.rabbit.rig.version, limits: this.overlay?.rabbit.rig.limits,
+      armControl: this.overlay?.rabbit.rig.armControl,
       elbowLimitsByRaise: this.overlay?.rabbit.rig.elbowLimitsByRaise,
       headLimitsByRaise: this.overlay?.rabbit.rig.headLimitsByRaise,
       ik: this.overlay?.rabbit.rig.ikSnapshot(),

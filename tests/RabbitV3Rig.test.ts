@@ -90,7 +90,7 @@ test('versioned metadata accepts narrower verified ranges and rejects unsafe or 
 });
 
 test('preview asset selection preserves an explicit V2 fallback and uses the application base URL', () => {
-  assert.equal(rabbitPreviewModelUrl('/'), '/assets/rabbit3d/rabbit_realtime_v3.glb');
+  assert.equal(rabbitPreviewModelUrl('/'), '/assets/rabbit3d/rabbit_carrot.glb');
   assert.equal(rabbitPreviewModelUrl('/garden/', '?rabbitRig=v2'), '/garden/assets/rabbit3d/rabbit_realtime.glb');
   assert.equal(rabbitPreviewModelUrl('/garden', '?rabbitRig=v3'), '/garden/assets/rabbit3d/rabbit_realtime_v3.glb');
 });

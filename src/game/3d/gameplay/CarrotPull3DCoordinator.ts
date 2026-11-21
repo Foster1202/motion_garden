@@ -49,6 +49,7 @@ export class CarrotPull3DCoordinator {
   private readonly plantedShoulderDistance: number;
   private readonly plantedWristDistance: number;
   private readonly maximumArmReach: number;
+  private readonly reachPitch: number;
   private contactDistanceAtGrab?: number;
 
   constructor(private readonly rabbit: Rabbit3D, private readonly carrot: Carrot3D,
@@ -57,12 +58,15 @@ export class CarrotPull3DCoordinator {
     if (!options.basketTarget.toArray().every(Number.isFinite)) throw new Error('Invalid basket target');
     this.basketTarget = options.basketTarget.clone();
     const rig = rabbit.rig;
+    this.reachPitch = rig.armControl === 'shoulder' ? CONFIG.shoulderOnlyReachPitch : CONFIG.reach.bodyPitch;
     rabbit.model.updateWorldMatrix(true, true);
     this.bodyRestRotation = rabbit.model.getWorldQuaternion(new Quaternion()).invert()
       .multiply(rig.bones.get('body')!.getWorldQuaternion(new Quaternion()));
     const point = (name: 'upper_arm.L' | 'forearm.L' | 'hand.L') =>
       rabbit.model.worldToLocal(rig.bones.get(name)!.getWorldPosition(new Vector3()));
-    this.maximumArmReach = point('upper_arm.L').distanceTo(point('forearm.L')) + point('forearm.L').distanceTo(point('hand.L'));
+    this.maximumArmReach = rig.armControl === 'shoulder'
+      ? point('upper_arm.L').distanceTo(point('hand.L'))
+      : point('upper_arm.L').distanceTo(point('forearm.L')) + point('forearm.L').distanceTo(point('hand.L'));
     const originalTarget = new Vector3(0, 13 / rabbit.pixelsPerUnit, .65);
     this.originalTargetDistance = tracker.sample().leftGripPosition.distanceTo(originalTarget);
     this.originalShoulderDistance = rig.bones.get('upper_arm.L')!.getWorldPosition(new Vector3()).distanceTo(originalTarget);
@@ -70,7 +74,7 @@ export class CarrotPull3DCoordinator {
     rig.setIKEnabled(true);
     rig.resetPose(true);
     rig.setArmRotation('left', CONFIG.reach.raise, CONFIG.reach.elbow, CONFIG.reach.plane);
-    rig.setCarrotReachPose(neutralRabbitPose(), 1, CONFIG.reach.bodyPitch);
+    rig.setCarrotReachPose(neutralRabbitPose(), 1, this.reachPitch);
     for (let frame = 0; frame < 120; frame++) rig.update(1 / 60);
     this.plantedGrip = tracker.sample().leftGripPosition.clone();
     const plantedShoulder = rig.bones.get('upper_arm.L')!.getWorldPosition(new Vector3());
@@ -245,12 +249,15 @@ export class CarrotPull3DCoordinator {
   }
 
   private stageArm(pose: { raise: number; elbow: number; plane: number }): void {
-    this.currentArm = pose;
-    this.rabbit.rig.setArmRotation('left', pose.raise, pose.elbow, pose.plane);
+    const rig = this.rabbit.rig;
+    this.currentArm = rig.armControl === 'shoulder'
+      ? { raise: Math.min(pose.raise, rig.limits.arm.max), elbow: 0, plane: Math.min(pose.plane, 90) }
+      : pose;
+    rig.setArmRotation('left', this.currentArm.raise, this.currentArm.elbow, this.currentArm.plane);
   }
 
   private stageReachPose(pose: RabbitPose | undefined, bendAmount: number, blend: number): void {
-    this.rabbit.rig.setCarrotReachPose({ ...(pose ?? neutralRabbitPose()), bendAmount }, blend, CONFIG.reach.bodyPitch);
+    this.rabbit.rig.setCarrotReachPose({ ...(pose ?? neutralRabbitPose()), bendAmount }, blend, this.reachPitch);
   }
 
   private stageContactTarget(): void {

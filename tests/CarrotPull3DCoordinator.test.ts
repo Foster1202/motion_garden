@@ -22,8 +22,8 @@ async function load(path: string) {
   const bytes = readFileSync(new URL(`../model/dist/${path}`, import.meta.url));
   return (await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), '')).scene;
 }
-async function fixture(completeAutomatically = true, basketTarget = new Vector3(3.8, .5, .7)) {
-  const rabbit = new Rabbit3D(await load('rabbit3d/rabbit_realtime_v3.glb'));
+async function fixture(completeAutomatically = true, basketTarget = new Vector3(3.8, .5, .7), modelName = 'rabbit_realtime_v3') {
+  const rabbit = new Rabbit3D(await load(`rabbit3d/${modelName}.glb`));
   const carrot = new Carrot3D(await load('carrot3d/carrot_realtime.glb'));
   const tracker = new RabbitHandTracker(rabbit);
   const model = new CarrotRound();
@@ -561,5 +561,27 @@ test('Changing the caller basket vector cannot redirect an in-progress harvest',
     target.set(-5, 8, -2);
     f.driveUntil(() => f.callbacks === 1, standing, 0);
     close(f.carrot.gripWorld(), new Vector3(3.8, .5, .7));
+  } finally { f.dispose(); }
+});
+
+
+test('Production one-piece arm grips the planted carrot and completes all five harvests', async () => {
+  const f = await fixture(true, undefined, 'rabbit_carrot');
+  try {
+    assert.equal(f.rabbit.rig.armControl, 'shoulder');
+    assert.ok(f.game.soilWorldY >= 0 && f.game.soilWorldY < .15, `soil height ${f.game.soilWorldY}`);
+    const request = { ...neutralRabbitPose(), leftArmElevation: 85, rightArmElevation: 60,
+      leftElbowBend: 110, rightElbowBend: 110, leftArmPlane: 60, rightArmPlane: 90, torsoLean: 8 };
+    for (let round = 1; round <= 5; round++) {
+      f.driveUntil(() => f.game.snapshot().phase === 'ATTACHED', bending, 1, 360, request);
+      assert.ok(f.game.snapshot().primaryDistance < CONFIG.maximumAlignmentDistance);
+      assert.ok(f.game.snapshot().attachmentError < .01);
+      assert.equal(f.game.snapshot().primaryArmTarget.elbow, 0);
+      f.driveUntil(() => f.model.score === round, standing, 0, 400, request);
+      if (round < 5) f.driveUntil(() => f.model.state === 'READY', nothing, 0);
+    }
+    assert.equal(f.unavailable, 0);
+    assert.equal(f.callbacks, 5);
+    assert.equal(f.model.state, 'COMPLETE');
   } finally { f.dispose(); }
 });

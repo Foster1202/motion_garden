@@ -24,10 +24,10 @@ export class Rabbit3DDebug {
     for (const [side, label] of [['L', '左'], ['R', '右']] as const) {
       const apply = () => rig.setArmRotation(side,
         Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂"]`)!.value),
-        Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}手肘"]`)!.value),
+        Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}手肘"]`)?.value ?? 0),
         Number(this.root.querySelector<HTMLInputElement>(`[aria-label="${label}臂前抬方向"]`)!.value));
       slider(`${label}臂`, `upper_arm.${side}`, 0, limits.arm.max, 1, apply);
-      slider(`${label}手肘`, `forearm.${side}`, 0, limits.forearm.max, 1, apply);
+      if (rig.armControl === 'articulated') slider(`${label}手肘`, `forearm.${side}`, 0, limits.forearm.max, 1, apply);
       slider(`${label}臂前抬方向`, rig.armInwardEnabled ? '0° 側抬 / 90° 前抬 / 145° 內收' : '0° 側抬 / 90° 前抬',
         0, rig.armInwardEnabled ? RABBIT_INWARD_ARM_MAX_PLANE : 90, 1, apply);
     }

@@ -107,11 +107,13 @@ Preview 用 CSS 鏡像；骨架 canvas 亦作相同 visual mirror。模型讀取
 
 開發預覽、骨骼角度與此次修復詳見 [Task 4B 文檔](docs/task-4b-motion-retargeting.md)。
 
-Task 4C-1 的 Carrot 3D 開發預覽預設使用獨立 V3 Rabbit Rig，保留 V2 四肢長度與卡通外觀，改善肩部空間及關節權重。直臂側抬／前抬可達 150°；120° 舉手時肘部最多彎曲 45°，最大舉手須頭部中立。`?rabbit3dDebug=1&mocapDebug=1&rabbitRig=v2` 可回退舊模型；Berry 仍使用 V2。建模、組合限制與對比圖詳見 [Task 4C-1 文檔](docs/task-4c1-rabbit-rig-improvement.md)。`npm run build:rabbit3d -- --version v3` 重新產生獨立 V3 資產，`npm run qa:rig-v3` 驗證實際預覽。
+拔蘿蔔 3D 遊戲與預覽預設載入 `rabbit_carrot.glb`。手臂直接取自莓果大豐收的 V2 網格、原肩部靜姿和材質，與 V3 身體及腿部合用。整段手臂由肩骨帶動，手骨保留原握點。相機預覽由 CSS 鏡像，姿勢使用人體解剖左右，直接對應兔子的同名肩骨。側抬與前抬使用肩到肘的方向，手腕遮擋不影響這條手臂的有效肩部訊號。
+
+以 `python3 model/scripts/build_carrot_rabbit_glb.py` 從現有兩個 GLB 重建拔蘿蔔模型，再執行 `npm run sync:assets`。可用 `?rabbit3dDebug=1&mocapDebug=1&rabbitRig=v3` 查看 [Task 4C-1 的分節骨骼](docs/task-4c1-rabbit-rig-improvement.md)，或以 `rabbitRig=v2` 查看莓果大豐收的兔子模型。`npm run qa:carrot-game` 驗證預設角色與五輪拔取，`npm run qa:rig-v3` 驗證歷史分節骨骼。
 
 Task 4C-2 在 V3 開發預覽加入可切換 IK／腳底接地。使用 `?rabbit3dDebug=1&mocapDebug=1` 顯示「啟用 IK」「停用 IK」及腳／手目標、殘差、限制和時間；`rabbitIK=0` 直接以 FK 開始。原地淺屈膝、側傾和小幅橫移使用固定腳底目標；超出雙腿可達範圍會限制 Root，手臂則在 V3 已驗證的肩肘組合範圍內靠近目標。`npm run qa:ik` 產生實際 Three.js FK／IK 對比、連續幀及性能結果。架構、限制與驗收見 [Task 4C-2 文檔](docs/task-4c2-realtime-ik-motion-coordination.md)。
 
-Task 4D-1 加入獨立 3D 蘿蔔、實際手骨握點、距離確認、200ms 抓取過渡及持續附著。使用 `http://127.0.0.1:5178/?rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1`，進入拔蘿蔔後選鍵盤測試，即可使用手動骨骼和抓取面板。手臂方向最高 145° 內收，姿勢按現有 IK 的耦合範圍限制。先將雙臂調至約 85–90°、手肘 10°、方向 145°，按「擺放到雙手中間（測試）」放置測試物，再按「抓住蘿蔔」。距離限制預設啟用。面板亦提供放開、重設和握點顯示。此獨立開發預覽隱藏 Sprite 蘿蔔及泥土前唇。使用 `npm run build:carrot3d` 重匯出原 Blender 蘿蔔，`npm run qa:carrot-grab` 執行 Chrome 驗證。座標、抓握限制與驗證記錄見 [Task 4D-1 文檔](docs/task-4d1-3d-carrot-grabbing.md)。
+Task 4D-1 加入獨立 3D 蘿蔔、實際手骨握點、距離確認、200ms 抓取過渡及持續附著。使用 `http://127.0.0.1:5178/?rabbitRig=v3&rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1`，進入拔蘿蔔後選鍵盤測試，即可使用手動骨骼和抓取面板。手臂方向最高 145° 內收，姿勢按現有 IK 的耦合範圍限制。先將雙臂調至約 85–90°、手肘 10°、方向 145°，按「擺放到雙手中間（測試）」放置測試物，再按「抓住蘿蔔」。距離限制預設啟用。面板亦提供放開、重設和握點顯示。此獨立開發預覽隱藏 Sprite 蘿蔔及泥土前唇。使用 `npm run build:carrot3d` 重匯出原 Blender 蘿蔔，`npm run qa:carrot-grab` 執行 Chrome 驗證。座標、抓握限制與驗證記錄見 [Task 4D-1 文檔](docs/task-4d1-3d-carrot-grabbing.md)。
 
 Task 4D-2 將體感入口接上正式即時 3D 遊戲。沿用 `CarrotRound` 的屈膝與站立保持、唯一入籃計分及五棵完成流程。穩定淺屈膝後，阿兔會自動俯身並以主手捉住生長在地面泥土中的蘿蔔。隨玩家起身，阿兔逐步抬起身體和主手，另一隻手持續跟隨玩家。蘿蔔按起身幅度逐漸離土，再以同一 Three.js scene 移入原有籃子。WebGL／GLB 或不可達抓取會顯示提示並回到原有畫面。正式版本隱藏開發控制。架構、數值、驗證與限制見 [Task 4D-2 文檔](docs/task-4d2-full-3d-carrot-pull.md)。
 
@@ -120,7 +122,7 @@ npm run dev -- --port 5178 --strictPort
 QA_URL=http://127.0.0.1:5178/ npm run qa:carrot-game
 ```
 
-開發數據可用 `?carrotGameDebug=1`。無 Webcam 的完整 3D 鍵盤模擬使用 `?carrotGameDebug=1&carrotGameSim=1`，沿用 `↓/S` 屈膝、`↑/W` 站立及 Esc 暫停。原有 `rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1` 仍可開啟獨立骨骼／抓握預覽。
+開發數據可用 `?carrotGameDebug=1`。無 Webcam 的完整 3D 鍵盤模擬使用 `?carrotGameDebug=1&carrotGameSim=1`，沿用 `↓/S` 屈膝、`↑/W` 站立及 Esc 暫停。原有 `rabbitRig=v3&rabbit3dDebug=1&mocapDebug=1&carrotGrabDebug=1` 仍可開啟獨立骨骼／抓握預覽。
 
 ## 開發 Preview／Debug
 

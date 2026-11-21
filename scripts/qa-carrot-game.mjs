@@ -59,7 +59,8 @@ async function installFixture(compiled = false) {
   await page.evaluate(async compiled => {
     const PoseEstimator = compiled ? undefined : (await import('/src/game/vision/PoseEstimator.ts')).PoseEstimator;
     window.__carrotGameFixture = { left: 0, right: 0, knee: 170, lean: 0, shift: 0,
-      lost: true, leftHidden: false, forward: false };
+      lost: true, leftHidden: false, forward: false, leftForward: false, rightForward: false,
+      leftElbow: 0, rightElbow: 0, wristsHidden: false, wristsMissing: false };
     window.__carrotGameStats = { models: 0, inferences: 0, closed: 0, streams: 0, timestamps: [] };
     const getMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = async options => {
@@ -94,23 +95,27 @@ async function installFixture(compiled = false) {
             const x = center + sign * height * .12;
             const armRadians = angle * Math.PI / 180;
             const kneeRadians = (180 - value.knee) * Math.PI / 180;
+            const bendRadians = (shoulder === 11 ? value.leftElbow : value.rightElbow) * Math.PI / 180;
+            const forward = value.forward || (shoulder === 11 ? value.leftForward : value.rightForward);
             points[shoulder] = point(x + lean, shoulderY);
             points[elbow] = point(x + lean + sign * Math.sin(armRadians) * height * .13,
               shoulderY + Math.cos(armRadians) * height * .13);
-            points[wrist] = point(x + lean + sign * Math.sin(armRadians) * height * .25,
-              shoulderY + Math.cos(armRadians) * height * .25);
+            points[wrist] = point(points[elbow].x * width + sign * Math.sin(armRadians + bendRadians) * height * .12,
+              points[elbow].y * height + Math.cos(armRadians + bendRadians) * height * .12);
+            if (forward) {
+              points[elbow] = { ...point(x + lean, shoulderY + Math.cos(armRadians) * height * .13),
+                z: -Math.sin(armRadians) * height * .13 / width };
+              points[wrist] = { ...point(x + lean, points[elbow].y * height + Math.cos(armRadians + bendRadians) * height * .12),
+                z: points[elbow].z - Math.sin(armRadians + bendRadians) * height * .12 / width };
+            }
             points[hip] = point(x, hipY);
             points[knee] = point(x, height * .69);
             points[ankle] = point(x + Math.sin(kneeRadians) * height * .17,
               height * .69 + Math.cos(kneeRadians) * height * .17);
           }
-          if (value.forward) {
-            for (const [shoulder, elbow, wrist] of [[11, 13, 15], [12, 14, 16]]) {
-              points[elbow] = { ...points[shoulder], z: -.10 };
-              points[wrist] = { ...points[shoulder], z: -.20 };
-            }
-          }
           if (value.leftHidden) for (const index of [13, 15]) points[index].visibility = .1;
+          if (value.wristsHidden) for (const index of [15, 16]) points[index].visibility = .1;
+          if (value.wristsMissing) for (const index of [15, 16]) points[index] = undefined;
           return { landmarks: [points] };
         },
       };
@@ -249,6 +254,97 @@ async function saveRoundCapture() {
     path: 'full-round.gif' };
   check('A continuous camera-driven full-round GIF records actual rendering', report.visualSequence);
 }
+
+const quaternionDegrees = (first, second) => {
+  const dot = Math.abs(first.reduce((sum, value, index) => sum + value * second[index], 0));
+  const norm = Math.hypot(...first) * Math.hypot(...second);
+  return 2 * Math.acos(Math.min(1, dot / norm)) * 180 / Math.PI;
+};
+async function shoulderArmChecks() {
+  await fixture({ lost: false, knee: 170, left: 0, right: 0, lean: 0, shift: 0,
+    forward: false, leftForward: false, rightForward: false, leftElbow: 0, rightElbow: 0,
+    wristsHidden: false, wristsMissing: false, leftHidden: false });
+  await page.waitForTimeout(800);
+  const rest = await snapshot();
+  assert.equal(rest.rabbit3d.armControl, 'shoulder');
+  report.armRestQuaternions = Object.fromEntries(['L', 'R'].map(side => [side, rest.rabbit3d.quaternions[`forearm.${side}`]]));
+  await capture('carrot-rest-game');
+  const mirror = await page.locator('.pose-preview-media canvas').evaluate(canvas => getComputedStyle(canvas).transform);
+  assert.match(mirror, /^matrix\(-1,/);
+  const cases = [
+    { name: 'anatomical-left', left: 60, right: 0 },
+    { name: 'anatomical-right', left: 0, right: 60 },
+    { name: 'both-shoulders', left: 75, right: 75 },
+    { name: 'lower-both', left: 0, right: 0 },
+    { name: 'left-forward', left: 60, right: 0, leftForward: true },
+    { name: 'right-forward', left: 0, right: 60, rightForward: true },
+    { name: 'lower-after-forward', left: 0, right: 0 },
+    { name: 'shoulder-only-reference', left: 45, right: 30 },
+    { name: 'elbow-only-change', left: 45, right: 30, leftElbow: 100, rightElbow: 90 },
+    { name: 'hidden-wrists', left: 45, right: 30, leftElbow: 100, rightElbow: 90, wristsHidden: true },
+    { name: 'missing-wrists', left: 45, right: 30, wristsMissing: true },
+  ];
+  report.armCases = [];
+  let previous = { left: 0, right: 0 };
+  let shoulderReference;
+  for (const value of cases) {
+    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(value.left - previous.left), Math.abs(value.right - previous.right)) / 25));
+    for (let index = 1; index <= steps; index++) {
+      await fixture({ left: previous.left + (value.left - previous.left) * index / steps,
+        right: previous.right + (value.right - previous.right) * index / steps,
+        forward: false, leftForward: value.leftForward ?? false, rightForward: value.rightForward ?? false,
+        leftElbow: value.leftElbow ?? 0, rightElbow: value.rightElbow ?? 0,
+        wristsHidden: value.wristsHidden ?? false, wristsMissing: value.wristsMissing ?? false });
+      await page.waitForTimeout(100);
+    }
+    previous = value;
+    await page.waitForTimeout(750);
+    const actual = await snapshot();
+    assert.equal(actual.rabbit3d.mocap.trackingState, 'tracking', value.name);
+    assert.equal(actual.state, 'READY', value.name);
+    assert.equal(actual.score, 0, value.name);
+    const measured = {};
+    for (const [side, requested] of [['L', value.left], ['R', value.right]]) {
+      measured[side] = quaternionDegrees(rest.rabbit3d.quaternions[`upper_arm.${side}`], actual.rabbit3d.quaternions[`upper_arm.${side}`]);
+      assert.ok(Math.abs(measured[side] - requested) < 3, `${value.name} anatomical ${side}: ${measured[side]} vs ${requested}`);
+      const elbow = quaternionDegrees(rest.rabbit3d.quaternions[`forearm.${side}`], actual.rabbit3d.quaternions[`forearm.${side}`]);
+      assert.ok(elbow < 1e-4, `${value.name} forearm.${side} must retain Rest, actual ${elbow}`);
+      measured[`elbow${side}`] = elbow;
+    }
+    const handPositions = Object.fromEntries(['L', 'R'].map(side => {
+      const position = actual.rabbit3d.finalWorldBonePositions[`hand.${side}`];
+      assert.ok(position.every(Number.isFinite));
+      const logical = { x: 894 + position[0] * actual.rabbit3d.pixelsPerUnit,
+        y: 681 - position[1] * actual.rabbit3d.pixelsPerUnit };
+      const viewport = actual.rabbit3d.viewport;
+      assert.ok(logical.x >= viewport.x && logical.x <= viewport.x + viewport.width
+        && logical.y >= viewport.y && logical.y <= viewport.y + viewport.height, `${value.name} ${side} hand is clipped`);
+      return [side, { world: position, logical }];
+    }));
+    if (value.leftForward) {
+      assert.ok(handPositions.L.world[2] > rest.rabbit3d.finalWorldBonePositions['hand.L'][2] + .05, 'Left hand moves forward');
+      assert.ok(actual.rabbit3d.mocap.smoothed.leftArmPlane > 75, 'Left forward plane');
+    }
+    if (value.rightForward) {
+      assert.ok(handPositions.R.world[2] > rest.rabbit3d.finalWorldBonePositions['hand.R'][2] + .05, 'Right hand moves forward');
+      assert.ok(actual.rabbit3d.mocap.smoothed.rightArmPlane > 75, 'Right forward plane');
+    }
+    if (value.name === 'shoulder-only-reference') shoulderReference = actual;
+    if (['elbow-only-change', 'hidden-wrists', 'missing-wrists'].includes(value.name)) {
+      for (const side of ['L', 'R']) assert.ok(quaternionDegrees(shoulderReference.rabbit3d.quaternions[`upper_arm.${side}`],
+        actual.rabbit3d.quaternions[`upper_arm.${side}`]) < .1, `${value.name} wrist must not move ${side} shoulder`);
+    }
+    report.armCases.push({ requested: value, measured, handPositions, raw: actual.rabbit3d.mocap.raw,
+      mapped: actual.rabbit3d.mocap.mapped, armControl: actual.rabbit3d.armControl });
+    if (['anatomical-left', 'anatomical-right', 'both-shoulders', 'left-forward'].includes(value.name)) await capture(value.name);
+  }
+  await fixture({ left: 0, right: 0, leftForward: false, rightForward: false, leftElbow: 0, rightElbow: 0,
+    wristsHidden: false, wristsMissing: false });
+  await page.waitForTimeout(800);
+  check('Anatomical shoulders independently follow shoulder-to-elbow side/forward motion; wrist-only changes and missing wrists leave both elbow joints at Rest',
+    { cases: report.armCases, mirroredPreviewTransform: mirror });
+}
+
 async function measurePerformance() {
   const before = await snapshot();
   const started = performance.now();
@@ -357,6 +453,7 @@ export const PoseLandmarker = { createFromOptions: async () => window.__createCa
   await waitDom(value => /即時動作同步中/.test(value.status ?? ''));
   await capture('production-ready');
   check('Production camera uses the automatic comfortable calibration and standing reference');
+  await productionShoulderVisuals();
   for (let round = 1; round <= 5; round++) {
     await fixture({ knee: 150 });
     await waitDom(value => value.state === 'GRABBED');
@@ -374,7 +471,7 @@ export const PoseLandmarker = { createFromOptions: async () => window.__createCa
   assert.equal(await page.evaluate(() => window.__carrotGameStats.inferences), inferences);
   assert.equal(await page.evaluate(() => window.__carrotGameStats.streams), 1);
   assert.equal(await page.evaluate(() => window.__carrotGameStats.models), 1);
-  assert.equal(report.requests.filter(url => /rabbit_realtime_v3\.glb/.test(url)).length, 1);
+  assert.equal(report.requests.filter(url => /rabbit_carrot\.glb/.test(url)).length, 1);
   assert.equal(report.requests.filter(url => /carrot_realtime\.glb/.test(url)).length, 1);
   check('Built production player completes five calibrated camera rounds and stops at 5/5 with one stream and one model load', completed);
   await page.locator('[data-action=home]').click();
@@ -422,6 +519,66 @@ export const PoseLandmarker = { createFromOptions: async () => window.__createCa
   await page.unroute('**/assets/carrot3d/carrot_realtime.glb', failCarrot);
   check('Production model failure shows a visible Hong Kong Chinese fallback notice and the Sprite game remains playable');
   assert.deepEqual(report.errors, []);
+}
+
+async function productionShoulderVisuals() {
+  const cases = [
+    { name: 'left', left: 60, right: 0 }, { name: 'right', left: 0, right: 60 },
+    { name: 'both', left: 75, right: 75 }, { name: 'lower', left: 0, right: 0 },
+    { name: 'forward', left: 60, right: 0, leftForward: true },
+    { name: 'elbow-only', left: 60, right: 0, leftForward: true, leftElbow: 100, rightElbow: 90 },
+    { name: 'missing-wrists', left: 60, right: 0, leftForward: true, wristsMissing: true },
+  ];
+  let previous = { left: 0, right: 0 };
+  report.productionShoulderVisuals = [];
+  for (const value of cases) {
+    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(value.left - previous.left), Math.abs(value.right - previous.right)) / 25));
+    for (let index = 1; index <= steps; index++) {
+      await fixture({ left: previous.left + (value.left - previous.left) * index / steps,
+        right: previous.right + (value.right - previous.right) * index / steps,
+        leftForward: value.leftForward ?? false, rightForward: false,
+        leftElbow: value.leftElbow ?? 0, rightElbow: value.rightElbow ?? 0,
+        wristsMissing: value.wristsMissing ?? false });
+      await page.waitForTimeout(100);
+    }
+    previous = value;
+    await page.waitForTimeout(750);
+    const state = await waitDom(current => /即時動作同步中/.test(current.status ?? ''));
+    assert.equal(state.state, 'READY');
+    assert.equal(state.score, '分數：0');
+    const name = `production-shoulder-${value.name}`;
+    await capture(name);
+    report.productionShoulderVisuals.push({ requested: value, screenshot: `${name}.png`,
+      validation: 'Rendered built player and active tracking; numerical bone assertions run in the development suite' });
+  }
+  await fixture({ left: 0, right: 0, leftForward: false, leftElbow: 0, rightElbow: 0, wristsMissing: false });
+  await page.waitForTimeout(800);
+  check('Built player renders independent anatomical shoulder/forward/lowering and wrist-independent fixtures with no scoring or developer controls',
+    report.productionShoulderVisuals);
+}
+
+async function berryRestVisual() {
+  await page.setViewportSize({ width: 1512, height: 982 });
+  await page.goto(base);
+  await page.locator('[data-action=start]').click();
+  await page.locator('[data-action=berry]').click();
+  await page.locator('[data-action=keyboard]').click();
+  await page.waitForFunction(async () => (await import('/src/main.ts')).game.scene.getScene('BerryKick')?.view?.fps > 0);
+  const result = await page.evaluate(async () => {
+    const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
+    const rabbit = scene.view.rabbit;
+    return { version: rabbit.rig.version,
+      armBounds: ['L', 'R'].map(side => {
+        const mesh = rabbit.model.getObjectByName(`Rabbit_Arm_${side}`);
+        return { side, vertices: mesh.geometry.getAttribute('position').count };
+      }), note: 'Actual Berry V2 rest game; camera and lighting are its existing game settings' };
+  });
+  await capture('berry-rest-game');
+  report.berryRestVisual = result;
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: '返回主頁', exact: true }).click();
+  await page.locator('[data-action=start]').waitFor();
+  check('Captured the unchanged Berry V2 rest rabbit for comparison with the Carrot rest screenshot', result);
 }
 
 async function developmentLifecycle() {
@@ -584,6 +741,24 @@ try {
   if (process.env.QA_LAYOUT_ONLY === '1') {
     report.input = 'Explicit development keyboard simulation for the supported maximum rabbit-scale layout';
     await maximumScaleLayout();
+  } else if (process.env.QA_REST_ONLY === '1') {
+    assert.equal(production, false);
+    report.input = 'Explicit development keyboard simulation for Carrot and existing keyboard Berry rest screenshots; no webcam.';
+    await enter('?carrotGameSim=1');
+    await page.locator('[data-input-action=keyboard]').click();
+    await waitSnapshot(value => value.rabbit3d.renderMode === '3d-game' && value.rabbit3d.armControl === 'shoulder');
+    await page.waitForTimeout(300);
+    await capture('carrot-rest-game');
+    await berryRestVisual();
+  } else if (process.env.QA_ARMS_ONLY === '1') {
+    assert.equal(production, false);
+    await enter();
+    await installFixture();
+    await page.locator('[data-input-action=camera]').click();
+    await waitSnapshot(value => value.rabbit3d.renderMode === '3d-game' && value.rabbit3d.armControl === 'shoulder');
+    await calibrate();
+    await shoulderArmChecks();
+    await berryRestVisual();
   } else if (production) {
     await productionGame();
   } else {
@@ -626,6 +801,7 @@ try {
     assert.equal(report.resources[0].spriteCarrotVisible, false);
     assert.equal(report.resources[0].spriteRabbitVisible, false);
 
+    await shoulderArmChecks();
     const rest = await snapshot();
     await fixture({ left: 55, right: 25, lean: 6, shift: .02 });
     await page.waitForTimeout(800);
@@ -669,10 +845,13 @@ try {
     assert.equal(value.rabbit3d.gameplay.attachment.distanceBypassAllowed, false);
     assert.equal(value.rabbit3d.gameplay.attachment.distanceLimitEnabled, true);
     report.firstGrab = value.rabbit3d.gameplay;
+    assert.equal(report.firstGrab.primaryArmTarget.elbow, 0);
+    for (const side of ['L', 'R']) assert.ok(quaternionDegrees(report.armRestQuaternions[side],
+      value.rabbit3d.quaternions[`forearm.${side}`]) < 1e-4, `Ground grab keeps forearm.${side} at Rest`);
     assert.ok(report.firstGrab.maximumAttachStep < .06, 'Attachment grip remains continuous at the scene clock');
     report.assistedGrabActiveSeconds = report.firstGrab.reachElapsed + report.firstGrab.attachment.transitionElapsed;
     await capture('03-grabbed');
-    check('Comfortable calibrated bend automatically reaches and attaches through bounded existing IK without placement or grab buttons', report.firstGrab);
+    check('Comfortable calibrated bend automatically reaches and attaches through bounded shoulder-only assistance without placement or grab buttons', report.firstGrab);
 
     await fixture({ knee: 162, right: 35, lean: 4, shift: -.015 });
     value = await waitSnapshot(item => item.rabbit3d.gameplay.pullProgress > .1 && item.rabbit3d.gameplay.pullProgress < .9);
@@ -741,6 +920,10 @@ try {
       await waitSnapshot(item => item.state === 'GRABBED' && item.rabbit3d.gameplay.phase === 'ATTACHED');
       const grab = (await snapshot()).rabbit3d.gameplay;
       assert.ok(grab.attachmentError < .01);
+      assert.equal(grab.primaryArmTarget.elbow, 0);
+      const grabbedPose = await snapshot();
+      for (const side of ['L', 'R']) assert.ok(quaternionDegrees(report.armRestQuaternions[side],
+        grabbedPose.rabbit3d.quaternions[`forearm.${side}`]) < 1e-4, `Round ${round} forearm.${side} remains at Rest`);
       await fixture({ knee: 162 });
       await page.waitForTimeout(250);
       await fixture({ knee: 170 });
@@ -777,7 +960,7 @@ try {
     const stats = await page.evaluate(() => ({ ...window.__carrotGameStats, timestamps: undefined }));
     assert.equal(stats.models, 1);
     assert.equal(stats.streams, 1);
-    const rabbitLoads = report.requests.filter(url => /rabbit_realtime_v3\.glb/.test(url));
+    const rabbitLoads = report.requests.filter(url => /rabbit_carrot\.glb/.test(url));
     const carrotLoads = report.requests.filter(url => /carrot_realtime\.glb/.test(url));
     assert.equal(rabbitLoads.length, 1);
     assert.equal(carrotLoads.length, 1);
@@ -787,6 +970,7 @@ try {
     assert.deepEqual(report.errors, []);
     check('Console health after deliberate asset and WebGL failure checks');
     await maximumScaleLayout();
+    await berryRestVisual();
   }
   assert.deepEqual(report.errors, []);
   report.status = 'PASS';

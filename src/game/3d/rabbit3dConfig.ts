@@ -3,6 +3,7 @@ import type { Object3D } from 'three';
 export type RabbitRenderMode = '3d' | 'sprite';
 export type RabbitSide = 'L' | 'R' | 'left' | 'right';
 export type RabbitRigVersion = 'v2' | 'v3';
+export type RabbitArmControl = 'articulated' | 'shoulder';
 export const RABBIT_INWARD_ARM_MAX_PLANE = 145;
 
 export const RABBIT_REQUIRED_BONES = [
@@ -113,7 +114,7 @@ export function rabbitRaiseLimit(curve: RabbitRaiseLimitCurve, elevation: number
 }
 
 export function rabbitRigProfile(model: Object3D): {
-  version: RabbitRigVersion; limits: RabbitRigLimits;
+  version: RabbitRigVersion; limits: RabbitRigLimits; armControl: RabbitArmControl;
   elbowLimitsByRaise: RabbitRaiseLimitCurve; headLimitsByRaise: RabbitRaiseLimitCurve;
 } {
   let metadata: Record<string, unknown> | undefined;
@@ -123,6 +124,9 @@ export function rabbitRigProfile(model: Object3D): {
   const version = metadata?.rig_version ?? 'v2';
   if (version !== 'v2' && version !== 'v3') throw new Error(`Unsupported Rabbit rig version: ${String(version)}`);
   const limits = version === 'v3' ? modelLimits(metadata?.rig_motion_limits) : copyLimits(RABBIT_V2_LIMITS);
+  const armControl = metadata?.arm_control ?? 'articulated';
+  if (armControl !== 'articulated' && (armControl !== 'shoulder' || version !== 'v3'
+    || limits.forearm.max !== 0 || limits.arm.min !== 0)) throw new Error('Invalid Rabbit arm control profile');
   const elbowLimitsByRaise = version === 'v3'
     ? modelRaiseCurve(metadata?.elbow_limits_by_raise, limits.arm.max, limits.forearm.max)
     : modelRaiseCurve([[0, limits.forearm.max], [limits.arm.max, limits.forearm.max]], limits.arm.max, limits.forearm.max);
@@ -133,12 +137,13 @@ export function rabbitRigProfile(model: Object3D): {
   Object.freeze(limits.forearm);
   Object.freeze(limits.root);
   Object.freeze(limits);
-  return { version, limits, elbowLimitsByRaise, headLimitsByRaise };
+  return { version, armControl, limits, elbowLimitsByRaise, headLimitsByRaise };
 }
 
 export function rabbitPreviewModelUrl(baseUrl: string, search = ''): string {
-  const version = new URLSearchParams(search).get('rabbitRig') === 'v2' ? 'v2' : 'v3';
-  const file = version === 'v2' ? 'rabbit_realtime.glb' : 'rabbit_realtime_v3.glb';
+  const version = new URLSearchParams(search).get('rabbitRig');
+  const file = version === 'v2' ? 'rabbit_realtime.glb'
+    : version === 'v3' ? 'rabbit_realtime_v3.glb' : 'rabbit_carrot.glb';
   return `${baseUrl.replace(/\/?$/, '/')}assets/rabbit3d/${file}`;
 }
 

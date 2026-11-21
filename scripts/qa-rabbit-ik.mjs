@@ -46,7 +46,7 @@ const poses = [
 const images = [];
 
 async function enter() {
-  await page.goto(`${base}?rabbit3dDebug=1&mocapDebug=1`);
+  await page.goto(`${base}?rabbitRig=v3&rabbit3dDebug=1&mocapDebug=1`);
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
   await page.locator('[data-input-action=keyboard]').click();
