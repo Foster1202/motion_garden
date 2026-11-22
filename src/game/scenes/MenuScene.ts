@@ -1,51 +1,57 @@
 import { SettingsPanel } from '../settings/SettingsPanel';
 import Phaser from 'phaser';
 import { GardenView } from '../art/GardenView';
-import { Rabbit } from '../art/Rabbit';
-import { MenuCarrot as Carrot } from '../art/MenuCarrot';
 import { Overlay, sproutIcon, carrotIcon, appleIcon, homeIcon } from '../ui/Overlay';
+import { HomeCoverVideo } from '../ui/HomeCoverVideo';
 import { AudioManager } from '../systems/AudioManager';
-import { REDUCED_MOTION } from '../config';
 
 export class MenuScene extends Phaser.Scene {
   private ui!: Overlay;
-  private rabbit!: Rabbit;
-  private carrot!: Carrot;
   private audio!: AudioManager;
+  private coverVideo?: HomeCoverVideo;
   private settings?: SettingsPanel;
   constructor() { super('Menu'); }
 
   create() {
     this.audio = new AudioManager();
     new GardenView(this);
-    this.rabbit = new Rabbit(this, 1140, 692, 1.04);
-    this.carrot = new Carrot(this, 1252, 617, .8);
-    this.carrot.root.angle = 20;
     this.ui = new Overlay();
     this.showHome();
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.settings?.destroy(); this.ui.destroy(); this.audio.destroy(); });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.leaveHome();
+      this.settings?.destroy();
+      this.settings = undefined;
+      this.ui.destroy();
+      this.audio.destroy();
+    });
   }
 
   private showHome() {
-    this.rabbit.root.setVisible(true);
-    this.carrot.root.setVisible(true);
+    this.ui.root.parentElement!.setAttribute('data-home-cover', '');
+    this.cameras.main.setVisible(false);
     this.ui.render(`
-      <header class="brand-bar"><span class="wordmark">${sproutIcon}動態花園</span><button class="button quiet" data-action="settings">設置</button></header>
-      <section class="welcome" aria-labelledby="welcome-title">
-        <h1 id="welcome-title">動態花園<span>阿兔 AI 小教練</span></h1>
-        <p>同阿兔一齊郁動身體，<br>收穫今日的小小快樂。</p>
-        <button class="button primary start-button" data-action="start">開始遊戲 <span aria-hidden="true">→</span></button>
-        <p class="welcome-note">按自己的步伐，輕鬆嚟就得。</p>
-      </section>
-      <div class="rabbit-greeting" aria-hidden="true">準備好未？</div>
-      <footer class="menu-footer"><span>舒服地活動 · 隨時可以休息</span><span>攝像頭 / 鍵盤</span></footer>`);
+      <video class="home-cover-media home-cover-video" autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
+      <div class="home-cover-actions">
+        <button class="button primary home-cover-start" data-action="start">開始遊戲 <span aria-hidden="true">→</span></button>
+        <button class="button home-cover-settings" data-action="settings">設置</button>
+      </div>`);
+    this.coverVideo = new HomeCoverVideo(
+      this.ui.root.querySelector<HTMLVideoElement>('.home-cover-video')!,
+      document.querySelector<HTMLImageElement>('#home-cover-still')!,
+    );
     this.ui.on('settings', () => { this.settings = new SettingsPanel(this.ui.root, () => { this.settings = undefined; this.ui.focus('settings'); }); });
     this.ui.on('start', () => this.showSelection());
   }
 
+  private leaveHome() {
+    this.coverVideo?.destroy();
+    this.coverVideo = undefined;
+    this.ui.root.parentElement!.removeAttribute('data-home-cover');
+  }
+
   private showSelection() {
-    this.rabbit.root.setVisible(false);
-    this.carrot.root.setVisible(false);
+    this.leaveHome();
+    this.cameras.main.setVisible(true);
     this.ui.render(`
       <header class="brand-bar"><span class="wordmark">${sproutIcon}動態花園</span><button class="button quiet" data-action="home">返回主頁</button></header>
       <section class="selection" aria-labelledby="selection-title">
@@ -61,11 +67,9 @@ export class MenuScene extends Phaser.Scene {
     this.ui.on('berry', () => this.scene.start('BerryKick'));
     this.ui.on('carrot', () => this.scene.start('CarrotPull'));
     this.ui.on('apple', () => this.scene.start('AppleHarvest'));
-    this.ui.on('home', () => this.showHome());
+    this.ui.on('home', () => { this.showHome(); this.ui.focus('start'); });
     this.ui.focus('carrot');
   }
 
   getAudioSnapshot() { return this.audio.snapshot(); }
-
-  update(time: number) { this.rabbit?.setPose(0, time, REDUCED_MOTION); }
 }
