@@ -6,6 +6,7 @@ import type { CalibrationProfile } from '../calibration/calibrationTypes';
 import { CalibrationController } from '../calibration/CalibrationController';
 import { CalibrationPanel } from '../calibration/CalibrationPanel';
 import { manualMotionRange } from '../settings/motionRange';
+import { GameIntroLayout } from '../ui/GameIntroLayout';
 import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 
 export interface MotionCaptureEvents {
@@ -26,6 +27,7 @@ export class MotionInputController implements MotionInput {
   private calibrationPanel?: CalibrationPanel;
   private readonly personStatus = document.createElement('p');
   private readonly panel: HTMLElement;
+  private readonly intro: GameIntroLayout;
   private readonly controls: HTMLElement;
   private generation = 0;
   private destroyed = false;
@@ -35,16 +37,22 @@ export class MotionInputController implements MotionInput {
   private readonly orientation = document.querySelector<HTMLElement>('.orientation-note');
   private readonly originalOrientation = this.orientation?.textContent ?? '';
 
-  constructor(private readonly host: HTMLElement, private readonly capture: MotionCaptureEvents = {}) {
+  constructor(private readonly host: HTMLElement, onHome: () => void, private readonly capture: MotionCaptureEvents = {}) {
     this.panel = document.createElement('section');
-    this.panel.className = 'motion-setup';
-    this.panel.setAttribute('aria-label', '輸入模式選擇');
-    this.panel.innerHTML = `
+    this.panel.className = 'motion-setup game-intro-dialog';
+    this.panel.setAttribute('aria-labelledby', 'motion-setup-title');
+    this.intro = new GameIntroLayout('carrot', `
       <h2 id="motion-setup-title">體感模式</h2>
+      <p>先淺屈膝，捉住蘿蔔，再慢慢企返起身。</p>
       <p id="motion-setup-message" role="status">開啟鏡頭後，阿兔會帶你設定舒服嘅活動幅度。</p>
-      <p class="motion-safety">請保持地面清爽，旁邊最好有穩固椅子。</p>
-      <p class="motion-privacy">鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。</p>
-      <div class="motion-setup-actions"><button class="button primary" data-input-action="camera">開啟鏡頭</button><button class="button secondary" data-input-action="keyboard">使用鍵盤測試</button></div>`;
+      <p class="motion-safety game-intro-note">請保持地面清爽，旁邊最好有穩固椅子。</p>
+      <p class="motion-privacy game-intro-detail">鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。</p>
+      <div class="game-intro-actions">
+        <button class="button primary" data-input-action="camera">開啟鏡頭</button>
+        <button class="button secondary" data-input-action="keyboard">使用鍵盤測試</button>
+        <button class="button quiet" data-input-action="home">返回主頁</button>
+      </div>`);
+    this.panel.append(this.intro.element);
     this.controls = document.createElement('aside');
     this.controls.className = 'motion-controls';
     this.controls.hidden = true;
@@ -56,6 +64,10 @@ export class MotionInputController implements MotionInput {
     host.classList.add('input-selecting');
     this.panel.querySelector('[data-input-action="camera"]')!.addEventListener('click', () => { void this.startCamera(); });
     this.panel.querySelector('[data-input-action="keyboard"]')!.addEventListener('click', () => this.useKeyboard());
+    this.panel.querySelector('[data-input-action="home"]')!.addEventListener('click', () => {
+      this.intro.stopVideo();
+      onHome();
+    });
     this.controls.querySelector('[data-input-action="change-mode"]')!.addEventListener('click', () => this.chooseMode());
     this.controls.querySelector('[data-input-action="recalibrate"]')!.addEventListener('click', () => this.restartCalibration());
     this.controls.querySelector('[data-input-action="reference"]')!.addEventListener('click', () => {
@@ -64,7 +76,10 @@ export class MotionInputController implements MotionInput {
     this.controls.querySelector('input')!.addEventListener('change', event => this.preview?.setVisible((event.target as HTMLInputElement).checked));
     this.setKeyboardHints(false);
     this.cameraButton.focus({ preventScroll: true });
+    this.intro.startVideo();
   }
+
+  get choosingMode() { return !this.panel.hidden && !this.loading; }
 
   sample(): MotionSample {
     if (this.paused || this.loading || (this.active instanceof MediapipeMotionInput && !this.cameraPlaying)) return { bending: false, standing: false };
@@ -103,6 +118,7 @@ export class MotionInputController implements MotionInput {
   reset() { this.active?.reset(); }
   pause() {
     this.paused = true;
+    this.intro.setPaused(true);
     this.active?.pause?.();
     this.preview?.clear();
     this.active?.reset();
@@ -110,6 +126,7 @@ export class MotionInputController implements MotionInput {
   }
   resume() {
     this.paused = false;
+    this.intro.setPaused(false);
     this.preview?.clear();
     this.active?.reset();
     this.active?.resume?.();
@@ -120,6 +137,7 @@ export class MotionInputController implements MotionInput {
     if (this.destroyed) return;
     this.destroyed = true;
     ++this.generation;
+    this.intro.stopVideo();
     this.releaseInput();
     this.host.classList.remove('input-selecting', 'using-camera', 'calibrating');
     if (this.orientation) this.orientation.textContent = this.originalOrientation;
@@ -141,10 +159,13 @@ export class MotionInputController implements MotionInput {
     this.cameraButton.disabled = false;
     this.setKeyboardHints(false);
     this.cameraButton.focus({ preventScroll: true });
+    this.panel.scrollTop = 0;
+    this.intro.startVideo(this.paused);
   }
 
   private useKeyboard() {
     if (this.destroyed) return;
+    this.intro.stopVideo();
     ++this.generation;
     this.releaseInput();
     this.loading = false;
@@ -162,6 +183,7 @@ export class MotionInputController implements MotionInput {
 
   private async startCamera() {
     if (this.loading || this.destroyed) return;
+    this.intro.stopVideo();
     const generation = ++this.generation;
     this.releaseInput();
     this.loading = true;

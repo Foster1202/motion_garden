@@ -1,3 +1,5 @@
+import type { GameIntroLayout } from './GameIntroLayout';
+
 export const sproutIcon = `<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 32V18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20 23C5 24 5 10 5 10s16-1 15 13Z" fill="currentColor"/><path d="M20 17C20 4 35 5 35 5s0 14-15 12Z" fill="currentColor"/></svg>`;
 export const carrotIcon = `<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M32 26Q51 21 57 40L20 72Z" fill="#e89950"/><path d="m42 30 4-22m3 25L65 14m-15 16L72 29" fill="none" stroke="#618c50" stroke-width="8" stroke-linecap="round"/><path d="m29 44 10 3m-12 8 7 2" stroke="#c77b3e" stroke-width="3" stroke-linecap="round"/></svg>`;
 export const appleIcon = `<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M41 29C7 7 6 68 30 69q11-7 20 0C76 65 72 9 41 29" fill="#ce5148"/><path d="M21 40q3-7 10-6" fill="none" stroke="#ffaea0" stroke-width="5" stroke-linecap="round"/><path d="M41 30q-6-16 4-22" stroke="#785339" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="54" cy="16" rx="13" ry="7" fill="#6b9658" transform="rotate(-25 54 16)"/></svg>`;
@@ -6,6 +8,7 @@ export const homeIcon = `<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M1
 export class Overlay {
   readonly root = document.getElementById('game-ui')!;
   private modal?: HTMLDialogElement;
+  private intro?: GameIntroLayout;
   private returnFocus?: HTMLElement;
   private readonly clickHandlers = new WeakMap<HTMLElement, EventListener>();
 
@@ -29,18 +32,30 @@ export class Overlay {
     const element = this.root.querySelector<HTMLElement>(selector);
     if (element && element.textContent !== value) element.textContent = value;
   }
-  dialog(html: string, dismiss?: () => void) {
+  dialog(content: string | GameIntroLayout, dismiss?: () => void) {
     this.closeModal();
     this.returnFocus = document.activeElement as HTMLElement;
     this.modal = document.createElement('dialog');
     this.modal.className = 'rest-dialog';
     this.modal.setAttribute('aria-labelledby', 'dialog-title');
-    this.modal.innerHTML = html;
+    if (typeof content === 'string') {
+      this.modal.innerHTML = content;
+    } else {
+      this.intro = content;
+      this.modal.classList.add('game-intro-dialog');
+      this.modal.append(content.element);
+    }
     this.root.append(this.modal);
     this.modal.addEventListener('cancel', event => { event.preventDefault(); dismiss?.(); });
     this.modal.showModal();
+    if (this.intro) {
+      this.modal.scrollTop = 0;
+      this.intro.startVideo();
+    }
   }
   closeModal() {
+    this.intro?.stopVideo();
+    this.intro = undefined;
     this.modal?.close();
     this.modal?.remove();
     this.modal = undefined;

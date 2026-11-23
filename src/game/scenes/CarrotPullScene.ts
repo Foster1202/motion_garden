@@ -144,7 +144,7 @@ export class CarrotPullScene extends Phaser.Scene {
       notice.textContent = '部分場景圖像未能載入，仍可繼續遊戲。';
       this.ui.root.append(notice);
     }
-    this.motion = new MotionInputController(this.ui.root, {
+    this.motion = new MotionInputController(this.ui.root, () => this.scene.start('Menu'), {
       onFrame: (frame, pose, profile) => this.rabbit3d?.acceptMotionFrame(frame, pose, profile),
       onReset: () => {
         if (this.voiceInputMode !== null || this.audio.snapshot().voiceId !== 'safety') this.audio.stopVoice();
@@ -205,7 +205,10 @@ export class CarrotPullScene extends Phaser.Scene {
     this.pauseGame(true);
   };
   private readonly onBlur = () => { if (this.motion?.getStatus?.().ready) this.pauseGame(); };
-  private readonly onVisibility = () => { if (document.hidden) this.pauseGame(); };
+  private readonly onVisibility = () => {
+    if (this.motion instanceof MotionInputController && this.motion.choosingMode) return;
+    if (document.hidden) this.pauseGame();
+  };
 
   private pauseGame(explicit = false) {
     if (this.paused || this.model.state === 'COMPLETE') return;

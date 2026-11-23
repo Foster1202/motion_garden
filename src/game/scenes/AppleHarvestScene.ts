@@ -7,6 +7,7 @@ import { getGameSettings } from '../settings/gameSettings';
 import { AudioManager } from '../systems/AudioManager';
 import { tryVoiceCue } from '../systems/voiceCue';
 import { Overlay, appleIcon } from '../ui/Overlay';
+import { GameIntroLayout } from '../ui/GameIntroLayout';
 import '../apple/appleHarvest.css';
 
 type ScenePhase = 'loading' | 'intro' | 'camera-starting' | 'camera-ready' | 'playing' | 'paused'
@@ -87,23 +88,23 @@ export class AppleHarvestScene extends Phaser.Scene {
       if (this.dead || this.view !== view || this.phase !== 'loading') return;
       if (!loaded) { this.artFailed(); return; }
       this.setPhase('intro');
-      this.ui.dialog(`
+      this.ui.dialog(new GameIntroLayout('apple', `
         <h2 id="dialog-title">同阿兔摘蘋果</h2>
         <ol class="apple-how-to">
           <li>跟住箭嘴，移去發光嘅蘋果樹。</li>
           <li>抬起一隻手至接近肩膊，再放低，摘一個蘋果。</li>
           <li>返去中間籃子，再抬手同放低，蘋果入籃就加一分。</li>
         </ol>
-        <p class="apple-intro-detail">${this.round.durationMs / 1000} 秒挑戰 · 舒服咁郁動，隨時可以休息。</p>
-        <div class="dialog-actions">
+        <p class="game-intro-note">${this.round.durationMs / 1000} 秒挑戰 · 舒服咁郁動，隨時可以休息。</p>
+        <div class="game-intro-actions">
           <button class="button primary" data-action="camera">開啟攝像頭</button>
           <button class="button secondary" data-action="keyboard">鍵盤試玩</button>
           <button class="button quiet" data-action="home">返回主頁</button>
-        </div>`);
+        </div>`));
       this.ui.root.querySelector('dialog')?.classList.add('apple-dialog');
       this.ui.on('camera', () => void this.startCamera());
       this.ui.on('keyboard', () => this.useKeyboard());
-      this.ui.on('home', () => this.home());
+      this.ui.on('home', () => { this.ui.closeModal(); this.home(); });
       this.ui.focus('camera');
     } catch {
       if (!this.dead && this.view === view) this.artFailed();

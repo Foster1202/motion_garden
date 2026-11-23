@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Overlay } from '../ui/Overlay';
+import { GameIntroLayout } from '../ui/GameIntroLayout';
 import { Rabbit3D } from '../3d/Rabbit3D';
 import { Rabbit } from '../art/Rabbit';
 import { BERRY_ASSETS, BERRY_CONFIG as C, berryFile, berryKey, type FootPoint, type BerrySide } from '../berry/berryConfig';
@@ -109,13 +110,18 @@ export class BerryKickScene extends Phaser.Scene {
       if (this.dead || signal.aborted) { rabbit.dispose(); return; }
       try { this.view = new BerryRabbitView(this, rabbit, () => this.modelFailure()); }
       catch (error) { rabbit.dispose(); throw error; }
-      this.ui.dialog(`<h2 id="dialog-title">準備好啦！</h2><p>${this.round.durationMs / 1000} 秒內，跟住箭嘴去發光嘅目標樹旁，伸腳掂中樹幹就有 3 顆莓果。得分後先收返隻腳，再跟下一個目標。<br>舒服地慢慢伸腳，可在旁邊放穩固椅子作支撐，唔使踢任何真實物件。</p>
-        <button class="button primary" data-action="camera">開啟攝像頭</button>
-        <button class="button secondary" data-action="keyboard">鍵盤試玩</button>
-        <button class="button quiet" data-action="home">返回主頁</button>`);
+      this.ui.dialog(new GameIntroLayout('berry', `
+        <h2 id="dialog-title">準備好啦！</h2>
+        <p>${this.round.durationMs / 1000} 秒內，跟住箭嘴去發光嘅目標樹旁，伸腳掂中樹幹就有 3 顆莓果。得分後先收返隻腳，再跟下一個目標。</p>
+        <p class="game-intro-note">舒服地慢慢伸腳，可在旁邊放穩固椅子作支撐，唔使踢任何真實物件。</p>
+        <div class="game-intro-actions">
+          <button class="button primary" data-action="camera">開啟攝像頭</button>
+          <button class="button secondary" data-action="keyboard">鍵盤試玩</button>
+          <button class="button quiet" data-action="home">返回主頁</button>
+        </div>`));
       this.ui.on('keyboard', () => { this.inputSource.useKeyboard(); this.begin(); });
       this.ui.on('camera', () => { this.begin(); void this.inputSource.startCamera(this.ui.root); });
-      this.ui.on('home', () => this.home());
+      this.ui.on('home', () => { this.ui.closeModal(); this.home(); });
     } catch { if (!this.dead && !signal.aborted) this.modelFailure(); }
   }
   private modelFailure() {
