@@ -1,12 +1,14 @@
-import type { PoseEstimatorAssets } from './poseLandmarker';
+import type { PoseDelegate, PoseEstimatorAssets } from './poseLandmarker';
 import type { PoseInference, PoseWorkerRequest, PoseWorkerResponse } from './poseWorkerMessages';
 
 const STARTUP_TIMEOUT_MS = 20_000;
 const INFERENCE_TIMEOUT_MS = 2_500;
+const GPU_WARMUP_TIMEOUT_MS = 20_000;
 
 export class PoseWorkerClient {
   private ready = false;
   private closed = false;
+  private warmingGpu = false;
   private frameId = 0;
   private pending?: {
     frameId?: number;
@@ -30,15 +32,20 @@ export class PoseWorkerClient {
     worker.onmessageerror = () => this.close(new Error('Pose Worker message could not be read.'));
   }
 
-  async initialize(assets: PoseEstimatorAssets, outputSegmentationMasks: boolean): Promise<void> {
-    const result = await this.send({ kind: 'initialize', assets, outputSegmentationMasks });
+  async initialize(assets: PoseEstimatorAssets, outputSegmentationMasks: boolean, delegate: PoseDelegate = 'CPU'): Promise<void> {
+    const result = await this.send({
+      kind: 'initialize', assets, outputSegmentationMasks, ...(delegate === 'GPU' ? { delegate } : {}),
+    });
     if (result.kind !== 'ready') throw new Error('Invalid Pose Worker initialization response.');
+    this.warmingGpu = delegate === 'GPU';
     this.ready = true;
   }
 
   async detect(bitmap: ImageBitmap, timestampMs: number): Promise<PoseInference> {
     const result = await this.send({ kind: 'detect', bitmap, timestampMs, frameId: ++this.frameId });
     if (result.kind !== 'result') throw new Error('Invalid Pose Worker inference response.');
+    // The landmark graph can compile its shaders when it sees the first person.
+    if (this.warmingGpu && result.inference.landmarks?.length) this.warmingGpu = false;
     return result.inference;
   }
 
@@ -57,8 +64,9 @@ export class PoseWorkerClient {
       return Promise.reject(new Error('Pose Worker is unavailable.'));
     }
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => this.close(new Error('Pose Worker timed out.')),
-        request.kind === 'initialize' ? STARTUP_TIMEOUT_MS : INFERENCE_TIMEOUT_MS);
+      const inferenceTimeout = this.warmingGpu ? GPU_WARMUP_TIMEOUT_MS : INFERENCE_TIMEOUT_MS;
+      const timeout = request.kind === 'initialize' ? STARTUP_TIMEOUT_MS : inferenceTimeout;
+      const timer = setTimeout(() => this.close(new Error('Pose Worker timed out.')), timeout);
       const finish = () => {
         clearTimeout(timer);
         this.pending = undefined;

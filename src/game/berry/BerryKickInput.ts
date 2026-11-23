@@ -52,7 +52,13 @@ export class BerryKickInput {
     const outputSegmentationMasks = !lowPerformanceMode && settings.backgroundProcessing;
     const camera = new PoseCamera({ lowPerformanceMode, onEnded: () => fail('相機已中斷，請重新開啟或使用鍵盤。') });
     this.camera = camera;
-    const estimator = new PoseEstimator({ maxFps: lowPerformanceMode ? 10 : undefined, outputSegmentationMasks, onFrame: frame => {
+    const estimator = new PoseEstimator({ maxFps: lowPerformanceMode ? 10 : undefined, outputSegmentationMasks, onPreviewFrame: frame => {
+      if (generation !== this.generation || this.paused || this.destroyed) return;
+      this.preview?.renderPreview(frame, {
+        background: outputSegmentationMasks ? settings.backgroundMode : 'none',
+        showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
+      });
+    }, onFrame: frame => {
       if (generation !== this.generation || this.paused || this.destroyed) return;
       const age = performance.now() - frame.timestampMs;
       if (!Number.isFinite(age) || age < 0 || age >= LEG_EXTENSION_CONFIG.maximumGapMs
@@ -65,10 +71,6 @@ export class BerryKickInput {
       this.poseFps = frame.poseFps;
       recordPosePerformance(this, frame);
       this.sample = this.retargeter.retargetLegMotion(this.extractor.extractLegMotion(frame));
-      this.preview?.render(frame, {
-        background: outputSegmentationMasks ? settings.backgroundMode : 'none',
-        showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
-      });
     }, onError: error => fail(error.message) });
     this.estimator = estimator;
     try {
@@ -131,7 +133,6 @@ export class BerryKickInput {
   private invalidateCameraSample() {
     this.stale = true;
     this.sample = this.extractor.suspendLegMotion('stale');
-    this.preview?.clear();
   }
   pause() {
     this.paused = true; this.keys.clear(); this.estimator?.pause(); this.preview?.setPaused(true);

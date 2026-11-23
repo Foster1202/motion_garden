@@ -37,6 +37,7 @@ export class PerformancePanel {
     this.renderedFrames = 0;
     setPerformanceMonitoring(this.enabled && !document.hidden);
     delete this.element.dataset.poseBackend;
+    delete this.element.dataset.poseDelegate;
     delete this.element.dataset.videoFps;
     this.element.textContent = this.enabled ? `${this.mode}模式 · 正在量度…` : '';
   };
@@ -52,7 +53,7 @@ export class PerformancePanel {
     this.renderedFrames++;
     const elapsed = now - this.windowStarted;
     if (elapsed < 1000) return;
-    const { pose, ai, camera, thread, threeFrames } = readPerformanceWindow(elapsed);
+    const { pose, ai, camera, thread, threeFrames, warmingGpu } = readPerformanceWindow(elapsed);
     const fps = (frames: number) => (frames * 1000 / elapsed).toFixed(1);
     const metric = (value: number | undefined) => value === undefined ? '—' : value.toFixed(1);
     const freshPose = pose && now - pose.timestampMs <= POSE_CONFIG.maxDataAgeMs ? pose : undefined;
@@ -60,6 +61,8 @@ export class PerformancePanel {
     const resolution = camera?.width && camera.height ? `${camera.width}×${camera.height}` : '—';
     if (ai) this.element.dataset.poseBackend = ai.backend;
     else delete this.element.dataset.poseBackend;
+    if (ai?.delegate) this.element.dataset.poseDelegate = ai.delegate;
+    else delete this.element.dataset.poseDelegate;
     if (camera?.presentedFps !== undefined) this.element.dataset.videoFps = camera.presentedFps.toFixed(1);
     else delete this.element.dataset.videoFps;
     const text = [
@@ -67,9 +70,14 @@ export class PerformancePanel {
       `Video ${metric(camera?.presentedFps)} FPS · 解碼 P95 ${metric(camera?.decodeP95Ms)} ms`,
       `推論 ${metric(latest)} ms · P95 ${metric(ai?.p95Ms)} ms`,
       `Pose ${metric(freshPose?.poseFps || undefined)} FPS · AI ${metric(ai?.completedFps)} FPS`
-        + (ai ? ` · ${ai.backend === 'worker' ? 'Worker' : '主線程'}${ai.fallbackReason ? ` (${ai.fallbackReason})` : ''}` : ''),
+        + (ai ? ` · ${ai.backend === 'worker' ? 'Worker' : '主線程'}${ai.delegate ? ` ${ai.delegate}` : ''}${ai.fallbackReason ? ` (${ai.fallbackReason})` : ''}` : ''),
       `Phaser ${fps(this.renderedFrames)} FPS · 3D ${threeFrames ? fps(threeFrames) : '—'} FPS`,
       `長任務 ${thread?.longTasks ?? '—'} · RAF 停頓 ${thread?.rafStalls ?? '—'} · 最長 ${metric(thread?.maxRafGapMs)} ms`,
+      ...(warmingGpu ? ['GPU 正在初始化／暖機…'] : []),
+      ...(ai ? [
+        `影格至結果 P95 ${metric(ai.frameAgeP95Ms)} ms · 傳幀 ${metric(ai.framePreparationMs)} ms`,
+        `有關鍵點 ${ai.landmarksCount}/${ai.windowCount} · 過期 ${ai.lateCount}/${ai.windowCount}`,
+      ] : []),
     ].join('\n');
     if (this.element.textContent !== text) this.element.textContent = text;
     this.windowStarted = now;

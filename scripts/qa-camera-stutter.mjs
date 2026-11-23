@@ -52,10 +52,11 @@ async function waitForBackend(page, backend) {
     .waitFor({ timeout: 25000 });
 }
 
-async function enterGame(page, search = '') {
+async function enterGame(page, search = '', showKeypoints = false) {
   await page.goto(new URL(search || './', base).href);
   await action(page, 'settings').click();
   await page.locator('[name=showPerformanceMetrics]').check();
+  if (showKeypoints) await page.locator('[name=showBodyKeypoints]').check();
   await page.locator('.game-settings [type=submit]').click();
   await action(page, 'start').click();
   await action(page, 'berry').click();
@@ -234,6 +235,45 @@ try {
     report.checks.push({ scenario: 'Worker unavailable at startup, main fallback' });
     await home(page);
   }, { blockWorker: true });
+
+  await withPage(async page => {
+    const poseWorker = page.waitForEvent('worker');
+    await enterGame(page, '?poseDelegate=cpu', true);
+    await waitForBackend(page, 'worker');
+    const worker = await poseWorker;
+    await worker.evaluate(() => {
+      const original = self.onmessage;
+      self.qaShowPose = true;
+      self.onmessage = event => {
+        const { data } = event;
+        if (data.kind !== 'detect') { original?.call(self, event); return; }
+        const { bitmap, frameId } = data;
+        const { width, height } = bitmap;
+        bitmap.close();
+        setTimeout(() => self.postMessage({ kind: 'result', frameId, inference: {
+          inferenceMs: 320, imageWidth: width, imageHeight: height,
+          landmarks: self.qaShowPose ? Array.from({ length: 33 }, (_, index) => ({
+            x: .32 + (index % 5) * .09, y: .18 + Math.floor(index / 5) * .09, visibility: .99,
+          })) : undefined,
+        } }), 320);
+      };
+    });
+    const delayed = page.locator('.berry-camera[data-pose-preview=delayed]');
+    await delayed.waitFor();
+    await page.waitForFunction(() => /過期 [1-9]\d*\/[1-9]\d*/.test(document.querySelector('.performance-panel').textContent));
+    assert.equal(await delayed.isVisible(), true);
+    await page.waitForTimeout(700);
+    assert.equal(await delayed.isVisible(), true);
+    const panel = await page.locator('.performance-panel').innerText();
+    assert.match(panel, /Pose — FPS/);
+    assert.match(await page.locator('[data-berry-tracking]').innerText(), /Tracking Lost/);
+    assert.equal(await page.locator('.berry-camera-source').evaluate(video => getComputedStyle(video).opacity), '1');
+    await page.screenshot({ path: join(output, 'camera-delayed-keypoints.png') });
+    await worker.evaluate(() => { self.qaShowPose = false; });
+    await delayed.waitFor({ state: 'detached' });
+    await home(page);
+    report.checks.push({ scenario: '320 ms results remain labelled in the preview, never feed gameplay and clear on person loss', panel });
+  });
 
   await withPage(async page => {
     await page.goto(base);

@@ -93,7 +93,7 @@ export class MotionInputController implements MotionInput {
     };
     if (status.mode === 'camera' && (status.cameraStatus !== 'running'
       || status.lastFrameTimestampMs === undefined || performance.now() - status.lastFrameTimestampMs > 250)) {
-      this.preview?.clear();
+      this.preview?.clearDiagnostics();
     }
     if (status.mode === 'camera' && (!status.ready || status.suspended)) {
       const calibration = this.calibration?.pause(performance.now());
@@ -189,6 +189,9 @@ export class MotionInputController implements MotionInput {
     this.cameraButton.disabled = true;
     this.setupMessage('體感模式', '正在準備鏡頭…');
     const options: MediapipeInputOptions = {
+      onPreviewFrame: frame => {
+        if (generation === this.generation && !this.destroyed) this.preview?.updatePreview(frame);
+      },
       onCameraReady: video => {
         if (generation !== this.generation || this.destroyed) return;
         this.preview = new PoseDebugOverlay(this.host, video, { paused: this.paused });
@@ -206,7 +209,7 @@ export class MotionInputController implements MotionInput {
       },
       onFrame: (frame, pose) => {
         if (generation !== this.generation || this.destroyed) return;
-        this.preview?.update(frame, pose);
+        this.preview?.updateDiagnostics(frame, pose);
         this.updateCalibration(input, pose);
         if (this.waitingForStanding && pose.state === 'STANDING' && !input.getStatus().suspended) this.waitingForStanding = false;
         this.getStatus();

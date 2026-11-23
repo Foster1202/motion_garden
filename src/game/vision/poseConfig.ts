@@ -8,6 +8,7 @@ export const POSE_CONFIG = {
   lossGraceMs: 600,
   autoRestMs: 3000,
   maxDataAgeMs: 250,
+  maxPreviewAgeMs: 750,
   maxFrameGapMs: 250,
   nominalFps: 25,
   maxTorsoLeanDegrees: 35,

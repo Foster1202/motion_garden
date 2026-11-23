@@ -21,6 +21,7 @@ export interface EstimatorDriver {
 }
 export interface MediapipeInputOptions {
   onCameraReady?: (video: HTMLVideoElement) => void;
+  onPreviewFrame?: (frame: PoseFrame) => void;
   onFrame?: (frame: PoseFrame, pose: PoseSnapshot) => void;
   onError?: (error: Error) => void;
   createCamera?: (options: PoseCameraOptions) => CameraDriver;
@@ -58,6 +59,9 @@ export class MediapipeMotionInput implements MotionInput {
     this.estimator = (options.createEstimator ?? (settings => new PoseEstimator(settings)))({
       maxFps: lowPerformanceMode ? 10 : undefined,
       outputSegmentationMasks: !lowPerformanceMode && settings.backgroundProcessing,
+      onPreviewFrame: options.onPreviewFrame && (frame => {
+        if (!this.destroyed && !this.paused) options.onPreviewFrame?.(frame);
+      }),
       onFrame: frame => this.acceptFrame(frame),
       onError: error => this.fail(error),
     });

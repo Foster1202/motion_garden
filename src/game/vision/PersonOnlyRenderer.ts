@@ -1,4 +1,5 @@
 import type { PoseFrame, PoseLandmark } from './poseTypes';
+import { POSE_CONFIG } from './poseConfig';
 
 export interface PersonPreviewOptions {
   background?: 'transparent' | 'none' | 'blur' | 'gray';
@@ -42,6 +43,7 @@ export class PersonOnlyRenderer {
   private readonly nativeVideo: boolean;
   private paused = false;
   private hasPixels = false;
+  private previewTimer?: ReturnType<typeof setTimeout>;
 
   constructor(private readonly video: HTMLVideoElement, readonly canvas: HTMLCanvasElement,
     { width = 320, height, nativeVideo = false, paused = false }: PersonPreviewCanvasOptions = {}) {
@@ -117,9 +119,65 @@ export class PersonOnlyRenderer {
     if (paused) this.clear();
   }
 
+  renderPreview(frame: PoseFrame, options: PersonPreviewOptions): void {
+    if (this.paused) return;
+    this.cancelPreviewTimer();
+    const age = Math.max(0, performance.now() - frame.timestampMs);
+    const hasKeypoints = Boolean(options.showBodyKeypoints && frame.landmarks?.length);
+    if (!Number.isFinite(age) || age >= POSE_CONFIG.maxPreviewAgeMs
+      || ((this.nativeVideo || options.background === 'none') && !hasKeypoints)) {
+      this.clear();
+      return;
+    }
+
+    const delayed = frame.previewOnly || age >= POSE_CONFIG.maxDataAgeMs;
+    // Avoid masking live pixels with a delayed silhouette.
+    const masklessFrame = frame.personMask ? { ...frame, personMask: undefined } : frame;
+    this.render(delayed ? masklessFrame : frame, options);
+    if (!this.hasPixels) return;
+    const expire = () => {
+      const remaining = frame.timestampMs + POSE_CONFIG.maxPreviewAgeMs - performance.now();
+      this.previewTimer = setTimeout(() => this.clear(), Math.max(0, remaining));
+    };
+    const showDelay = () => {
+      if (!delayed && frame.personMask) this.render(masklessFrame, options);
+      if (hasKeypoints) this.drawDelayNotice();
+      expire();
+    };
+    if (delayed) showDelay();
+    else this.previewTimer = setTimeout(showDelay, POSE_CONFIG.maxDataAgeMs - age);
+  }
+
   clear(): void {
+    this.cancelPreviewTimer();
     this.clearPixels();
     this.resetMask();
+  }
+
+  private cancelPreviewTimer(): void {
+    if (this.previewTimer !== undefined) {
+      clearTimeout(this.previewTimer);
+      this.previewTimer = undefined;
+    }
+    if (this.canvas.dataset.posePreview !== undefined) delete this.canvas.dataset.posePreview;
+  }
+
+  private drawDelayNotice(): void {
+    const { context, canvas } = this;
+    canvas.dataset.posePreview = 'delayed';
+    const fontSize = Math.max(12, Math.round(canvas.width * .055));
+    context.save();
+    // The displayed camera canvas is mirrored, so counter-mirror the label.
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+    context.font = `${fontSize}px system-ui`;
+    context.textBaseline = 'top';
+    context.fillStyle = '#211809cc';
+    const label = '關鍵點延遲';
+    context.fillRect(4, 4, context.measureText(label).width + 10, fontSize + 8);
+    context.fillStyle = '#fff4d6';
+    context.fillText(label, 9, 8);
+    context.restore();
   }
 
   private clearPixels(): void {

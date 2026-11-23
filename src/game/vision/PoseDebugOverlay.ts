@@ -15,7 +15,6 @@ export class PoseDebugOverlay {
   private calibration?: CalibrationProfile;
   private readonly settings = getGameSettings();
   private readonly processBackground = !this.settings.lowPerformanceMode && this.settings.backgroundProcessing;
-  private hasFrame = false;
 
   constructor(host: HTMLElement, private readonly video: HTMLVideoElement,
     options: { debug?: boolean; preview?: boolean; paused?: boolean } = {}) {
@@ -51,22 +50,32 @@ export class PoseDebugOverlay {
   }
 
   clear() {
-    if (this.hasFrame) this.personRenderer.clear();
-    this.hasFrame = false;
-    this.metrics.textContent = '';
+    this.personRenderer.clear();
+    this.clearDiagnostics();
   }
 
   setCalibration(profile?: CalibrationProfile) { this.calibration = profile ? copyCalibrationProfile(profile) : undefined; }
 
   update(frame: PoseFrame, pose: PoseSnapshot) {
+    this.updatePreview(frame);
+    this.updateDiagnostics(frame, pose);
+  }
+
+  updatePreview(frame: PoseFrame) {
     if (this.root.hidden) return;
-    this.personRenderer.render(frame, {
+    this.personRenderer.renderPreview(frame, {
       background: this.processBackground ? this.settings.backgroundMode : 'none',
       showBodyKeypoints: this.settings.showBodyKeypoints,
       confidenceThreshold: this.settings.confidenceThreshold,
     });
-    this.hasFrame = true;
-    if (!this.debug) return;
+  }
+
+  clearDiagnostics() {
+    if (this.metrics.textContent) this.metrics.textContent = '';
+  }
+
+  updateDiagnostics(frame: PoseFrame, pose: PoseSnapshot) {
+    if (!this.debug || this.root.hidden) return;
     const number = (value: number | undefined) => value === undefined ? '—' : value.toFixed(3);
     const angle = (value: number | undefined) => value === undefined ? '—' : `${value.toFixed(1)}°`;
     const mode = TRACKING_MODE_LABEL[pose.trackingMode ?? 'lost'];

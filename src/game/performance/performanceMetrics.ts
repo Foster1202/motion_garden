@@ -7,7 +7,12 @@ type PoseMetrics = Pick<PoseFrame,
 interface InferenceSample {
   inferenceMs: number;
   completedAtMs: number;
+  frameAgeMs: number;
+  framePreparationMs?: number;
+  late: boolean;
+  hasLandmarks: boolean;
   backend: 'worker' | 'main';
+  delegate?: 'CPU' | 'GPU';
   fallbackReason?: string;
 }
 
@@ -17,7 +22,9 @@ let threeFrames = 0;
 let cameraBinding: { video: HTMLVideoElement } | undefined;
 let videoProbe: VideoPerformanceProbe | undefined;
 let threadProbe: MainThreadPerformanceProbe | undefined;
-let inference: { owner: object; latest: InferenceSample; durations: number[]; windowCount: number } | undefined;
+let warmingGpuOwner: object | undefined;
+let inference: { owner: object; latest: InferenceSample; durations: number[]; ages: number[];
+  windowCount: number; lateCount: number; landmarksCount: number } | undefined;
 
 export function setPerformanceMonitoring(active: boolean): void {
   videoProbe?.stop();
@@ -25,6 +32,7 @@ export function setPerformanceMonitoring(active: boolean): void {
   enabled = active;
   pose = undefined;
   inference = undefined;
+  warmingGpuOwner = undefined;
   threeFrames = 0;
   const video = cameraBinding?.video;
   videoProbe = active && video ? new VideoPerformanceProbe(video) : undefined;
@@ -55,15 +63,28 @@ export function clearPosePerformance(owner: object): void {
 
 export function recordInferencePerformance(owner: object, sample: InferenceSample): void {
   if (!enabled) return;
-  if (inference?.owner !== owner) inference = { owner, latest: sample, durations: [], windowCount: 0 };
+  if (inference?.owner !== owner) inference = { owner, latest: sample, durations: [], ages: [],
+    windowCount: 0, lateCount: 0, landmarksCount: 0 };
   inference.latest = sample;
   inference.windowCount++;
+  if (sample.late) inference.lateCount++;
+  if (sample.hasLandmarks) inference.landmarksCount++;
   inference.durations.push(sample.inferenceMs);
-  if (inference.durations.length > 120) inference.durations.shift();
+  inference.ages.push(sample.frameAgeMs);
+  if (inference.durations.length > 120) {
+    inference.durations.shift();
+    inference.ages.shift();
+  }
+}
+
+export function setGpuWarmup(owner: object, active: boolean): void {
+  if (active && enabled) warmingGpuOwner = owner;
+  else if (warmingGpuOwner === owner) warmingGpuOwner = undefined;
 }
 
 export function clearInferencePerformance(owner: object): void {
   if (inference?.owner === owner) inference = undefined;
+  setGpuWarmup(owner, false);
 }
 
 export function recordThreeFrame(): void {
@@ -83,10 +104,13 @@ export function readPerformanceWindow(elapsedMs: number) {
   const ai = inference ? {
     ...inference.latest,
     p95Ms: percentile95(inference.durations),
+    frameAgeP95Ms: percentile95(inference.ages),
     completedFps: inference.windowCount * 1000 / elapsedMs,
+    windowCount: inference.windowCount, lateCount: inference.lateCount, landmarksCount: inference.landmarksCount,
   } : undefined;
-  const sample = { pose: pose?.metrics, ai, camera, thread: threadProbe?.read(), threeFrames };
+  const sample = { pose: pose?.metrics, ai, camera, thread: threadProbe?.read(), threeFrames,
+    warmingGpu: warmingGpuOwner !== undefined };
   threeFrames = 0;
-  if (inference) inference.windowCount = 0;
+  if (inference) inference.windowCount = inference.lateCount = inference.landmarksCount = 0;
   return sample;
 }

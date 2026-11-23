@@ -26,6 +26,7 @@ export interface PoseFrame {
   imageHeight?: number;
   backend?: 'worker' | 'main';
   fallbackReason?: string;
+  previewOnly?: boolean;
 }
 
 export interface PoseSnapshot {

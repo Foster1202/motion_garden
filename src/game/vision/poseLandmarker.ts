@@ -17,11 +17,31 @@ export interface PoseEstimatorAssets {
   modelPath: string;
 }
 
-export async function createPoseLandmarker(assets: PoseEstimatorAssets, outputSegmentationMasks: boolean, useModule = false) {
+export type PoseDelegate = 'CPU' | 'GPU';
+
+export async function createPoseLandmarker(
+  assets: PoseEstimatorAssets,
+  outputSegmentationMasks: boolean,
+  useModule = false,
+  delegate: PoseDelegate = 'CPU',
+) {
+  let canvas: OffscreenCanvas | undefined;
+  if (delegate === 'GPU') {
+    canvas = new OffscreenCanvas(1, 1);
+    const context = canvas.getContext('webgl2', { antialias: false, failIfMajorPerformanceCaveat: true });
+    if (!context) throw new Error('Hardware WebGL2 is unavailable for pose inference.');
+    const debug = context.getExtension('WEBGL_debug_renderer_info');
+    const renderer = debug && String(context.getParameter(debug.UNMASKED_RENDERER_WEBGL));
+    if (renderer && /SwiftShader|llvmpipe|softpipe|Basic Render Driver|Software Rasterizer/i.test(renderer)) {
+      context.getExtension('WEBGL_lose_context')?.loseContext();
+      throw new Error('Software WebGL2 cannot accelerate pose inference.');
+    }
+  }
   const { FilesetResolver, PoseLandmarker } = await import('@mediapipe/tasks-vision');
   const fileset = await FilesetResolver.forVisionTasks(assets.wasmRoot, useModule);
   return PoseLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: assets.modelPath, delegate: 'CPU' },
+    baseOptions: { modelAssetPath: assets.modelPath, delegate },
+    canvas,
     runningMode: 'VIDEO',
     numPoses: 1,
     minPoseDetectionConfidence: 0.55,

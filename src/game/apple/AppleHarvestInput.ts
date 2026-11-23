@@ -81,6 +81,13 @@ export class AppleHarvestInput {
       const estimator = new PoseEstimator({
         maxFps: lowPerformanceMode ? 10 : undefined,
         outputSegmentationMasks,
+        onPreviewFrame: frame => {
+          if (!isCurrent() || this.paused) return;
+          this.preview?.renderPreview(frame, {
+            background: outputSegmentationMasks ? settings.backgroundMode : 'none',
+            showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
+          });
+        },
         onFrame: frame => { if (isCurrent() && !this.paused) this.onFrame(frame, settings); },
         onError: error => fail(error.message),
       });
@@ -110,7 +117,6 @@ export class AppleHarvestInput {
       const age = this.frameAgeMs;
       if (this.status !== 'waiting-for-frames' && (age === null || age >= C.maximumFrameGapMs)) {
         this.interrupt('waiting-for-frames');
-        this.preview?.clear();
       }
       if (this.sample.lateralReliable) {
         const difference = this.sample.x - this.x;
@@ -202,17 +208,12 @@ export class AppleHarvestInput {
     const age = performance.now() - timestamp;
     if (!Number.isFinite(age) || age < 0 || age >= C.maximumFrameGapMs || (this.lastFrame !== undefined && gap <= 0)) {
       this.interrupt('waiting-for-frames');
-      this.preview?.clear();
       return;
     }
     if (gap >= C.maximumFrameGapMs) this.interrupt('recovering');
     this.lastFrame = timestamp;
     this.poseFps = frame.poseFps;
     recordPosePerformance(this, frame);
-    this.preview?.render(frame, {
-      background: settings.lowPerformanceMode || !settings.backgroundProcessing ? 'none' : settings.backgroundMode,
-      showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
-    });
 
     const human = this.extractor.extractArmReach(frame, Math.max(.55, settings.confidenceThreshold));
     if (!human || (this.reference && human.orientation !== this.reference.orientation)) {

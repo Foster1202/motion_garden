@@ -12,7 +12,7 @@ worker.onmessage = async ({ data }) => {
   try {
     if (data.kind === 'initialize') {
       outputSegmentationMasks = data.outputSegmentationMasks;
-      landmarker = await createPoseLandmarker(data.assets, outputSegmentationMasks, true);
+      landmarker = await createPoseLandmarker(data.assets, outputSegmentationMasks, true, data.delegate);
       worker.postMessage({ kind: 'ready' });
       return;
     }

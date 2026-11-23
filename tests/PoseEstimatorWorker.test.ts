@@ -129,6 +129,51 @@ test('worker transfers one bitmap at a time and samples the latest presented fra
   assert.equal(f.mainModelLoads(), 0);
 });
 
+test('sustained CPU delay tries GPU once, and GPU failure returns to CPU Worker without reopening video', async () => {
+  const cpu = new WorkerFixture('ready');
+  const gpu = new WorkerFixture('ready');
+  const recovered = new WorkerFixture('ready');
+  const backends = [cpu, gpu, recovered];
+  let workersCreated = 0;
+  const f = fixture('ready', { delegatePreference: 'auto',
+    createWorker: () => backends[workersCreated++] as unknown as Worker });
+  await f.start();
+  try {
+    for (let frame = 0; frame < 6; frame++) {
+      const start = 20 + frame * 200;
+      f.present(start);
+      f.tick(start);
+      await nextTurn();
+      f.setTime(start + 175);
+      cpu.complete();
+      await nextTurn();
+    }
+    assert.equal(cpu.terminations, 1);
+    assert.equal(gpu.messages[0].kind, 'initialize');
+    assert.equal(gpu.messages[0].delegate, 'GPU');
+    f.present(1250);
+    f.tick(1250);
+    await nextTurn();
+    gpu.reply({ kind: 'failure' });
+    await nextTurn();
+    assert.equal(gpu.terminations, 1);
+    assert.equal(recovered.messages[0].kind, 'initialize');
+    assert.equal(recovered.messages[0].delegate, undefined);
+    f.present(1300);
+    f.tick(1300);
+    await nextTurn();
+    f.setTime(1330);
+    recovered.complete();
+    await nextTurn();
+    assert.equal(f.frames.at(-1)?.fallbackReason, 'gpu-runtime');
+    assert.equal(f.frames.at(-1)?.backend, 'worker');
+    assert.equal(workersCreated, 3);
+    assert.equal(f.mainModelLoads(), 0);
+  } finally {
+    f.estimator.destroy();
+  }
+});
+
 test('pause during bitmap creation closes the late bitmap without transferring or starting new work', async () => {
   let release!: (bitmap: ImageBitmap) => void;
   let closed = 0;
@@ -153,7 +198,8 @@ test('pause during bitmap creation closes the late bitmap without transferring o
 });
 
 test('pose completions past validity and across pause/resume cannot reach gameplay', async () => {
-  const f = fixture();
+  const previews: PoseFrame[] = [];
+  const f = fixture('ready', { onPreviewFrame: frame => previews.push(frame) });
   await f.start();
   try {
     f.present(10); f.tick(12);
@@ -162,6 +208,7 @@ test('pose completions past validity and across pause/resume cannot reach gamepl
     f.worker.complete();
     await nextTurn();
     assert.equal(f.frames.length, 0);
+    assert.deepEqual(previews.map(frame => [frame.timestampMs, frame.previewOnly]), [[10, true]]);
     f.present(280); f.tick(283);
     await nextTurn();
     f.estimator.pause();
@@ -171,11 +218,19 @@ test('pose completions past validity and across pause/resume cannot reach gamepl
     f.worker.complete();
     await nextTurn();
     assert.equal(f.frames.length, 0);
+    assert.equal(previews.length, 1);
     f.tick(340);
     await nextTurn();
     f.worker.complete();
     await nextTurn();
     assert.deepEqual(f.frames.map(frame => [frame.timestampMs, frame.poseFps]), [[320, 0]]);
+    assert.deepEqual(previews.map(frame => [frame.timestampMs, frame.previewOnly]), [[10, true], [320, false]]);
+    f.present(420); f.tick(425);
+    await nextTurn();
+    f.setTime(1170);
+    f.worker.complete();
+    await nextTurn();
+    assert.equal(previews.length, 2, 'results beyond the visual budget must not draw a skeleton');
   } finally {
     f.estimator.destroy();
   }

@@ -1,9 +1,10 @@
-import { clearInferencePerformance, recordInferencePerformance } from '../performance/performanceMetrics';
+import { clearInferencePerformance, recordInferencePerformance, setGpuWarmup } from '../performance/performanceMetrics';
 import { POSE_CONFIG } from './poseConfig';
 import { createPoseLandmarker, personMask, type PoseEstimatorAssets, type PoseLandmarkerResultLike } from './poseLandmarker';
 import type { PoseFrame } from './poseTypes';
 import { PoseWorkerClient } from './PoseWorkerClient';
 import type { PoseInference } from './poseWorkerMessages';
+import { WorkerPerformancePolicy, type PoseDelegate, type PoseDelegatePreference } from './workerPerformancePolicy';
 
 export { personMask } from './poseLandmarker';
 export type { PoseEstimatorAssets, PoseLandmarkerResultLike, PoseSegmentationMaskLike } from './poseLandmarker';
@@ -26,6 +27,7 @@ export class PoseEstimatorError extends Error {
 
 export interface PoseEstimatorOptions {
   onFrame: (frame: PoseFrame) => void;
+  onPreviewFrame?: (frame: PoseFrame) => void;
   onError?: (error: PoseEstimatorError) => void;
   maxFps?: number;
   outputSegmentationMasks?: boolean;
@@ -33,6 +35,7 @@ export interface PoseEstimatorOptions {
   createLandmarker?: (assets: PoseEstimatorAssets, outputSegmentationMasks: boolean) => Promise<PoseLandmarkerLike>;
   createWorker?: () => Worker;
   createBitmap?: (video: HTMLVideoElement) => Promise<ImageBitmap>;
+  delegatePreference?: PoseDelegatePreference;
   requestFrame?: (callback: FrameRequestCallback) => number;
   cancelFrame?: (id: number) => void;
   now?: () => number;
@@ -75,6 +78,10 @@ export class PoseEstimator {
   private landmarker?: PoseLandmarkerLike;
   private worker?: PoseWorkerClient;
   private workerBusy = false;
+  private workerDelegate: PoseDelegate;
+  private readonly delegatePolicy: WorkerPerformancePolicy;
+  private gpuAwaitingLandmarks = false;
+  private mainOnly = false;
   private fallbackReason?: string;
   private initializing?: Promise<void>;
   private video?: HTMLVideoElement;
@@ -100,6 +107,10 @@ export class PoseEstimator {
     this.requestFrame = options.requestFrame ?? requestAnimationFrame.bind(globalThis);
     this.cancelFrame = options.cancelFrame ?? cancelAnimationFrame.bind(globalThis);
     this.now = options.now ?? (() => performance.now());
+    const queryDelegate = new URLSearchParams(globalThis.location?.search).get('poseDelegate');
+    const preference = options.delegatePreference ?? (queryDelegate === 'gpu' ? 'GPU' : queryDelegate === 'cpu' ? 'CPU' : 'auto');
+    this.workerDelegate = preference === 'GPU' ? 'GPU' : 'CPU';
+    this.delegatePolicy = new WorkerPerformancePolicy(preference);
     const maxFps = Math.max(1, Math.min(25, options.maxFps ?? 25));
     // Allow a 1 ms margin for refresh timestamps rounded just below the 10 FPS interval.
     this.intervalMs = 1000 / maxFps - (maxFps === 10 ? 1 : 0);
@@ -114,7 +125,17 @@ export class PoseEstimator {
     const assets = poseEstimatorAssets(this.options.baseUrl ?? import.meta.env?.BASE_URL ?? '/');
     const pending = (async () => {
       try {
-        if (this.shouldUseWorker() && await this.initializeWorker(assets, generation)) return;
+        if (this.shouldUseWorker()) {
+          if (await this.initializeWorker(assets, generation)) return;
+          if (this.workerDelegate === 'GPU') {
+            this.workerDelegate = 'CPU';
+            this.delegatePolicy.finish();
+            this.fallbackReason = 'gpu-startup';
+            if (await this.initializeWorker(assets, generation)) return;
+          }
+          this.mainOnly = true;
+          this.fallbackReason = 'startup';
+        }
         this.requireGeneration(generation);
         const landmarker = await (this.options.createLandmarker ?? createPoseLandmarker)(assets, this.outputSegmentationMasks);
         if (generation !== this.generation) {
@@ -140,7 +161,7 @@ export class PoseEstimator {
 
   private shouldUseWorker(): boolean {
     const forcedMain = new URLSearchParams(globalThis.location?.search).get('poseBackend') === 'main';
-    if (forcedMain || this.fallbackReason || (this.options.createLandmarker && !this.options.createWorker)) return false;
+    if (forcedMain || this.mainOnly || (this.options.createLandmarker && !this.options.createWorker)) return false;
     if (!this.options.createWorker && (typeof Worker !== 'function' || typeof OffscreenCanvas !== 'function'
       || typeof createImageBitmap !== 'function')) {
       this.fallbackReason = 'unsupported';
@@ -151,20 +172,22 @@ export class PoseEstimator {
 
   private async initializeWorker(assets: PoseEstimatorAssets, generation: number): Promise<boolean> {
     try {
+      this.gpuAwaitingLandmarks = this.workerDelegate === 'GPU';
+      setGpuWarmup(this, this.gpuAwaitingLandmarks);
       const worker = new PoseWorkerClient((this.options.createWorker ?? createWorker)());
       this.worker = worker;
       const base = globalThis.document?.baseURI;
       await worker.initialize({
         wasmRoot: new URL(assets.wasmRoot, base).href,
         modelPath: new URL(assets.modelPath, base).href,
-      }, this.outputSegmentationMasks);
+      }, this.outputSegmentationMasks, this.workerDelegate);
       this.requireGeneration(generation);
       return true;
     } catch {
+      setGpuWarmup(this, false);
       this.worker?.close();
       this.worker = undefined;
       this.requireGeneration(generation);
-      this.fallbackReason = 'startup';
       return false;
     }
   }
@@ -242,6 +265,7 @@ export class PoseEstimator {
       if (!globalThis.document?.hidden) {
         const timestampMs = Number.isFinite(frame.presentationTime) ? Math.min(now, frame.presentationTime) : now;
         this.latestVideoFrame = { count: frame.presentedFrames, timestampMs };
+        if (this.worker && !this.options.requestFrame) this.tryInfer(now);
       }
       this.videoFrameId = video.requestVideoFrameCallback(observe);
     };
@@ -251,12 +275,18 @@ export class PoseEstimator {
   private readonly tick: FrameRequestCallback = (timestampMs): void => {
     this.frameId = undefined;
     if (!this.running || this.destroyed) return;
+    this.tryInfer(timestampMs);
+    this.schedule();
+  };
+
+  private tryInfer(timestampMs: number): void {
+    if (!this.running || this.destroyed || globalThis.document?.hidden) return;
     const video = this.video;
     const frame = this.latestVideoFrame;
     const freshVideo = this.videoFrameId === undefined
       ? video?.currentTime !== this.lastVideoTime
       : frame && frame.count !== this.sampledVideoFrame && timestampMs - frame.timestampMs < POSE_CONFIG.maxDataAgeMs;
-    if (video && !globalThis.document?.hidden && (this.landmarker || (this.worker && !this.workerBusy))
+    if (video && (this.landmarker || (this.worker && !this.workerBusy && !this.initializing))
       && video.readyState >= 2 && video.videoWidth > 0
       && freshVideo && timestampMs - this.lastInferenceMs >= this.intervalMs) {
       this.lastVideoTime = video.currentTime;
@@ -266,27 +296,40 @@ export class PoseEstimator {
       if (this.worker) void this.inferWithWorker(this.worker, video, sampledAt);
       else if (this.landmarker) this.inferOnMain(this.landmarker, video, sampledAt);
     }
-    this.schedule();
-  };
+  }
 
   private modelTimestamp(timestampMs: number): number {
     this.lastTimestampMs = Math.max(timestampMs, this.lastTimestampMs + 0.001);
     return this.lastTimestampMs;
   }
 
-  private emitFrame(inference: PoseInference, timestampMs: number, backend: 'worker' | 'main'): void {
-    this.totalInferenceMs += inference.inferenceMs;
-    this.inferenceCount++;
-    if (this.previousFrameMs !== undefined) {
-      const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
-      this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
-    }
-    this.previousFrameMs = timestampMs;
-    this.options.onFrame({
-      ...inference, timestampMs, poseFps: this.poseFps,
-      averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
-      backend, fallbackReason: this.fallbackReason,
+  private emitFrame(inference: PoseInference, timestampMs: number, backend: 'worker' | 'main',
+    completedAtMs: number, framePreparationMs?: number): void {
+    const frameAgeMs = Math.max(0, completedAtMs - timestampMs);
+    const previewOnly = frameAgeMs >= POSE_CONFIG.maxDataAgeMs;
+    setGpuWarmup(this, false);
+    recordInferencePerformance(this, {
+      backend, completedAtMs, inferenceMs: inference.inferenceMs, frameAgeMs, framePreparationMs,
+      delegate: backend === 'worker' ? this.workerDelegate : 'CPU',
+      late: previewOnly, hasLandmarks: Boolean(inference.landmarks?.length), fallbackReason: this.fallbackReason,
     });
+    if (frameAgeMs >= POSE_CONFIG.maxPreviewAgeMs) return;
+    if (!previewOnly) {
+      this.totalInferenceMs += inference.inferenceMs;
+      this.inferenceCount++;
+      if (this.previousFrameMs !== undefined) {
+        const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
+        this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
+      }
+      this.previousFrameMs = timestampMs;
+    }
+    const frame: PoseFrame = {
+      ...inference, timestampMs, poseFps: this.poseFps,
+      averageInferenceMs: this.inferenceCount ? this.totalInferenceMs / this.inferenceCount : undefined,
+      backend, fallbackReason: this.fallbackReason, previewOnly,
+    };
+    this.options.onPreviewFrame?.(frame);
+    if (!previewOnly && this.running) this.options.onFrame(frame);
   }
 
   private failInference(error: unknown): void {
@@ -301,12 +344,11 @@ export class PoseEstimator {
       try {
         const completedAtMs = this.now();
         const inferenceMs = Math.max(0, completedAtMs - startedMs);
-        recordInferencePerformance(this, { inferenceMs, completedAtMs, backend: 'main', fallbackReason: this.fallbackReason });
         const mask = this.outputSegmentationMasks ? result.segmentationMasks?.[0] : undefined;
         this.emitFrame({
           landmarks: result.landmarks[0], personMask: mask ? personMask(mask) : undefined, inferenceMs,
           imageWidth: video.videoWidth, imageHeight: video.videoHeight,
-        }, timestampMs, 'main');
+        }, timestampMs, 'main', completedAtMs);
       } finally {
         result.close?.();
       }
@@ -317,39 +359,53 @@ export class PoseEstimator {
 
   private async inferWithWorker(worker: PoseWorkerClient, video: HTMLVideoElement, timestampMs: number): Promise<void> {
     this.workerBusy = true;
+    if (this.gpuAwaitingLandmarks) setGpuWarmup(this, true);
     const generation = this.startGeneration;
     const visibilityGeneration = this.visibilityGeneration;
     const isCurrent = () => this.running && generation === this.startGeneration
       && visibilityGeneration === this.visibilityGeneration && this.worker === worker && !globalThis.document?.hidden;
+    const preparingAtMs = this.now();
+    let framePreparationMs: number;
     let inference: PoseInference;
     try {
       const bitmap = await captureBitmap(this.options.createBitmap ?? createImageBitmap, video);
-      if (!isCurrent() || this.now() - timestampMs >= POSE_CONFIG.maxDataAgeMs) {
+      const preparedAtMs = this.now();
+      framePreparationMs = Math.max(0, preparedAtMs - preparingAtMs);
+      if (!isCurrent() || preparedAtMs - timestampMs >= POSE_CONFIG.maxDataAgeMs) {
         bitmap.close();
         return;
       }
       inference = await worker.detect(bitmap, this.modelTimestamp(timestampMs));
     } catch {
-      if (this.worker === worker && !this.destroyed) this.fallbackToMain(worker);
+      if (this.worker === worker && !this.destroyed) {
+        if (this.workerDelegate === 'GPU') this.replaceWorker(worker, 'CPU', 'gpu-runtime');
+        else this.replaceWorker(worker, undefined, 'runtime');
+      }
       return;
     } finally {
       this.workerBusy = false;
     }
     if (!isCurrent()) return;
-    const completedAtMs = this.now();
-    recordInferencePerformance(this, { inferenceMs: inference.inferenceMs, completedAtMs, backend: 'worker' });
-    if (completedAtMs - timestampMs >= POSE_CONFIG.maxDataAgeMs) return;
     try {
-      this.emitFrame(inference, timestampMs, 'worker');
+      const now = this.now();
+      if (inference.landmarks?.length) this.gpuAwaitingLandmarks = false;
+      this.emitFrame(inference, timestampMs, 'worker', now, framePreparationMs);
+      if (!isCurrent()) return;
+      const nextDelegate = this.delegatePolicy.observe(this.workerDelegate, now - timestampMs, Boolean(inference.landmarks?.length));
+      if (nextDelegate) this.replaceWorker(worker, nextDelegate, nextDelegate === 'CPU' ? 'gpu-trial' : undefined);
+      else if (!this.options.requestFrame) this.tryInfer(now);
     } catch (error) {
       this.failInference(error);
     }
   }
 
-  private fallbackToMain(worker: PoseWorkerClient): void {
+  private replaceWorker(worker: PoseWorkerClient, delegate: PoseDelegate | undefined, reason?: string): void {
     worker.close();
     this.worker = undefined;
-    this.fallbackReason = 'runtime';
+    if (delegate) this.workerDelegate = delegate;
+    else this.mainOnly = true;
+    if (delegate !== 'GPU') this.delegatePolicy.finish();
+    this.fallbackReason = reason;
     this.previousFrameMs = undefined;
     this.poseFps = this.totalInferenceMs = this.inferenceCount = 0;
     clearInferencePerformance(this);
