@@ -82,8 +82,9 @@ async function installFixture(compiled = false) {
           const width = video.videoWidth;
           const height = video.videoHeight;
           const center = width * (.5 + value.shift);
-          const shoulderY = height * .28;
-          const hipY = height * .52;
+          const hipDrop = value.partialHipMotion ? (170 - value.knee) * .0013 : 0;
+          const shoulderY = height * (.28 + hipDrop);
+          const hipY = height * (.52 + hipDrop);
           const lean = Math.tan(value.lean * Math.PI / 180) * (hipY - shoulderY);
           const point = (x, y, visibility = .99) =>
             ({ x: x / width, y: y / height, z: 0, visibility, presence: .99 });
@@ -113,6 +114,10 @@ async function installFixture(compiled = false) {
             points[ankle] = point(x + Math.sin(kneeRadians) * height * .17,
               height * .69 + Math.cos(kneeRadians) * height * .17);
           }
+          if (value.headCropped) for (let index = 0; index < 11; index++) points[index] = point(center, -height * .1);
+          if (value.armsCropped) for (const index of [13, 14, 15, 16]) points[index] = point(center, height * 1.1);
+          if (value.anklesCropped) for (const index of [27, 28]) points[index] = point(center, height * 1.1);
+          if (value.kneesHidden) for (const index of [25, 26]) points[index].visibility = .1;
           if (value.leftHidden) for (const index of [13, 15]) points[index].visibility = .1;
           if (value.wristsHidden) for (const index of [15, 16]) points[index].visibility = .1;
           if (value.wristsMissing) for (const index of [15, 16]) points[index] = undefined;
@@ -675,6 +680,105 @@ async function developmentLifecycle() {
   check('Home during pending Carrot loading rejects late work and leaves no texture, duplicate canvas or game controls', remaining);
 }
 
+async function partialBodyGameplay() {
+  const ready = item => item.rabbit3d?.gameplayReady && !item.input.suspended;
+  const grabbed = item => item.state === 'GRABBED' && item.rabbit3d.gameplay.phase === 'ATTACHED';
+  async function calibrateWithVisibleThighs(anklesCropped) {
+    await enter();
+    await installFixture();
+    await fixture({ lost: false, partialHipMotion: true, headCropped: true, armsCropped: true,
+      anklesCropped, knee: 170 });
+    await page.locator('[data-input-action=camera]').click();
+    await waitSnapshot(value => ['BEND_INSTRUCTIONS', 'BEND_SAMPLING'].includes(value.input.calibrationState));
+    await fixture({ knee: 150 });
+    await waitSnapshot(value => value.input.calibrationReady);
+    const profile = await calibrationProfile();
+    assert.ok(profile.partial.range > .04);
+    assert.equal(profile.metric === 'partial', anklesCropped);
+    if (anklesCropped) assert.equal(profile.standingAngle, undefined);
+    else assert.ok(Math.abs(profile.standingAngle - 170) < .1);
+    await fixture({ knee: 170 });
+    const initial = await waitSnapshot(ready);
+    assert.equal(initial.input.trackingMode, anklesCropped ? 'partial' : 'full');
+    assert.equal(initial.rabbit3d.mocap.raw.headYaw, undefined);
+    assert.equal(initial.rabbit3d.mocap.raw.leftArmElevation, undefined);
+    return profile;
+  }
+
+  const profile = await calibrateWithVisibleThighs(true);
+  assert.match(await page.locator('.person-status').innerText(), /Partial Tracking/);
+  await capture('partial-calibrated-ready');
+  check('Cropped head, arms and ankles permit automatic personal calibration and real 3D control', profile);
+  await fixture({ shift: .018 });
+  await page.waitForTimeout(800);
+  assert.equal((await snapshot()).state, 'READY');
+  await fixture({ shift: 0 });
+  await pauseAndResume('cropped standing pose');
+  await fixture({ kneesHidden: true });
+  const lost = await waitSnapshot(value => value.input.trackingMode === 'lost');
+  assert.equal(lost.input.suspended, true);
+  await page.waitForTimeout(300);
+  assert.equal((await snapshot()).score, 0);
+  await fixture({ kneesHidden: false });
+  await waitSnapshot(ready);
+  check('Translation, pause and missing required knees cannot award points and tracking recovers');
+
+  for (let score = 1; score <= 5; score++) {
+    await waitSnapshot(value => value.state === 'READY');
+    await fixture({ knee: 150 });
+    const bend = await waitSnapshot(grabbed);
+    assert.equal(bend.score, score - 1);
+    assert.equal(bend.input.trackingMode, 'partial');
+    assert.equal(bend.rabbit3d.mocap.raw.activeKneeAngle, undefined);
+    assert.ok(bend.rabbit3d.mocap.raw.estimatedBendAmount > .9);
+    if (score === 1) {
+      await capture('partial-grabbed');
+      await fixture({ anklesCropped: false });
+      await page.waitForTimeout(450);
+      const restored = await snapshot();
+      assert.equal(restored.input.trackingMode, 'partial');
+      assert.equal(restored.state, 'GRABBED');
+      assert.equal(restored.score, 0);
+      await fixture({ anklesCropped: true });
+    }
+    await fixture({ knee: 170 });
+    const harvest = await waitSnapshot(value => value.score === score);
+    assert.equal(harvest.score, score);
+    report.rounds.push({ score, trackingMode: harvest.input.trackingMode, state: harvest.state });
+  }
+  await waitSnapshot(value => value.state === 'COMPLETE');
+  await capture('partial-complete');
+  check('Partial-only calibration retains its metric when ankles appear and completes five normal 3D harvests');
+  await page.locator('[data-action=home]').click();
+  await page.locator('[data-action=start]').waitFor();
+  assert.equal(await page.evaluate(() => window.__carrotGameStream.getTracks().every(track => track.readyState === 'ended')), true);
+
+  const paired = await calibrateWithVisibleThighs(false);
+  await fixture({ knee: 150, anklesCropped: true });
+  await waitSnapshot(value => value.input.trackingMode === 'partial' && value.input.suspended);
+  await page.waitForTimeout(400);
+  const unconfirmed = await snapshot();
+  assert.equal(unconfirmed.state, 'READY');
+  assert.equal(unconfirmed.score, 0);
+  await fixture({ knee: 170 });
+  await waitSnapshot(ready);
+  await fixture({ knee: 150 });
+  await waitSnapshot(grabbed);
+  await fixture({ anklesCropped: false });
+  await page.waitForTimeout(350);
+  assert.equal((await snapshot()).input.trackingMode, 'partial');
+  await fixture({ knee: 170 });
+  await waitSnapshot(value => value.score === 1 && value.input.trackingMode === 'full');
+  await page.waitForTimeout(400);
+  assert.equal((await snapshot()).score, 1);
+  assert.deepEqual(await calibrationProfile(), paired);
+  check('Paired metric switches wait for stable standing and retain the same profile and one score');
+  await page.evaluate(() => window.__carrotGameStream.getTracks()[0].dispatchEvent(new Event('ended')));
+  await page.getByRole('heading', { name: '未能開啟鏡頭' }).waitFor();
+  assert.equal(await page.evaluate(() => window.__carrotGameStream.getTracks().every(track => track.readyState === 'ended')), true);
+  check('Cropped camera disconnect uses ordinary setup and releases the video track');
+}
+
 async function maximumScaleLayout() {
   await enter('?carrotGameSim=1');
   await page.evaluate(async () => {
@@ -687,7 +791,7 @@ async function maximumScaleLayout() {
   await page.locator('[data-input-action=keyboard]').click();
   await waitSnapshot(value => value.rabbit3d.renderMode === '3d-game');
   report.layoutCases = [];
-  for (const viewport of [{ width: 1512, height: 982 }, { width: 600, height: 800 }]) {
+  for (const viewport of [{ width: 1512, height: 982 }, { width: 950, height: 500 }]) {
     await page.setViewportSize(viewport);
     await page.waitForTimeout(200);
     const result = await page.evaluate(async () => {
@@ -738,7 +842,10 @@ async function maximumScaleLayout() {
 }
 
 try {
-  if (process.env.QA_LAYOUT_ONLY === '1') {
+  if (process.env.QA_PARTIAL_ONLY === '1') {
+    assert.equal(production, false);
+    await partialBodyGameplay();
+  } else if (process.env.QA_LAYOUT_ONLY === '1') {
     report.input = 'Explicit development keyboard simulation for the supported maximum rabbit-scale layout';
     await maximumScaleLayout();
   } else if (process.env.QA_REST_ONLY === '1') {
@@ -817,14 +924,14 @@ try {
     await page.waitForTimeout(500);
     check('Continuous arm and torso motion remain live while standing and subthreshold bend does not grab');
     await measurePerformance();
-    await page.setViewportSize({ width: 600, height: 800 });
+    await page.setViewportSize({ width: 950, height: 500 });
     await page.waitForTimeout(350);
     assert.equal(await page.locator('vite-error-overlay').count(), 0);
     assert.equal((await snapshot()).rabbit3d.renderMode, '3d-game');
-    await capture('responsive-600');
+    await capture('responsive-950');
     await page.setViewportSize({ width: 1512, height: 982 });
     await page.waitForTimeout(350);
-    check('Responsive FIT layout preserves the 3D game and player controls at 600 by 800');
+    check('Responsive FIT layout preserves the 3D game and player controls at 950 by 500');
 
     await fixture({ knee: 150 });
     await waitSnapshot(item => item.state === 'BENDING' && item.progress > .12 && item.progress < .6);

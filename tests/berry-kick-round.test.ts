@@ -69,6 +69,23 @@ test('tracking loss disarms and requires reliable retraction before another hit'
   assert.deepEqual(hit(round, 'left'), { kind: 'harvest', side: 'left' });
 });
 
+test('only the unreliable leg is disarmed and the visible leg can still harvest', () => {
+  const round = createRound(120, () => 1);
+  round.update(16, sample());
+  const right = { left: false, right: true };
+  assert.equal(round.update(16, { ...sample('left', 1), legReliable: right }), undefined);
+  assert.deepEqual(round.snapshot().armed, { left: false, right: true });
+  assert.deepEqual(round.update(16, { ...sample('right', 1), legReliable: right }), { kind: 'harvest', side: 'right' });
+  assert.equal(round.update(1000, sample('left', 1)), undefined);
+  assert.equal(round.score, 3);
+
+  const leftRound = createRound();
+  leftRound.update(16, sample());
+  assert.deepEqual(leftRound.update(16, { ...sample('left', 1), legReliable: { left: true, right: false } }),
+    { kind: 'harvest', side: 'left' });
+  assert.equal(leftRound.snapshot().armed.right, false);
+});
+
 test('pause freezes clock, transitions, cooldown and scoring', () => {
   const round = createRound();
   hit(round, 'left');

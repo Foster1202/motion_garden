@@ -1,3 +1,5 @@
+import type { TrackingMode } from './trackingMode';
+
 export type PoseState = 'UNKNOWN' | 'STANDING' | 'TRANSITION' | 'BENDING' | 'TRACKING_LOST';
 export type PoseCandidateState = 'STANDING' | 'BENDING';
 
@@ -29,6 +31,10 @@ export interface PoseSnapshot {
   leftKneeAngle?: number;
   rightKneeAngle?: number;
   activeKneeAngle?: number;
+  trackingMode?: TrackingMode;
+  trackingTransition?: boolean;
+  partialBendSignal?: number;
+  estimatedBendAmount?: number;
   confidence: number;
   reliableSides: number;
   candidateState?: PoseCandidateState;

@@ -113,7 +113,7 @@ export class MocapController {
     const inward = allowInwardArms && rig.version === 'v3' && !this.shoulderOnly;
     const maximumPlane = inward ? RABBIT_INWARD_ARM_MAX_PLANE : 90;
     this.extractor = new HumanPoseExtractor(inward, this.shoulderOnly);
-    this.retargeter = new MotionRetargeter(maximumPlane, gardenMovement, this.shoulderOnly, this.maximumArmElevation);
+    this.retargeter = new MotionRetargeter(maximumPlane, gardenMovement, this.shoulderOnly, this.maximumArmElevation, gardenMovement);
     this.smoother = new MotionSmoother(rig.version === 'v3', maximumPlane);
     this.initialRootX = rig.bones?.get('root')?.position.x;
     for (const [name, bone] of rig.bones ?? []) {
@@ -223,6 +223,7 @@ export class MocapController {
     }
     this.lastTimestamp = frame.timestampMs;
     if (pose.timestampMs !== frame.timestampMs) { fail('mismatched-pose'); return; }
+    if (pose.trackingTransition) { fail(pose.reason ?? 'tracking-mode-transition'); return; }
     const human = this.extractor.extract(frame, pose, profile);
     this.extractionRejection = this.extractor.lastRejection;
     if (!human) { fail('unreliable-pose'); return; }
@@ -245,7 +246,8 @@ export class MocapController {
       }
     }
     this.raw = human;
-    this.movementStanding = human.activeKneeAngle >= profile.standingThreshold;
+    this.movementStanding = pose.trackingMode !== 'partial' && human.activeKneeAngle !== undefined
+      && profile.standingThreshold !== undefined && human.activeKneeAngle >= profile.standingThreshold;
     const anatomical = this.retargeter.update(human, profile);
     let mapped = anatomical;
     if (anatomical && this.gardenMovement) {

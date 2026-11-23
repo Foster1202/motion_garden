@@ -145,6 +145,7 @@
 }
 
 .apple-camera { position: absolute; right: 2.5%; bottom: 10%; width: 13%; border: 3px solid #fffbed; border-radius: 12px; transform: scaleX(-1); }
+.apple-tracking-status { right:2.5%; bottom:3%; font-size:clamp(10px,1cqw,16px); padding:.35em .65em; }
 .apple-camera-source { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .apple-harvest-ui .apple-score-popup { top: 60%; left: 59%; }
 .apple-result-art svg { width: 72px; transform: rotate(7deg); }
@@ -157,28 +158,12 @@
 .apple-how-to {
   text-align: left;
   padding-inline-start: 1.75em;
-  font-size: clamp(17px, 1.5vw, 23px);
+  font-size: clamp(12px, 1.5cqw, 23px);
   line-height: 1.6;
 }
 
 .apple-how-to li { padding-inline-start: .25em; margin-top: .35em; }
 
-@media (max-width: 700px) {
-  #app:has(.apple-harvest-ui) .orientation-note { display: none; }
-  .apple-hud { inset: 2% 2.5% auto; }
-  .apple-hud h1 { font-size: max(15px, 3.5cqw); }
-  .apple-hud .button { font-size: max(13px, 2.6cqw); min-height: 42px; }
-  .apple-timer { font-size: max(10px, 2.2cqw); }
-  .apple-timer strong { font-size: max(14px, 3.1cqw); }
-  .apple-score { font-size: max(12px, 2.5cqw); }
-  .apple-target { top: 15%; min-width: 14cqw; padding: .25cqw 1.5cqw; }
-  .apple-target span { font-size: max(10px, 1.8cqw); }
-  .apple-target strong { font-size: max(17px, 4cqw); }
-  .apple-hint { top: 29%; font-size: max(12px, 2.45cqw); padding: .28em .65em; }
-  .apple-footer { bottom: 1.5%; font-size: max(10px, 2.2cqw); }
-  .apple-harvest-ui .berry-countdown-digit { top: 40%; font-size: 11cqw; }
-  .apple-harvest-ui .berry-score-popup { top: 62%; font-size: 6cqw; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .apple-harvest-ui .button { transition: none; }

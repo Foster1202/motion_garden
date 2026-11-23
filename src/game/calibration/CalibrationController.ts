@@ -1,16 +1,19 @@
 import type { PoseSnapshot } from '../vision/poseTypes';
 import { CALIBRATION_CONFIG as CONFIG } from './calibrationConfig';
-import { calibrationThresholds, interquartileRange, isPlausibleAngle, isStable, median, validateCalibration } from './calibrationMath';
-import type { CalibrationProfile, CalibrationSide, CalibrationSnapshot, CalibrationState } from './calibrationTypes';
+import { calibrationThresholds, interquartileRange, isPlausibleAngle, isStable, median, partialMotionRange, quantile, validateCalibration, validatePartialMotionRange } from './calibrationMath';
+import { copyCalibrationProfile, type KneeCalibrationProfile, type CalibrationProfile, type CalibrationSide,
+  type CalibrationSnapshot, type CalibrationState } from './calibrationTypes';
+import { PARTIAL_BEND_CONFIG as PARTIAL } from '../vision/partialBend';
 
-interface AngleSample { time: number; active: number; left?: number; right?: number }
-interface Baseline { active: number; left?: number; right?: number; iqr: number }
+interface CalibrationSample { time: number; active: number; left?: number; right?: number; partial?: number }
+interface Baseline { active: number; left?: number; right?: number; iqr: number; partial?: number }
+const REQUIRED_LANDMARKS = '請讓鏡頭睇到肩膊、腰部同膝頭。';
 
 export class CalibrationController {
   private state: CalibrationState = 'IDLE';
   private message = '準備設定你舒服嘅活動幅度。';
-  private samples: AngleSample[] = [];
-  private readySamples: AngleSample[] = [];
+  private samples: CalibrationSample[] = [];
+  private readySamples: CalibrationSample[] = [];
   private sampleStarted: number | undefined;
   private stepStarted = 0;
   private lastTimestamp: number | undefined;
@@ -23,6 +26,8 @@ export class CalibrationController {
   private bendArmed = false;
   private pausedAt: number | undefined;
   private activeAngle: number | undefined;
+  private partialBendSignal: number | undefined;
+  private metric?: 'knee-angle' | 'partial';
   private destroyed = false;
 
   begin(nowMs: number): CalibrationSnapshot { return this.restart(nowMs); }
@@ -34,31 +39,47 @@ export class CalibrationController {
     if (!Number.isFinite(nowMs) || !Number.isFinite(timestamp) || timestamp > nowMs
       || nowMs - timestamp > CONFIG.maxDataAgeMs
       || (this.lastTimestamp !== undefined && timestamp <= this.lastTimestamp)) {
-      this.interrupt('行後少少，等阿兔睇到你全身。');
+      this.interrupt(REQUIRED_LANDMARKS);
       return this.getSnapshot();
     }
     if (this.lastTimestamp !== undefined && timestamp - this.lastTimestamp > CONFIG.maxFrameGapMs) this.interrupt();
     this.lastTimestamp = timestamp;
     this.lastUpdate = nowMs;
-    const available = this.availableSide(pose);
-    if (!available || !isPlausibleAngle(pose.activeKneeAngle) || !Number.isFinite(pose.confidence) || pose.confidence < CONFIG.confidenceThreshold
+    if (!Number.isFinite(pose.confidence) || pose.confidence < CONFIG.confidenceThreshold
       || pose.state === 'UNKNOWN' || pose.state === 'TRACKING_LOST') {
-      this.interrupt('行後少少，等阿兔睇到你全身。');
+      this.interrupt(REQUIRED_LANDMARKS);
       return this.getSnapshot();
     }
-    if (!this.side) this.side = available;
-    const sample = this.angleSample(pose, nowMs);
+    const available = this.availableSide(pose);
+    const partial = pose.partialBendSignal;
+    const hasPartial = partial !== undefined && Number.isFinite(partial);
+    if (!this.metric) this.metric = available ? 'knee-angle' : hasPartial ? 'partial' : undefined;
+    if (this.metric === 'knee-angle' && available) this.side ??= available;
+    let sample: CalibrationSample | undefined = this.metric === 'knee-angle' && available ? this.angleSample(pose, nowMs) : undefined;
+    if (this.metric === 'knee-angle' && !sample && hasPartial) {
+      if (this.standing?.partial !== undefined) this.standing = { ...this.standing, active: -this.standing.partial };
+      else if (this.standing) {
+        this.standing = undefined;
+        this.bendArmed = false;
+        this.stepStarted = nowMs;
+      }
+      this.metric = 'partial';
+      this.side = undefined;
+      this.interrupt();
+    }
+    if (this.metric === 'partial' && hasPartial) sample = { time: nowMs, active: -partial, partial };
     if (!sample) {
-      this.interrupt('行後少少，等阿兔睇到你全身。');
+      this.interrupt(REQUIRED_LANDMARKS);
       return this.getSnapshot();
     }
-    this.activeAngle = sample.active;
+    this.activeAngle = this.metric === 'knee-angle' ? sample.active : undefined;
+    this.partialBendSignal = sample.partial;
     const bending = this.standing !== undefined;
     if (bending && !this.bendArmed) {
       this.message = '去到你覺得舒服嘅位置就得，唔使蹲低。';
       return this.getSnapshot();
     }
-    if (bending && this.standing!.active - sample.active < CONFIG.bendTriggerDrop) {
+    if (bending && this.standing!.active - sample.active < (this.metric === 'partial' ? PARTIAL.bendTrigger : CONFIG.bendTriggerDrop)) {
       this.clearWindow();
       this.state = 'BEND_INSTRUCTIONS';
       this.message = '慢慢屈膝，去到你覺得舒服嘅位置就得。';
@@ -68,7 +89,7 @@ export class CalibrationController {
       this.readySamples.push(sample);
       if (this.readySamples.length > CONFIG.maximumSamples) this.readySamples.shift();
       const values = this.readySamples.map(value => value.active);
-      if (Math.max(...values) - Math.min(...values) > CONFIG.readyMaximumSpread) {
+      if (Math.max(...values) - Math.min(...values) > (this.metric === 'partial' ? PARTIAL.readySpread : CONFIG.readyMaximumSpread)) {
         this.readySamples = [sample];
         this.message = bending ? '去到舒服嘅位置，再保持一下。' : '企穩少少，再試一次。';
         return this.getSnapshot();
@@ -93,7 +114,7 @@ export class CalibrationController {
     if (nowMs - this.stepStarted >= CONFIG.stepTimeoutMs) {
       this.fail('timeout', '未設定到，我哋再試一次。');
     } else if (this.lastUpdate !== undefined && nowMs - this.lastUpdate > CONFIG.maxDataAgeMs) {
-      this.interrupt('行後少少，等阿兔睇到你全身。');
+      this.interrupt(REQUIRED_LANDMARKS);
     }
     return this.getSnapshot();
   }
@@ -130,9 +151,11 @@ export class CalibrationController {
     this.clearWindow();
     this.standing = undefined;
     this.side = undefined;
+    this.metric = undefined;
     this.profile = undefined;
     this.failureReason = undefined;
     this.activeAngle = undefined;
+    this.partialBendSignal = undefined;
     this.bendArmed = false;
     this.pausedAt = undefined;
     this.lastTimestamp = undefined;
@@ -163,6 +186,7 @@ export class CalibrationController {
     this.profile = undefined;
     this.side = undefined;
     this.activeAngle = undefined;
+    this.partialBendSignal = undefined;
     this.state = 'IDLE';
     this.pausedAt = undefined;
     this.destroyed = true;
@@ -175,10 +199,10 @@ export class CalibrationController {
       state: this.state,
       progress: this.state === 'COMPLETE' ? 1 : Math.max(0, Math.min(1, timeProgress, this.samples.length / CONFIG.minimumSamples)),
       message: this.message,
-      profile: this.profile ? { ...this.profile } : undefined,
+      profile: this.profile ? copyCalibrationProfile(this.profile) : undefined,
       failureReason: this.failureReason,
       sampleCount: this.samples.length,
-      activeAngle: this.activeAngle,
+      activeAngle: this.activeAngle, partialBendSignal: this.partialBendSignal, metric: this.metric,
       paused: this.pausedAt !== undefined,
       samplingSide: this.side,
       bendStarted: this.bendArmed,
@@ -189,19 +213,21 @@ export class CalibrationController {
     return ['STANDING_INSTRUCTIONS', 'STANDING_SAMPLING', 'BEND_INSTRUCTIONS', 'BEND_SAMPLING'].includes(this.state);
   }
   private availableSide(pose: PoseSnapshot): CalibrationSide | undefined {
+    if (pose.trackingMode === 'partial' || !isPlausibleAngle(pose.activeKneeAngle)) return undefined;
     const left = isPlausibleAngle(pose.leftKneeAngle);
     const right = isPlausibleAngle(pose.rightKneeAngle);
     if (pose.reliableSides < 1) return undefined;
     if (left && right && pose.reliableSides < 2) return undefined;
     return left && right ? 'both' : left ? 'left' : right ? 'right' : undefined;
   }
-  private angleSample(pose: PoseSnapshot, nowMs: number): AngleSample | undefined {
+  private angleSample(pose: PoseSnapshot, nowMs: number): CalibrationSample | undefined {
     const left = this.side !== 'right' && isPlausibleAngle(pose.leftKneeAngle) ? pose.leftKneeAngle : undefined;
     const right = this.side !== 'left' && isPlausibleAngle(pose.rightKneeAngle) ? pose.rightKneeAngle : undefined;
     if ((this.side === 'both' && (left === undefined || right === undefined))
       || (this.side === 'left' && left === undefined) || (this.side === 'right' && right === undefined)) return undefined;
     const active = left !== undefined && right !== undefined ? (left + right) / 2 : (left ?? right);
-    return active === undefined ? undefined : { time: nowMs, active, left, right };
+    return active === undefined || pose.trackingMode === 'partial'
+      ? undefined : { time: nowMs, active, left, right, partial: pose.partialBendSignal };
   }
   private clearWindow(): void {
     this.samples = [];
@@ -211,23 +237,29 @@ export class CalibrationController {
   private interrupt(message?: string): void {
     this.clearWindow();
     this.activeAngle = undefined;
+    this.partialBendSignal = undefined;
     if (!this.isActive()) return;
     this.state = this.standing ? 'BEND_INSTRUCTIONS' : 'STANDING_INSTRUCTIONS';
-    if (!this.standing) this.side = undefined;
+    if (!this.standing) {
+      this.side = undefined;
+      if (this.metric === 'knee-angle') this.metric = undefined;
+    }
     this.message = message ?? (this.standing ? '去到舒服嘅位置，再保持一下。' : '放鬆企好，唔使刻意用力。');
   }
-  private stats(samples: AngleSample[]): Baseline {
+  private stats(samples: CalibrationSample[]): Baseline {
     const left = samples.flatMap(sample => sample.left === undefined ? [] : [sample.left]);
     const right = samples.flatMap(sample => sample.right === undefined ? [] : [sample.right]);
     const active = samples.map(sample => sample.active);
+    const partial = samples.flatMap(sample => sample.partial === undefined ? [] : [sample.partial]);
     return { active: median(active), left: left.length ? median(left) : undefined,
-      right: right.length ? median(right) : undefined, iqr: interquartileRange(active) };
+      right: right.length ? median(right) : undefined, iqr: interquartileRange(active),
+      partial: partial.length >= CONFIG.minimumSamples && stablePartial(partial) ? median(partial) : undefined };
   }
   private finishWindow(nowMs: number): void {
     const stable = ['active', 'left', 'right'].every(key => {
       const values = this.samples.flatMap(sample => sample[key as 'active' | 'left' | 'right'] === undefined
         ? [] : [sample[key as 'active' | 'left' | 'right']!]);
-      return !values.length || isStable(values);
+      return !values.length || (this.metric === 'partial' ? stablePartial(values) : isStable(values));
     });
     if (!stable) {
       this.interrupt(this.standing ? '去到舒服嘅位置，再保持一下。' : '企穩少少，再試一次。');
@@ -245,8 +277,17 @@ export class CalibrationController {
     }
     this.state = 'VALIDATING';
     const standing = this.standing;
+    const partial = standing.partial !== undefined && baseline.partial !== undefined
+      ? partialMotionRange(standing.partial, baseline.partial) : undefined;
+    if (this.metric === 'partial') {
+      if (!validatePartialMotionRange(partial)) {
+        this.fail('partial-range-too-small', '未能分辨企直同屈膝。請用舒服幅度重試，或者使用鍵盤。');
+      } else this.complete({ metric: 'partial', partial, timestamp: nowMs });
+      return;
+    }
     const thresholds = calibrationThresholds(standing.active, baseline.active);
-    const profile: CalibrationProfile = {
+    const profile: KneeCalibrationProfile = {
+      ...(validatePartialMotionRange(partial) ? { partial } : {}),
       standingAngle: standing.active, bendingAngle: baseline.active, ...thresholds, timestamp: nowMs,
       leftStanding: standing.left, rightStanding: standing.right,
       leftBending: baseline.left, rightBending: baseline.right,
@@ -258,11 +299,12 @@ export class CalibrationController {
       this.fail('range-too-small', '暫時未能穩定辨識呢個幅度，可以按舒服幅度重試或使用鍵盤，唔使勉強。');
     } else if (!validateCalibration(profile)) {
       this.fail('invalid-profile', '未設定到，我哋再試一次。');
-    } else {
-      this.profile = profile;
-      this.state = 'COMPLETE';
-      this.message = '之後阿兔會跟住你舒服嘅活動幅度。';
-    }
+    } else this.complete(profile);
+  }
+  private complete(profile: CalibrationProfile): void {
+    this.profile = profile;
+    this.state = 'COMPLETE';
+    this.message = '之後阿兔會跟住你舒服嘅活動幅度。';
   }
   private fail(reason: string, message: string): void {
     this.failedStep = this.standing ? 'bend' : 'standing';
@@ -272,4 +314,9 @@ export class CalibrationController {
     this.failureReason = reason;
     this.message = message;
   }
+}
+
+function stablePartial(values: readonly number[]): boolean {
+  return interquartileRange(values) <= PARTIAL.maximumIqr
+    && quantile(values, .9) - quantile(values, .1) <= PARTIAL.maximumSpread;
 }

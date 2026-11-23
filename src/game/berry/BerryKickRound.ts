@@ -2,6 +2,7 @@ import { BERRY_CONFIG as C, footInTrunk, type BerrySide, type FootPoint, type Tr
 export type BerryState = 'READY' | 'MOVING' | 'LEG_EXTENDING' | 'TREE_HIT' | 'BERRIES_FALLING' | 'RECOVERY' | 'COMPLETE';
 export interface BerryRoundInput {
   left: number; right: number; feet: Record<BerrySide, FootPoint>; reliable: boolean; rootX: number;
+  legReliable?: Record<BerrySide, boolean>;
 }
 export interface BerryContact {
   kind: 'harvest' | 'wrong-tree';
@@ -51,7 +52,10 @@ export class BerryKickRound {
       this.armed.left = this.armed.right = false; return undefined;
     }
     if (!input.reliable) { this.armed.left = this.armed.right = false; return undefined; }
+    if (input.legReliable?.left === false) this.armed.left = false;
+    if (input.legReliable?.right === false) this.armed.right = false;
     for (const side of ['left', 'right'] as const) {
+      if (input.legReliable?.[side] === false) continue;
       if (input[side] <= C.retractThreshold) this.armed[side] = true;
       const correctPosition = side === 'left' ? input.rootX < 720 : input.rootX > 880;
       if (this.armed[side] && input[side] >= C.extensionThreshold

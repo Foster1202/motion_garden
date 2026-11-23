@@ -99,13 +99,16 @@ try {
             const aspectFactor = (16 / 9) / (video.videoWidth / video.videoHeight);
             const spike = inference === f.spikeAt ? 'whole-pose' : inference === f.hipSpikeAt ? 'one-hip' : null;
             if (spike) window.__berryStats.spikes.push(spike);
-            const points = Array.from({ length: 33 }, () => ({ x: .5, y: .5, visibility: .99, presence: .99 }));
+            const points = Array.from({ length: 33 }, (_, id) => ({
+              x: .5, y: id < 11 ? -.1 : .5, visibility: .99, presence: .99,
+            }));
             const set = (id, x, y) => {
               const confidence = f.hidden?.includes(id) ? .1 : .99;
               const offset = (x - .5) * scale + shift + (f.jitter ?? 0) * Math.sin(inference * 1.73 + id);
               const anomaly = spike === 'whole-pose' ? .26 : spike === 'one-hip' && id === 23 ? .10 : 0;
               points[id] = { x: .5 + (f.mirrored ? -1 : 1) * (offset + anomaly) * aspectFactor,
-                y: .37 + (y - .5) * scale, z: 0, visibility: confidence, presence: confidence };
+                y: f.cropAnkles && (id === 27 || id === 28) ? 1.08 : .37 + (y - .5) * scale,
+                z: 0, visibility: confidence, presence: confidence };
             };
             set(11, .57, .28); set(12, .43, .28);
             set(23, .54, .5); set(24, .46, .5);
@@ -154,7 +157,8 @@ try {
   assert.ok(personPreview.keptAlpha > 0);
   assert.equal(personPreview.backgroundAlpha, 255);
   check('Berry camera keeps the original image with both preview enhancements disabled by default');
-  check('Camera starts without calibration; pause during delayed initialization retains camera and resumes');
+  assert.equal(await page.locator('[data-berry-tracking]').innerText(), 'Full Tracking');
+  check('Out-of-frame head does not block full leg tracking; pause during delayed initialization retains camera and resumes');
   const initial = await settled(0);
   const reference = initial.tracking.reference;
   assert.ok(reference?.scale > 0);
@@ -246,17 +250,22 @@ try {
   report.stress.largestStationaryCommand = largestStationaryCommand;
   check('Stationary jitter and isolated high-confidence whole-pose and one-hip jumps leave the rabbit centered');
 
-  await fixture({ shift: .11, jitter: 0, hidden: [27, 28] });
-  const legsHidden = await settled(-1);
-  assert.equal(legsHidden.tracking.kickReliable, false);
-  assert.equal(legsHidden.armed.left, false);
+  await fixture({ shift: .11, jitter: 0, cropAnkles: true });
+  await settled(-1);
+  const legsHidden = await wait(s => s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
+  assert.equal(legsHidden.tracking.legTracking.left.mode, 'partial');
+  assert.equal(legsHidden.tracking.legTracking.right.mode, 'partial');
+  assert.deepEqual(legsHidden.tracking.legAmounts, { left: 0, right: 0 });
   assert.equal(legsHidden.score, 0);
-  trackingTrace('ankle-only occlusion', legsHidden);
+  assert.equal(await page.locator('[data-berry-tracking]').innerText(), 'Partial Tracking');
+  trackingTrace('both ankles missing, horizontal translation only', legsHidden);
   assert.deepEqual(legsHidden.tracking.reference, reference);
-  await fixture({ hidden: [23], shift: -.12 });
+  await fixture({ hidden: [23], cropAnkles: false, shift: -.12 });
   const hipHidden = await wait(s => !s.tracking.reliable);
   await page.waitForTimeout(700);
   const hipStillHidden = await snapshot();
+  assert.equal(hipStillHidden.tracking.mode, 'lost');
+  assert.equal(await page.locator('[data-berry-tracking]').innerText(), 'Tracking Lost');
   assert.deepEqual(hipStillHidden.tracking.reference, reference);
   closeTo(hipStillHidden.rootX, hipHidden.rootX, 1, 'Hip obstruction freeze');
   trackingTrace('hip obstruction', hipStillHidden);
@@ -265,7 +274,7 @@ try {
   assert.deepEqual(hipRecovered.tracking.reference, reference);
   closeTo(hipRecovered.rootX, earlyRight.rootX, 12, 'Recover opposite original center');
   trackingTrace('hip recovered off-center', hipRecovered);
-  check('Ankle occlusion blocks kicking while torso moves; hip occlusion freezes the rendered root, then recovers off-center');
+  check('Both cropped ankles allow lateral control without creating a kick; losing a hip freezes the rendered root and recovers off-center');
 
   await page.evaluate(async () => {
     const { game } = await import('/src/main.ts');
@@ -293,7 +302,7 @@ try {
   const hud = page.locator('.berry-tracking-debug');
   await hud.waitFor({ state: 'visible' });
   await page.waitForTimeout(250);
-  assert.match(await hud.innerText(), /Tracking tracking · reference tracking[\s\S]*Offset .*rootX[\s\S]*Frame age .*FPS/);
+  assert.match(await hud.innerText(), /Full Tracking · tracking · tracking[\s\S]*Offset .*rootX[\s\S]*Frame age .*FPS/);
   await page.screenshot({ path: `${output}/camera-tracking-hud.png` });
   check('The existing scheduler stops when video frames stop advancing; stale input freezes movement and fresh frames recover');
 
@@ -308,22 +317,40 @@ try {
   assert.equal(await page.evaluate(() => window.__cameraTargetDraws), 1);
   await page.screenshot({ path: `${output}/camera-wrong-right.png` });
   check('Camera projected contact on the wrong tree retains the target and RNG state and produces one feedback event while held');
-  await fixture({ right: 0, shift: .13 }); await wait(s => s.rootX < 540);
+  await fixture({ right: 0, shift: .13, cropAnkles: true });
+  await wait(s => s.rootX < 540 && s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
   assert.equal((await snapshot()).score, 0);
   await fixture({ left: .07 }); const left = await wait(s => s.score === 3);
+  assert.equal(left.tracking.legTracking.left.mode, 'partial');
+  assert.equal(left.tracking.legTracking.right.mode, 'partial');
   assert.ok(left.feet.left.x >= left.zones.left.x && left.feet.left.x <= left.zones.left.x + left.zones.left.width);
-  await page.waitForTimeout(1300); assert.equal((await snapshot()).score, 3);
+  assert.equal(await page.locator('[data-berry-tracking]').innerText(), 'Partial Tracking');
+  await page.screenshot({ path: `${output}/camera-partial-left-contact.png` });
+  await fixture({ cropAnkles: false });
+  const handover = await wait(s => s.tracking.mode === 'full');
+  assert.equal(handover.tracking.legTracking.left.reliable, false);
+  assert.ok(handover.tracking.legAmounts.left >= left.tracking.legAmounts.left - .1);
+  await page.waitForTimeout(1300);
+  assert.equal((await snapshot()).score, 3);
+  assert.equal((await snapshot()).armed.left, false);
   assert.equal((await snapshot()).target, 'right');
   assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'right');
   await page.screenshot({ path: `${output}/camera-left-contact.png` });
-  check('Synthetic left extension drives actual left bone and projected contact; held extension cannot repeat');
-  await fixture({ left: 0 }); await page.waitForTimeout(650);
-  await fixture({ shift: -.13 }); await wait(s => s.rootX > 1060);
+  check('Both ankles cropped: thigh extension drives the actual left bone and virtual contact; restoring full tracking retains the held leg without duplicate scoring');
+  await fixture({ left: 0 }); await wait(s => s.armed.left);
+  await fixture({ shift: -.13, hidden: [27] });
+  await wait(s => s.rootX > 1060 && s.tracking.legTracking.left.mode === 'partial'
+    && s.tracking.legTracking.right.mode === 'full' && s.armed.right);
+  await fixture({ hidden: [25, 27] });
+  const oneKnee = await wait(s => s.tracking.legTracking.left.mode === 'lost');
+  assert.equal(oneKnee.tracking.legTracking.right.mode, 'full');
+  assert.equal(oneKnee.armed.left, false);
+  assert.equal(oneKnee.armed.right, true);
   await fixture({ right: .07 }); const right = await wait(s => s.score === 6);
   assert.equal(right.counts.left, 1); assert.equal(right.counts.right, 1);
   assert.equal(right.target, 'left');
   assert.ok(right.feet.right.x >= right.zones.right.x && right.feet.right.x <= right.zones.right.x + right.zones.right.width);
-  check('Synthetic right extension uses same independent right-foot geometric scoring');
+  check('A hidden left ankle and then left knee leave the right leg usable for full-geometry contact scoring');
 
   await fixture({ lost: true });
   const lostPose = await wait(s => !s.tracking.reliable);
@@ -336,7 +363,7 @@ try {
   assert.deepEqual(sustainedLoss.tracking.reference, reference);
   trackingTrace('missing person', sustainedLoss);
   assert.match(await page.locator('[data-berry-hint]').innerText(), /睇唔清楚/);
-  await fixture({ lost: false, shift: 0, left: 0, right: 0 }); await wait(s => s.armed.left && s.armed.right);
+  await fixture({ lost: false, shift: 0, left: 0, right: 0, hidden: null }); await wait(s => s.armed.left && s.armed.right);
   await fixture({ shift: .13 }); await wait(s => s.rootX < 540);
   await page.locator('[data-action=pause]').click();
   const paused = await snapshot(); const inferenceCount = await page.evaluate(() => window.__berryStats.inferences);
@@ -406,12 +433,13 @@ try {
   await page.locator('dialog [data-action=camera-home]').click();
   check('Camera ending during initialization clears the preview and reports failure once after the late model closes');
 
-  await fixture({ delay: 0, mirrored: true, dimensions: { width: 640, height: 480 } });
+  await fixture({ delay: 0, mirrored: true, cropAnkles: true, dimensions: { width: 640, height: 480 } });
   await enter(); await page.locator('[data-action=camera]').click();
   await wait(s => s.armed.left);
   const videoDimensions = await page.locator('.berry-camera-source').evaluate(video => [video.videoWidth, video.videoHeight]);
   assert.deepEqual(videoDimensions, [640, 480]);
   const mirroredNeutral = await settled(0);
+  assert.equal(mirroredNeutral.tracking.mode, 'partial');
   assert.equal(mirroredNeutral.tracking.reference.direction, -reference.direction);
   assert.equal(mirroredNeutral.target, 'left');
   assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'left');
@@ -429,7 +457,7 @@ try {
   trackingTrace('mirrored 640x480 left', mirroredLeft);
   trackingTrace('mirrored 640x480 right', mirroredRight);
   trackingTrace('mirrored 640x480 near the frame edge', edge);
-  check('Mirrored landmarks at 640×480 retain anatomical direction, travel and bounded position near the frame edge');
+  check('A fresh 640×480 mirrored camera session starts with both ankles out of view and retains anatomical direction, travel and edge clamp');
   await page.evaluate(() => window.__berryStats.streams.at(-1).getVideoTracks()[0].dispatchEvent(new Event('ended')));
   await page.locator('dialog [data-action=keyboard]').waitFor();
   assert.match(await page.locator('dialog').innerText(), /相機暫停/);

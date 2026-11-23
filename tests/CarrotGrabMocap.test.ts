@@ -49,8 +49,8 @@ function ready(maximumPlane = 90) {
 test('Opt-in extractor preserves inward arm direction on both anatomical sides', () => {
   for (const reverse of [false, true]) {
     const input = frame(true, reverse);
-    const inward = new HumanPoseExtractor(true).extract(input, snapshot, profile)!;
-    const legacy = new HumanPoseExtractor().extract(input, snapshot, profile)!;
+    const inward: HumanPose = new HumanPoseExtractor(true).extract(input, snapshot, profile)!;
+    const legacy: HumanPose = new HumanPoseExtractor().extract(input, snapshot, profile)!;
     assert.ok(inward.leftArmPlane! > 90 && inward.rightArmPlane! > 90);
     assert.ok(legacy.leftArmPlane! <= 90 && legacy.rightArmPlane! <= 90);
     assert.equal(inward.leftArmElevation, legacy.leftArmElevation);
@@ -61,7 +61,7 @@ test('Opt-in extractor preserves inward arm direction on both anatomical sides',
 test('Opt-in extractor retains outward and forward ranges and filters missing arms', () => {
   const input = frame(false);
   const enabled = new HumanPoseExtractor(true).extract(input, snapshot, profile)!;
-  const legacy = new HumanPoseExtractor().extract(input, snapshot, profile)!;
+  const legacy: HumanPose = new HumanPoseExtractor().extract(input, snapshot, profile)!;
   assert.equal(enabled.leftArmPlane, legacy.leftArmPlane);
   assert.equal(enabled.rightArmPlane, legacy.rightArmPlane);
   (input.landmarks as PoseLandmark[])[13].visibility = .1;

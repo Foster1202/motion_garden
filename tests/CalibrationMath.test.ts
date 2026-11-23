@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { calibrationThresholds, interquartileRange, isStable, median, validateCalibration } from '../src/game/calibration/calibrationMath';
-import type { CalibrationProfile } from '../src/game/calibration/calibrationTypes';
+import type { KneeCalibrationProfile } from '../src/game/calibration/calibrationTypes';
 
-function profile(standing = 155, bending = 135): CalibrationProfile {
+function profile(standing = 155, bending = 135): KneeCalibrationProfile {
   return { standingAngle: standing, bendingAngle: bending, ...calibrationThresholds(standing, bending), timestamp: 1000 };
 }
 

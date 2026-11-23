@@ -5,6 +5,7 @@ import { PoseCamera } from '../vision/PoseCamera';
 import { PoseEstimator } from '../vision/PoseEstimator';
 import { PersonOnlyRenderer } from '../vision/PersonOnlyRenderer';
 import { getGameSettings } from '../settings/gameSettings';
+import type { TrackingMode } from '../vision/trackingMode';
 const neutral = (): BerryMotionSample => ({ leftLegExtensionAmount: 0, rightLegExtensionAmount: 0,
   lateralOffset: 0, lateralReliable: false, reliable: false, timestampMs: 0 });
 export class BerryKickInput {
@@ -104,9 +105,15 @@ export class BerryKickInput {
     return this.lastFrame === undefined ? null : performance.now() - this.lastFrame;
   }
   get hasCameraReference() { return this.extractor.hasLegMotionReference; }
+  get trackingMode(): TrackingMode {
+    if (this.paused || this.stale || !this.sample.lateralReliable) return 'lost';
+    const legs = this.sample.legTracking;
+    return legs?.left.mode === 'full' && legs.right.mode === 'full' ? 'full' : 'partial';
+  }
   trackingSnapshot() {
     return {
       ...this.extractor.legMotionSnapshot(),
+      mode: this.trackingMode,
       status: this.paused ? 'paused' : this.stale ? 'waiting-for-frames'
         : this.sample.lateralReliable ? 'tracking' : 'waiting-for-pose',
       reliable: !this.paused && !this.stale && this.sample.lateralReliable,

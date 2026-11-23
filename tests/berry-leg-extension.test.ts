@@ -17,8 +17,13 @@ function frame(timestampMs: number, left = 0, right = 0, translation = 0, mirror
   set(27, .54 + left, .9); set(28, .46 - right, .9);
   return { landmarks, timestampMs, imageWidth: 720 * aspect, imageHeight: 720, inferenceMs: 8, poseFps: 30 };
 }
-function establish(detector: LegExtensionDetector, mirror = false, scale = 1) {
-  for (let time = 0; time <= 400; time += 40) detector.update(frame(time, 0, 0, 0, mirror, scale));
+function hide(value: PoseFrame, ...ids: number[]) {
+  for (const id of ids) (value.landmarks![id] as PoseLandmark).visibility = .1;
+  return value;
+}
+
+function establish(detector: LegExtensionDetector, mirror = false, scale = 1, hidden: number[] = []) {
+  for (let time = 0; time <= 400; time += 40) detector.update(hide(frame(time, 0, 0, 0, mirror, scale), ...hidden));
 }
 function settle(detector: LegExtensionDetector, left = 0, right = 0, translation = 0, mirror = false, scale = 1) {
   let sample = detector.update(frame(440, left, right, translation, mirror, scale));
@@ -76,13 +81,18 @@ test('loss and pause suppress commands immediately and recover away from the ori
     assert.deepEqual(detector.snapshot().reference, reference);
     const recovered = detector.update(frame(1680, .07, 0, -.09));
     assert.ok(recovered.lateralOffset > .3);
-    assert.ok(recovered.leftLegExtensionAmount >= .9);
+    assert.ok(recovered.leftLegExtensionAmount > .55);
+    assert.equal(recovered.legTracking!.left.reliable, false);
+    let settled = recovered;
+    for (let t = 1720; t <= 1920; t += 40) settled = detector.update(frame(t, .07, 0, -.09));
+    assert.ok(settled.leftLegExtensionAmount >= .9);
+    assert.equal(settled.legTracking!.left.reliable, false);
   }
 });
 
 test('low confidence, invalid coordinates, duplicate timestamps and unstable wide stance are rejected', () => {
   for (const modify of [
-    (value: PoseFrame) => { (value.landmarks![27] as PoseLandmark).visibility = .1; },
+    (value: PoseFrame) => { (value.landmarks![23] as PoseLandmark).visibility = .1; },
     (value: PoseFrame) => { (value.landmarks![24] as PoseLandmark).x = NaN; },
     (value: PoseFrame) => { (value.landmarks![11] as PoseLandmark).x += .2; },
   ]) {
@@ -155,16 +165,116 @@ test('one high-confidence hip spike below the jump threshold cannot steer the ra
   assert.equal(detector.update(frame(520)).lateralOffset, 0);
 });
 
-test('temporarily hidden feet disallow kicks while torso motion continues', () => {
+test('a hidden ankle uses the calibrated thigh while the other leg keeps its full geometry', () => {
   const detector = new LegExtensionDetector(); establish(detector);
   const value = frame(440, 0, 0, -.035);
   (value.landmarks![27] as PoseLandmark).x = -.01;
   detector.update(value);
-  const sample = new MotionRetargeter().retargetLegMotion(detector.update({ ...value, timestampMs: 480 }));
-  assert.equal(sample.reliable, false);
-  assert.equal(sample.lateralReliable, true);
-  assert.equal(sample.leftLegExtensionAmount, 0);
-  assert.ok(sample.lateralOffset > .1);
+  const retargeter = new MotionRetargeter();
+  const transition = retargeter.retargetLegMotion(detector.update({ ...value, timestampMs: 480 }));
+  assert.deepEqual(transition.legTracking, {
+    left: { mode: 'partial', reliable: false }, right: { mode: 'full', reliable: true },
+  });
+  assert.equal(transition.lateralReliable, true);
+  assert.equal(transition.leftLegExtensionAmount, 0);
+  assert.ok(transition.lateralOffset > .1);
+  let kick = transition;
+  for (let t = 520; t <= 920; t += 40) kick = retargeter.retargetLegMotion(detector.update(hide(frame(t, 0, .07, -.035), 27)));
+  assert.ok(kick.rightLegExtensionAmount > .9);
+  assert.equal(kick.legTracking!.right.reliable, true);
+  assert.equal(kick.leftLegExtensionAmount, 0);
+});
+
+test('standing with a cropped head and both ankles calibrates independent thigh control', () => {
+  for (const mirror of [false, true]) for (const scale of [.65, 1.3]) {
+    const detector = new LegExtensionDetector();
+    const hidden = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 27, 28];
+    establish(detector, mirror, scale, hidden);
+    assert.equal(detector.hasReference, true);
+    for (let t = 440; t <= 840; t += 40) {
+      const slide = detector.update(hide(frame(t, 0, 0, .045, mirror, scale), ...hidden));
+      assert.equal(slide.leftLegExtensionAmount, 0);
+      assert.equal(slide.rightLegExtensionAmount, 0);
+    }
+    const run = (from: number, to: number, left: number, right = 0) => {
+      let sample = detector.update(hide(frame(from, left, right, .045, mirror, scale), ...hidden));
+      for (let t = from + 40; t <= to; t += 40) sample = detector.update(hide(frame(t, left, right, .045, mirror, scale), ...hidden));
+      return sample;
+    };
+    const spike = run(880, 960, .07);
+    assert.equal(spike.leftLegExtensionAmount, 0);
+    assert.equal(run(1000, 1160, 0).leftLegExtensionAmount, 0);
+    const left = run(1200, 1560, .07);
+    assert.equal(left.legTracking!.left.mode, 'partial');
+    assert.equal(left.legTracking!.left.reliable, true);
+    assert.ok(left.leftLegExtensionAmount >= .95);
+    assert.equal(left.rightLegExtensionAmount, 0);
+    assert.deepEqual(left.legTracking!.right, { mode: 'partial', reliable: true });
+    assert.ok(run(1600, 2040, 0).leftLegExtensionAmount < .05);
+    const right = run(2080, 2520, 0, .07);
+    assert.ok(right.rightLegExtensionAmount >= .95);
+    assert.equal(right.legTracking!.right.mode, 'partial');
+  }
+});
+
+test('sideways torso lean with hip-to-knee translation does not create a partial kick', () => {
+  const detector = new LegExtensionDetector();
+  establish(detector, false, 1, [27, 28]);
+  for (let t = 440; t <= 1040; t += 40) {
+    const value = hide(frame(t, 0, 0, .04), 27, 28);
+    for (const id of [11, 12]) (value.landmarks![id] as PoseLandmark).x += .04;
+    const sample = detector.update(value);
+    assert.equal(sample.leftLegExtensionAmount, 0);
+    assert.equal(sample.rightLegExtensionAmount, 0);
+    assert.equal(sample.lateralReliable, true);
+  }
+  assert.ok(detector.snapshot().legAmounts.left === 0 && detector.snapshot().legAmounts.right === 0);
+});
+
+test('a lateral weight shift over planted knees does not become a partial kick', () => {
+  const detector = new LegExtensionDetector();
+  establish(detector, false, 1, [27, 28]);
+  for (let t = 440; t <= 1040; t += 40) {
+    const value = hide(frame(t, 0, 0, .04), 27, 28);
+    for (const id of [25, 26]) (value.landmarks![id] as PoseLandmark).x -= .04;
+    const sample = detector.update(value);
+    assert.equal(sample.leftLegExtensionAmount, 0);
+    assert.equal(sample.rightLegExtensionAmount, 0);
+    assert.equal(sample.lateralReliable, true);
+  }
+});
+
+test('a missing knee disables only its own side and low-confidence ankle coordinates have no influence', () => {
+  const detector = new LegExtensionDetector();
+  establish(detector, false, 1, [25, 27, 28]);
+  let sample;
+  for (let t = 440; t < 1000; t += 40) {
+    const value = hide(frame(t, 0, .07), 25, 27, 28);
+    (value.landmarks![28] as PoseLandmark).x = t % 80 === 0 ? 0 : 1;
+    sample = detector.update(value);
+    assert.equal(sample.legTracking!.left.mode, 'lost');
+    assert.equal(sample.leftLegExtensionAmount, 0);
+  }
+  assert.ok(sample!.rightLegExtensionAmount > .95);
+  assert.deepEqual(sample!.legTracking!.right, { mode: 'partial', reliable: true });
+});
+
+test('ankle handover preserves visual smoothing and disarms held kicks until confirmed retraction', () => {
+  const detector = new LegExtensionDetector();
+  establish(detector, false, 1, [27, 28]);
+  let partial = detector.update(hide(frame(440, .07), 27, 28));
+  for (let t = 480; t <= 840; t += 40) partial = detector.update(hide(frame(t, .07), 27, 28));
+  assert.ok(partial.leftLegExtensionAmount > .95);
+  const switched = detector.update(frame(880, .07));
+  assert.equal(switched.legTracking!.left.mode, 'full');
+  assert.equal(switched.legTracking!.left.reliable, false);
+  assert.ok(Math.abs(switched.leftLegExtensionAmount - partial.leftLegExtensionAmount) < .05);
+  for (let t = 920; t <= 1400; t += 40) assert.equal(detector.update(frame(t, .07)).legTracking!.left.reliable, false);
+  let retracted = detector.update(frame(1440));
+  assert.equal(retracted.legTracking!.left.reliable, false);
+  for (let t = 1480; t <= 1760; t += 40) retracted = detector.update(frame(t));
+  assert.equal(retracted.legTracking!.left.reliable, true);
+  assert.ok(retracted.leftLegExtensionAmount < .05);
 });
 
 test('120 seconds of mirrored sweeps, depth changes and aspect changes retain the initial travel', () => {

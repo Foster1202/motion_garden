@@ -1,3 +1,4 @@
+import type { TrackingMode } from '../vision/trackingMode';
 import type { CalibrationState } from '../calibration/calibrationTypes';
 
 export interface MotionSample {
@@ -17,6 +18,7 @@ export interface MotionInputStatus {
   message: string;
   cameraStatus?: 'initializing' | 'running' | 'paused' | 'stopped';
   trackingState?: CameraTrackingState;
+  trackingMode?: TrackingMode;
   personDetected?: boolean;
   poseFps?: number;
   framesReceived?: number;

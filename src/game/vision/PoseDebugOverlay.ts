@@ -1,5 +1,6 @@
 import type { PoseFrame, PoseSnapshot } from './poseTypes';
-import type { CalibrationProfile } from '../calibration/calibrationTypes';
+import { copyCalibrationProfile, type CalibrationProfile } from '../calibration/calibrationTypes';
+import { TRACKING_MODE_LABEL } from './trackingMode';
 import { PersonOnlyRenderer } from './PersonOnlyRenderer';
 import { getGameSettings } from '../settings/gameSettings';
 
@@ -49,7 +50,7 @@ export class PoseDebugOverlay {
     this.metrics.textContent = '';
   }
 
-  setCalibration(profile?: CalibrationProfile) { this.calibration = profile ? { ...profile } : undefined; }
+  setCalibration(profile?: CalibrationProfile) { this.calibration = profile ? copyCalibrationProfile(profile) : undefined; }
 
   update(frame: PoseFrame, pose: PoseSnapshot) {
     if (this.root.hidden) return;
@@ -62,10 +63,23 @@ export class PoseDebugOverlay {
     this.canvas.parentElement!.style.aspectRatio = `${this.canvas.width} / ${this.canvas.height}`;
     this.root.style.setProperty('--pose-preview-aspect', String(this.canvas.width / this.canvas.height));
     if (!this.debug) return;
+    const number = (value: number | undefined) => value === undefined ? '—' : value.toFixed(3);
     const angle = (value: number | undefined) => value === undefined ? '—' : `${value.toFixed(1)}°`;
-    this.metrics.textContent = `L ${angle(pose.leftKneeAngle)} · R ${angle(pose.rightKneeAngle)} · ${angle(pose.activeKneeAngle)}\n${pose.state} · 信心 ${(pose.confidence * 100).toFixed(0)}%\n${frame.inferenceMs.toFixed(1)} ms · 平均 ${(frame.averageInferenceMs ?? frame.inferenceMs).toFixed(1)} ms · ${frame.poseFps.toFixed(1)} FPS`;
+    const mode = TRACKING_MODE_LABEL[pose.trackingMode ?? 'lost'];
+    const measurement = pose.trackingMode === 'partial'
+      ? `屈膝特徵 ${number(pose.partialBendSignal)} · 推算幅度 ${number(pose.estimatedBendAmount)}`
+      : `L ${angle(pose.leftKneeAngle)} · R ${angle(pose.rightKneeAngle)} · ${angle(pose.activeKneeAngle)}`;
+    const rows = [measurement, `${mode} · ${pose.state} · 信心 ${(pose.confidence * 100).toFixed(0)}%`,
+      `${frame.inferenceMs.toFixed(1)} ms · 平均 ${(frame.averageInferenceMs ?? frame.inferenceMs).toFixed(1)} ms · ${frame.poseFps.toFixed(1)} FPS`];
+    if (pose.reason) rows.push(pose.reason);
     const profile = this.calibration;
-    if (profile) this.metrics.textContent += `\n基準 ${angle(profile.standingAngle)} / ${angle(profile.bendingAngle)}\n閾值 ${angle(profile.standingThreshold)} / ${angle(profile.bendingThreshold)}\n幅度 ${angle(profile.range)}`;
+    if (profile && profile.metric !== 'partial') rows.push(
+      `膝角基準 ${angle(profile.standingAngle)} / ${angle(profile.bendingAngle)}`,
+      `膝角閾值 ${angle(profile.standingThreshold)} / ${angle(profile.bendingThreshold)}`);
+    if (profile?.partial) rows.push(
+      `特徵基準 ${number(profile.partial.standing)} / ${number(profile.partial.bending)}`,
+      `特徵閾值 ${number(profile.partial.standingThreshold)} / ${number(profile.partial.bendingThreshold)}`);
+    this.metrics.textContent = rows.join('\n');
   }
 
   destroy() { this.calibration = undefined; this.clear(); this.root.remove(); }

@@ -309,14 +309,14 @@ try {
   await wait(s => s.rabbit3d.mocap.referenceReady);
   check('Manual sliders own bones exclusively until mocap is restored, with developer reference reset retained');
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 900, height: 700 }, { width: 600, height: 800 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 900, height: 700 }, { width: 950, height: 500 }]) {
     await page.setViewportSize(viewport);
     await page.waitForTimeout(250);
     assert.equal((await snapshot()).rabbit3d.status, 'ready');
     await assertPreviewLayout();
     await page.screenshot({ path: `${output}/resize-${viewport.width}.png` });
   }
-  check('Desktop and narrow layouts keep preview and scrollable developer panel separate');
+  check('Desktop and small landscape layouts keep preview and scrollable developer panel separate');
 
   await page.setViewportSize({ width: 1512, height: 982 });
   await page.evaluate(async () => {
@@ -409,7 +409,7 @@ try {
   assert.equal(await page.locator('.rabbit-3d-debug').count(), 0);
   assert.ok(Math.abs((await calibrationProfile()).standingAngle - 155) < 1);
   await page.screenshot({ path: `${output}/automatic-without-mocap-debug.png` });
-  for (const viewport of [{ width: 1512, height: 982 }, { width: 600, height: 800 }]) {
+  for (const viewport of [{ width: 1512, height: 982 }, { width: 950, height: 500 }]) {
     await page.setViewportSize(viewport);
     await page.waitForTimeout(200);
     await assertPreviewLayout();

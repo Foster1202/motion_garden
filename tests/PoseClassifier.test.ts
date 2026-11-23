@@ -328,8 +328,11 @@ test('a calibrated single-leg cohort stays fixed when the other leg enters the f
   assert.equal(snapshot.reliableSides, 1);
   points[ID.leftAnkle].visibility = 0;
   snapshot = classifier.update(frame(240, 155, points));
-  assert.equal(snapshot.state, 'TRACKING_LOST');
-  assert.equal(snapshot.reason, 'calibrated-legs-unavailable');
+  assert.equal(snapshot.state, 'TRANSITION');
+  assert.equal(snapshot.activeKneeAngle, undefined);
+  assert.equal(snapshot.trackingMode, 'partial');
+  assert.equal(snapshot.trackingTransition, true);
+  assert.equal(snapshot.reason, 'partial-calibration-required');
 });
 
 test('a two-leg calibration freezes on a missing leg instead of changing the fused angle basis', () => {
@@ -339,7 +342,9 @@ test('a two-leg calibration freezes on a missing leg instead of changing the fus
     leftRange: 30, rightRange: 10 });
   confirm(classifier, 155);
   const points = landmarks(155);points[ID.rightAnkle].visibility = 0;
-  assert.equal(classifier.update(frame(240, 155, points)).state, 'TRACKING_LOST');
+  const partial = classifier.update(frame(240, 155, points));
+  assert.equal(partial.trackingMode, 'partial');
+  assert.equal(partial.trackingTransition, true);
   assert.equal(classifier.update(frame(280, 155)).state, 'TRANSITION');
   assert.equal(classifier.update(frame(440, 155)).state, 'TRANSITION');
   assert.equal(classifier.update(frame(480, 155)).state, 'STANDING');

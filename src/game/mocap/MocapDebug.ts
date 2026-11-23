@@ -93,7 +93,8 @@ export class MocapDebug {
       `Raw Elbow 3D ${fmt(raw?.leftElbowBend)} / ${fmt(raw?.rightElbowBend)}°`,
       `Raw Elbow 2D ${fmt(raw?.leftElbowProjectedBend)} / ${fmt(raw?.rightElbowProjectedBend)}°`,
       `Raw Torso Lean ${fmt(raw?.torsoLean)}° · forward ${fmt(raw?.torsoForward)}°`,
-      `Raw Knee Angle ${fmt(raw?.activeKneeAngle)}°`,
+      `Body tracking ${input?.trackingMode ?? '—'} · ${raw?.estimatedBendAmount === undefined
+        ? `raw knee angle ${fmt(raw?.activeKneeAngle)}°` : `estimated bend ${fmt(raw.estimatedBendAmount)}`}`,
       `Root X target ${fmt(snapshot.mapped?.lateralOffset)} / applied ${fmt(snapshot.rootOffsetApplied)} model units · IK constrained ${pipeline.rootClamped ?? '—'}`,
       `Garden world movement ${JSON.stringify(pipeline.worldMovement) ?? '—'}`,
       `Update ticks ${snapshot.updateCount} · pose writes ${snapshot.poseWrites} · bone changes ${snapshot.bonePoseChanges}`,

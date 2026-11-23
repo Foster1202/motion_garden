@@ -3,10 +3,11 @@ import test from 'node:test';
 import { HumanPoseExtractor, type HumanPose } from '../src/game/mocap/HumanPoseExtractor';
 import { MotionRetargeter } from '../src/game/mocap/MotionRetargeter';
 import { neutralRabbitPose } from '../src/game/mocap/RabbitPose';
-import type { CalibrationProfile } from '../src/game/calibration/calibrationTypes';
+import type { KneeCalibrationProfile, PartialCalibrationProfile } from '../src/game/calibration/calibrationTypes';
+import { partialMotionRange } from '../src/game/calibration/calibrationMath';
 import type { PoseFrame, PoseLandmark, PoseSnapshot } from '../src/game/vision/poseTypes';
 import { RABBIT_3D_CONFIG } from '../src/game/3d/rabbit3dConfig';
-const profile: CalibrationProfile = {
+const profile: KneeCalibrationProfile = {
   standingAngle: 170, bendingAngle: 140, range: 30, standingThreshold: 164, bendingThreshold: 150.5, timestamp: 100,
   reliableSide: 'both', leftStanding: 170, rightStanding: 170, leftBending: 140, rightBending: 140, leftRange: 30, rightRange: 30,
 };
@@ -59,9 +60,9 @@ test('arms are continuous and aspect-correct across landscape and portrait image
   }
 });
 test('classifier EMA knee value preserves fixed calibrated leg cohort', () => {
-  const extractor = new HumanPoseExtractor(); const single: CalibrationProfile = { ...profile, reliableSide: 'left' };
+  const extractor = new HumanPoseExtractor(); const single: KneeCalibrationProfile = { ...profile, reliableSide: 'left' };
   const pose = snapshot({ leftKneeAngle: 155, rightKneeAngle: 110, activeKneeAngle: 155, reliableSides: 1 });
-  close(extractor.extract(frame(), pose, single)!.activeKneeAngle, 155);
+  close(extractor.extract(frame(), pose, single)!.activeKneeAngle!, 155);
   assert.equal(extractor.extract(frame(), { ...pose, activeKneeAngle: 132.5 }, single), undefined);
   assert.equal(extractor.extract(frame(), { ...pose, leftKneeAngle: undefined }, single), undefined);
 });
@@ -614,4 +615,45 @@ test('optional torso-scale reference uses reliable sample medians', () => {
   }), profile);
   assert.equal(mapper.isReferenceReady, true);
   close(mapper.reference!.torsoScale!, .3);
+});
+
+
+test('head, arms and ankles can be outside the frame during the Carrot standing reference', () => {
+  const partial: PartialCalibrationProfile = { metric: 'partial', timestamp: 100,
+    partial: partialMotionRange(-.56, -.43) };
+  const source = frame();
+  const points = [...source.landmarks!];
+  for (const id of [0, 7, 8, 13, 14, 15, 16, 27, 28]) points[id] = { x: .5, y: 1.1, visibility: 1 };
+  const raw = { ...source, landmarks: points };
+  const classified = snapshot({ trackingMode: 'partial', partialBendSignal: -.56, estimatedBendAmount: 0,
+    leftKneeAngle: undefined, rightKneeAngle: undefined, activeKneeAngle: undefined });
+  const extractor = new HumanPoseExtractor(false, true);
+  const standing = extractor.extract(raw, classified, partial)!;
+  assert.equal(standing.headYaw, undefined);
+  assert.equal(standing.activeKneeAngle, undefined);
+  assert.equal(standing.estimatedBendAmount, 0);
+  const mapper = new MotionRetargeter(90, true, true, 90, true);
+  for (let time = 0; time <= 600; time += 40) mapper.update({ ...standing, timestampMs: time }, partial);
+  assert.equal(mapper.isReferenceReady, true);
+  const target = mapper.update({ ...standing, timestampMs: 640, estimatedBendAmount: .76 }, partial)!;
+  close(target.bendAmount, .76);
+  close(target.headPitch, 0);
+  close(target.leftArmElevation, 0);
+  assert.equal(mapper.update({ ...standing, timestampMs: 680, estimatedBendAmount: NaN }, partial), undefined);
+
+  points[25] = { ...points[25], visibility: .1 };
+  assert.equal(extractor.extract(raw, classified, partial), undefined);
+});
+
+test('Berry retargeting preserves a valid partial leg when the opposite knee is unavailable', () => {
+  const mapper = new MotionRetargeter();
+  const result = mapper.retargetLegMotion({ leftLegExtensionAmount: .74, rightLegExtensionAmount: NaN,
+    reliable: true, lateralReliable: true, lateralOffset: -.4, timestampMs: 100,
+    legTracking: { left: { mode: 'partial', reliable: true }, right: { mode: 'lost', reliable: false } },
+  });
+  close(result.leftLegExtensionAmount, .74);
+  close(result.rightLegExtensionAmount, 0);
+  close(result.lateralOffset, -.4);
+  assert.deepEqual(result.legTracking, { left: { mode: 'partial', reliable: true },
+    right: { mode: 'lost', reliable: false } });
 });

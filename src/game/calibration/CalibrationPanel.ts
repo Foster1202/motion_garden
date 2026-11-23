@@ -26,7 +26,7 @@ export class CalibrationPanel {
       <p class="calibration-label">動作設定</p>
       <h2 id="calibration-title" tabindex="-1">第一步：自然企直</h2>
       <p class="calibration-message" role="status"></p>
-      <p class="calibration-framing">頭到腳盡量留喺畫面內。去到舒服嘅位置就得，唔使蹲低。</p>
+      <p class="calibration-framing">請讓鏡頭睇到肩膊、腰部同膝頭。去到舒服嘅位置就得，唔使蹲低。</p>
       <div class="calibration-progress" role="progressbar" aria-label="動作設定進度" aria-valuemin="0" aria-valuemax="100"><div></div></div>
       <div class="calibration-actions"></div>
       <button class="calibration-keyboard" data-calibration-action="keyboard">使用鍵盤測試</button>`;
@@ -49,6 +49,7 @@ export class CalibrationPanel {
       : snapshot.state.startsWith('BEND') ? '第二步：慢慢屈膝' : '第一步：自然企直';
     if (this.title.textContent !== title) this.title.textContent = title;
     if (this.message.textContent !== snapshot.message) this.message.textContent = snapshot.message;
+    this.root.dataset.calibrationMetric = snapshot.metric ?? '';
     const progress = Math.max(0, Math.min(1, snapshot.progress));
     this.fill.style.width = `${progress * 100}%`;
     this.progress.setAttribute('aria-valuenow', String(Math.round(progress * 100)));

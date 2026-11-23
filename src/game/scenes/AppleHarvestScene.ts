@@ -1,3 +1,4 @@
+import { TRACKING_MODE_LABEL } from '../vision/trackingMode';
 import Phaser from 'phaser';
 import { AppleHarvestInput, type AppleHarvestSample } from '../apple/AppleHarvestInput';
 import { AppleHarvestRound, type AppleHarvestEvent } from '../apple/AppleHarvestRound';
@@ -56,6 +57,7 @@ export class AppleHarvestScene extends Phaser.Scene {
   private safetyCue = false;
   private trackingCue = false;
   private targetBadge!: HTMLElement;
+  private trackingBadge!: HTMLElement;
   private effectsHost!: HTMLElement;
   private pauseButton!: HTMLButtonElement;
   private readonly effects = new Set<ClockEffect>();
@@ -127,8 +129,10 @@ export class AppleHarvestScene extends Phaser.Scene {
       </div>
       <div class="berry-effects" data-apple-effects aria-hidden="true"></div>
       <p class="apple-hint" data-apple-hint role="status">正在準備蘋果園同 3D 阿兔…</p>
-      <footer class="apple-footer" data-apple-controls hidden></footer>`);
+      <footer class="apple-footer" data-apple-controls hidden></footer>
+      <small class="person-status apple-tracking-status" data-apple-tracking hidden></small>`);
     this.targetBadge = this.ui.root.querySelector('[data-apple-target]')!;
+    this.trackingBadge = this.ui.root.querySelector('[data-apple-tracking]')!;
     this.effectsHost = this.ui.root.querySelector('[data-apple-effects]')!;
     this.pauseButton = this.ui.root.querySelector('[data-action="pause"]')!;
     this.ui.on('pause', () => this.togglePause());
@@ -137,6 +141,7 @@ export class AppleHarvestScene extends Phaser.Scene {
 
   private setPhase(phase: ScenePhase) {
     this.phase = phase;
+    this.refreshTrackingStatus();
     this.pauseButton.disabled = phase !== 'playing' && phase !== 'camera-ready';
   }
 
@@ -148,7 +153,7 @@ export class AppleHarvestScene extends Phaser.Scene {
     if (await source.startCamera(this.ui.root) && !this.dead && source === this.source && this.phase === 'camera-starting') {
       this.setPhase('camera-ready');
       this.showControls('體感操作 · 左右小步移動 · 抬手，再放低');
-      this.ui.text('[data-apple-hint]', '企喺鏡頭中間，放鬆雙手，畀鏡頭睇到肩膊、胯部同手腕。');
+      this.ui.text('[data-apple-hint]', '放鬆雙手，畀鏡頭睇到肩膊、腰部同至少一隻手腕。');
       this.skipDelta = true;
     }
   }
@@ -252,6 +257,7 @@ export class AppleHarvestScene extends Phaser.Scene {
     if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
 
     const sample = this.source.update(Math.min(deltaMs, 100));
+    this.refreshTrackingStatus();
     this.playerX = sample.x;
     if (!this.clockStarted) {
       if (!sample.lateralReliable || !this.source.hasCameraReference) {
@@ -314,14 +320,24 @@ export class AppleHarvestScene extends Phaser.Scene {
 
   private hint(sample?: AppleHarvestSample) {
     if (this.round.depositing) return '蘋果就快落入籃子！';
-    if (sample && !sample.lateralReliable) return '我睇唔清楚你，請企返喺鏡頭入面。';
-    if (sample && sample.left === null && sample.right === null) return '請畀鏡頭睇到肩膊同手腕。';
+    if (sample && !sample.lateralReliable) return '請畀鏡頭睇清楚肩膊同腰部。';
+    if (sample && sample.left === null && sample.right === null) return '請畀鏡頭睇到至少一隻手腕。';
     if (this.round.elapsedMs < this.wrongUntil) return '請去指定嘅蘋果樹！';
     if (this.round.state === 'DEPOSITING') return '放低隻手，將蘋果放入籃子。';
     if (this.round.state === 'PICKING') return '放低隻手，完成採摘。';
     if (this.round.carrying) return Math.abs(this.playerX - APPLE_CONFIG.zones.basket.center) <= APPLE_CONFIG.zones.basket.radius
       ? '到籃子啦！抬起一隻手，再放低。' : PICKED_HINT;
     return '行到發光嘅樹旁，抬起一隻手，再放低。';
+  }
+
+  private refreshTrackingStatus() {
+    const badge = this.trackingBadge;
+    badge.hidden = this.source.mode !== 'camera' || (this.phase !== 'playing' && this.phase !== 'camera-ready');
+    if (badge.hidden) return;
+    const mode = this.source.trackingMode;
+    if (badge.dataset.trackingMode === mode) return;
+    badge.dataset.trackingMode = mode;
+    badge.textContent = TRACKING_MODE_LABEL[mode];
   }
 
   private updateTrackingVoice(sample: AppleHarvestSample) {

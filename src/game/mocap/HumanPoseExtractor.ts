@@ -3,6 +3,7 @@ import { LegExtensionDetector, type BerryMotionSample } from './LegExtensionDete
 import { validateMotionRange } from '../settings/motionRange';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
 import { calculateAngle, imagePoint, landmarkConfidence } from '../vision/poseMath';
+import { observePartialBend } from '../vision/partialBend';
 import type { PoseFrame, PoseLandmark, PoseSnapshot } from '../vision/poseTypes';
 import { MOCAP_CONFIG as CONFIG } from './mocapConfig';
 
@@ -26,7 +27,8 @@ export interface HumanPose {
   torsoForward?: number;
   headYaw?: number;
   headPitch?: number;
-  activeKneeAngle: number;
+  activeKneeAngle?: number;
+  estimatedBendAmount?: number;
   centerX: number;
   bodyScale: number;
   torsoScale?: number;
@@ -112,27 +114,40 @@ export class HumanPoseExtractor {
     const confidence = (indices: readonly number[]) => Math.min(...indices.map(i => landmarkConfidence(points[i])));
     const torsoConfidence = confidence([11, 12, 23, 24]);
     if (torsoConfidence < CONFIG.confidenceThreshold) return this.reject(`torso-confidence ${torsoConfidence} < ${CONFIG.confidenceThreshold}`);
-    const selected = profile.reliableSide === 'left' ? ['left'] as const
-      : profile.reliableSide === 'right' ? ['right'] as const
-        : profile.reliableSide === 'both' ? ['left', 'right'] as const
-          : (['left', 'right'] as const).filter(side => (side === 'left' ? pose.leftKneeAngle : pose.rightKneeAngle) !== undefined);
-    if (!selected.length || pose.reliableSides !== selected.length) return this.reject('calibrated-leg-cohort-unreliable');
-    const kneeAngles: number[] = [];
-    let kneeConfidence = 1;
-    for (const side of selected) {
-      const indices = side === 'left' ? [23, 25, 27] : [24, 26, 28];
-      const value = side === 'left' ? pose.leftKneeAngle : pose.rightKneeAngle;
-      const currentConfidence = confidence(indices);
-      if (currentConfidence < CONFIG.confidenceThreshold || value === undefined || !Number.isFinite(value)
-        || value < 0 || value > 180) return this.reject(`${side}-knee-confidence ${currentConfidence} (min ${CONFIG.confidenceThreshold}), angle ${value}`);
-      if (calculateAngle(imagePoint(points[indices[0]], width, height), imagePoint(points[indices[1]], width, height),
-        imagePoint(points[indices[2]], width, height)) === undefined) return this.reject(`${side}-knee-degenerate-geometry`);
-      kneeAngles.push(value);
-      kneeConfidence = Math.min(kneeConfidence, currentConfidence);
+    let kneeConfidence: number;
+    let knee: number | undefined;
+    let estimatedBendAmount: number | undefined;
+    if (pose.trackingMode === 'partial') {
+      kneeConfidence = observePartialBend(points, width, height)?.confidence ?? 0;
+      estimatedBendAmount = pose.estimatedBendAmount;
+      if (!profile.partial || kneeConfidence < CONFIG.confidenceThreshold
+        || typeof estimatedBendAmount !== 'number' || !Number.isFinite(estimatedBendAmount)
+        || estimatedBendAmount < 0 || estimatedBendAmount > 1) return this.reject('partial-bend-unreliable');
+    } else {
+      if (profile.metric === 'partial') return this.reject('partial-profile-requires-estimate');
+      const selected = profile.reliableSide === 'left' ? ['left'] as const
+        : profile.reliableSide === 'right' ? ['right'] as const
+          : profile.reliableSide === 'both' ? ['left', 'right'] as const
+            : (['left', 'right'] as const).filter(side => (side === 'left' ? pose.leftKneeAngle : pose.rightKneeAngle) !== undefined);
+      if (!selected.length || pose.reliableSides !== selected.length) return this.reject('calibrated-leg-cohort-unreliable');
+      const kneeAngles: number[] = [];
+      let confidenceMin = 1;
+      for (const side of selected) {
+        const indices = side === 'left' ? [23, 25, 27] : [24, 26, 28];
+        const value = side === 'left' ? pose.leftKneeAngle : pose.rightKneeAngle;
+        const currentConfidence = confidence(indices);
+        if (currentConfidence < CONFIG.confidenceThreshold || value === undefined || !Number.isFinite(value)
+          || value < 0 || value > 180) return this.reject(`${side}-knee-confidence ${currentConfidence} (min ${CONFIG.confidenceThreshold}), angle ${value}`);
+        if (calculateAngle(imagePoint(points[indices[0]], width, height), imagePoint(points[indices[1]], width, height),
+          imagePoint(points[indices[2]], width, height)) === undefined) return this.reject(`${side}-knee-degenerate-geometry`);
+        kneeAngles.push(value);
+        confidenceMin = Math.min(confidenceMin, currentConfidence);
+      }
+      knee = pose.activeKneeAngle;
+      const cohortMean = kneeAngles.reduce((sum, angle) => sum + angle, 0) / kneeAngles.length;
+      if (knee === undefined || !Number.isFinite(knee) || Math.abs(knee - cohortMean) > 1e-5) return this.reject('fused-knee-cohort-mismatch');
+      kneeConfidence = confidenceMin;
     }
-    const knee = pose.activeKneeAngle;
-    const cohortMean = kneeAngles.reduce((sum, angle) => sum + angle, 0) / kneeAngles.length;
-    if (knee === undefined || !Number.isFinite(knee) || Math.abs(knee - cohortMean) > 1e-5) return this.reject('fused-knee-cohort-mismatch');
     const mean = (a: PoseLandmark, b: PoseLandmark) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
     const shoulders = mean(points[11], points[12]);
     const hips = mean(points[23], points[24]);
@@ -200,7 +215,7 @@ export class HumanPoseExtractor {
       torsoForward: depthAvailable ? MathUtils.radToDeg(Math.atan2(torsoDown.z, torsoDown.y)) : undefined,
       headYaw: faceReliable ? MathUtils.radToDeg(Math.atan2(-(points[0].x - earX) * width, shoulderWidth / 2)) : undefined,
       headPitch: faceReliable ? MathUtils.radToDeg(Math.atan2((points[0].y - earY) * height, shoulderWidth / 2)) : undefined,
-      activeKneeAngle: knee, centerX: hips.x, bodyScale: shoulderWidth / width,
+      activeKneeAngle: knee, estimatedBendAmount, centerX: hips.x, bodyScale: shoulderWidth / width,
       torsoScale: projectedTorsoLength / height,
       trackingConfidence: Math.min(torsoConfidence, kneeConfidence, pose.confidence), timestampMs: frame.timestampMs,
     };

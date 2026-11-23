@@ -1,5 +1,6 @@
 import { CALIBRATION_CONFIG as CONFIG } from './calibrationConfig';
-import type { CalibrationProfile } from './calibrationTypes';
+import type { CalibrationProfile, PartialMotionRange } from './calibrationTypes';
+import { PARTIAL_BEND_CONFIG } from '../vision/partialBend';
 
 export function quantile(values: readonly number[], fraction: number): number {
   if (!values.length || !Number.isFinite(fraction) || fraction < 0 || fraction > 1
@@ -32,8 +33,28 @@ export function calibrationThresholds(standingAngle: number, bendingAngle: numbe
   };
 }
 
+export function partialMotionRange(standing: number, bending: number): PartialMotionRange {
+  const range = bending - standing;
+  return { standing, bending, range,
+    standingThreshold: standing + range * CONFIG.standingThresholdFraction,
+    bendingThreshold: standing + range * CONFIG.bendingThresholdFraction };
+}
+
+export function validatePartialMotionRange(profile: PartialMotionRange | undefined): profile is PartialMotionRange {
+  if (!profile || ![profile.standing, profile.bending, profile.range, profile.standingThreshold,
+    profile.bendingThreshold].every(Number.isFinite) || profile.standing < -2 || profile.bending > .1
+    || profile.range < PARTIAL_BEND_CONFIG.minimumRange - 1e-8
+    || profile.range > PARTIAL_BEND_CONFIG.maximumRange) return false;
+  const expected = partialMotionRange(profile.standing, profile.bending);
+  return (['range', 'standingThreshold', 'bendingThreshold'] as const)
+    .every(key => Math.abs(expected[key] - profile[key]) < 1e-8);
+}
+
 export function validateCalibration(profile: CalibrationProfile): boolean {
-  if (!profile || !isPlausibleAngle(profile.standingAngle) || !isPlausibleAngle(profile.bendingAngle)
+  if (!profile || !Number.isFinite(profile.timestamp) || profile.timestamp < 0) return false;
+  if (profile.metric === 'partial') return validatePartialMotionRange(profile.partial);
+  if (profile.partial && !validatePartialMotionRange(profile.partial)) return false;
+  if (!isPlausibleAngle(profile.standingAngle) || !isPlausibleAngle(profile.bendingAngle)
     || !isPlausibleAngle(profile.standingThreshold) || !isPlausibleAngle(profile.bendingThreshold)
     || !Number.isFinite(profile.range) || profile.range < CONFIG.minimumRange - CONFIG.numericAngleEpsilon
     || profile.range > CONFIG.maximumRange + CONFIG.numericAngleEpsilon

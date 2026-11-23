@@ -26,7 +26,7 @@ export interface MediapipeInputOptions {
 }
 
 export class MediapipeMotionInput implements MotionInput {
-  private readonly classifier = new PoseClassifier();
+  private readonly classifier = new PoseClassifier(true);
   private readonly now: () => number;
   private readonly camera: CameraDriver;
   private readonly estimator: EstimatorDriver;
@@ -83,7 +83,8 @@ export class MediapipeMotionInput implements MotionInput {
     const now = this.now();
     const pose = this.classifier.snapshot(now);
     const trackingLost = pose.state === 'UNKNOWN' || pose.state === 'TRACKING_LOST';
-    if (trackingLost) {
+    const interrupted = trackingLost || pose.trackingTransition;
+    if (interrupted) {
       this.recovering = true;
       this.reliableSince = undefined;
       this.lastReliableTimestampMs = undefined;
@@ -95,7 +96,7 @@ export class MediapipeMotionInput implements MotionInput {
       this.recovering = pose.timestampMs - this.reliableSince < POSE_CONFIG.debounceMs;
     }
     // Reliable neutral poses can recover continuous tracking without emitting a game action.
-    const suspended = !this.started || this.paused || this.destroyed || trackingLost || this.recovering;
+    const suspended = !this.started || this.paused || this.destroyed || interrupted || this.recovering;
     const freshFrame = this.lastFrame !== undefined && now >= this.lastFrame.timestampMs
       && now - this.lastFrame.timestampMs <= POSE_CONFIG.maxDataAgeMs;
     const personDetected = freshFrame && this.lastFrame!.personDetected;
@@ -106,14 +107,16 @@ export class MediapipeMotionInput implements MotionInput {
     this.updateTrackingState(desiredTrackingState, now);
     const message = this.paused ? '休息緊，準備好先再繼續。'
       : !personDetected ? '未偵測到人物，請慢慢行到鏡頭前。'
-      : trackingLost ? '正在確認姿勢…請讓鏡頭看見全身。'
+      : trackingLost ? '請讓鏡頭睇到肩膊、腰部同膝頭。'
+      : pose.reason === 'partial-calibration-required' ? '而家只睇到部分姿勢，請重新設定動作。'
+      : pose.trackingTransition ? '已切換追蹤方式，請自然企穩再繼續。'
       : pose.state === 'STANDING' ? '準備好啦，慢慢屈膝。'
       : pose.state === 'BENDING' ? '見到你啦！慢慢企返起身。'
       : pose.state === 'TRANSITION' ? '見到你啦！企穩少少，準備好先開始。' : '企喺鏡頭前面，等阿兔見到你。';
     return { mode: 'camera', ready: this.started && !this.destroyed, suspended,
       requestPause: false, message,
       cameraStatus: this.destroyed ? 'stopped' : !this.started ? 'initializing' : this.paused ? 'paused' : 'running',
-      trackingState: this.trackingState, personDetected,
+      trackingState: this.trackingState, trackingMode: freshFrame ? pose.trackingMode : 'lost', personDetected,
       poseFps: freshFrame ? this.lastFrame!.poseFps : 0,
       framesReceived: this.framesReceived, lastFrameTimestampMs: this.lastFrame?.timestampMs };
   }

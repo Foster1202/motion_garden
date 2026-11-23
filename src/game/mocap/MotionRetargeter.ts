@@ -57,7 +57,8 @@ export class MotionRetargeter {
   private readonly armElevationLimit: number;
 
   constructor(private readonly maximumArmPlane = 90, private readonly gardenMovement = false,
-    private readonly shoulderOnly = false, maximumArmElevation = CONFIG.limits.arm.max) {
+    private readonly shoulderOnly = false, maximumArmElevation = CONFIG.limits.arm.max,
+    private readonly allowMissingArms = false) {
     this.armElevationLimit = shoulderOnly && Number.isFinite(maximumArmElevation)
       ? clamp(maximumArmElevation, 0, CONFIG.limits.arm.max) : CONFIG.limits.arm.max;
   }
@@ -81,6 +82,22 @@ export class MotionRetargeter {
     const finiteLateral = Number.isFinite(sample.lateralOffset);
     const lateralReliable = sample.lateralReliable && finiteLateral
       && Number.isFinite(sample.timestampMs) && sample.timestampMs >= 0;
+    if (sample.legTracking) {
+      const legTracking = { ...sample.legTracking };
+      const amount = (side: 'left' | 'right') => {
+        const measured = sample[`${side}LegExtensionAmount`];
+        if (!lateralReliable || legTracking[side].mode === 'lost' || !Number.isFinite(measured)) {
+          legTracking[side] = { mode: 'lost', reliable: false };
+          return 0;
+        }
+        return clamp(measured, 0, 1);
+      };
+      const leftLegExtensionAmount = amount('left');
+      const rightLegExtensionAmount = amount('right');
+      return { ...sample, legTracking, leftLegExtensionAmount, rightLegExtensionAmount, lateralReliable,
+        lateralOffset: finiteLateral ? clamp(sample.lateralOffset, -1, 1) : 0,
+        reliable: legTracking.left.reliable || legTracking.right.reliable };
+    }
     const valid = sample.reliable && lateralReliable
       && [sample.leftLegExtensionAmount, sample.rightLegExtensionAmount].every(Number.isFinite);
     return {
@@ -129,7 +146,8 @@ export class MotionRetargeter {
 
   update(human: HumanPose, profile: CalibrationProfile): RabbitPose | undefined {
     if (!validateMotionRange(profile)) return undefined;
-    const key = JSON.stringify([profile.timestamp, profile.standingAngle, profile.range, profile.reliableSide ?? 'both']);
+    const key = JSON.stringify([profile.timestamp, profile.metric, profile.standingAngle, profile.range,
+      profile.reliableSide ?? 'both', profile.partial]);
     if (key !== this.profileKey) { this.resetReference(); this.profileKey = key; }
     if (!Number.isFinite(human.timestampMs) || human.timestampMs < 0
       || (this.lastTimestamp !== undefined && human.timestampMs <= this.lastTimestamp)) {
@@ -137,7 +155,7 @@ export class MotionRetargeter {
       if (this.status.requiresReset) this.clearRecovery();
       return undefined;
     }
-    if (!this.valid(human)) {
+    if (!this.valid(human, profile)) {
       if (!this.captured) this.rejectCandidate(human.timestampMs, 'invalid-human-pose', []);
       else if (this.status.requiresReset) {
         this.lastTimestamp = human.timestampMs;
@@ -180,7 +198,7 @@ export class MotionRetargeter {
         -CONFIG.limits.torsoForward, CONFIG.limits.torsoForward),
       headYaw: clamp((human.headYaw ?? reference.headYaw) - reference.headYaw, -CONFIG.limits.headYaw, CONFIG.limits.headYaw),
       headPitch: clamp((human.headPitch ?? reference.headPitch) - reference.headPitch, -CONFIG.limits.headPitch, CONFIG.limits.headPitch),
-      bendAmount: clamp((profile.standingAngle - human.activeKneeAngle) / profile.range, 0, 1),
+      bendAmount: human.estimatedBendAmount ?? clamp((profile.standingAngle! - human.activeKneeAngle!) / profile.range!, 0, 1),
       lateralOffset: this.lateral(human.centerX, reference),
       trackingConfidence: clamp(human.trackingConfidence, 0, 1), timestampMs: human.timestampMs,
     };
@@ -213,12 +231,17 @@ export class MotionRetargeter {
     return { ...target };
   }
 
-  private valid(human: HumanPose): boolean {
-    return [human.torsoLean, human.activeKneeAngle, human.centerX, human.bodyScale,
+  private valid(human: HumanPose, profile: CalibrationProfile): boolean {
+    const activeKneeAngle = human.activeKneeAngle;
+    const estimatedBendAmount = human.estimatedBendAmount;
+    const usableBend = estimatedBendAmount === undefined
+      ? profile.metric !== 'partial' && finite(activeKneeAngle) && activeKneeAngle >= 0 && activeKneeAngle <= 180
+      : !!profile.partial && finite(estimatedBendAmount) && estimatedBendAmount >= 0 && estimatedBendAmount <= 1;
+    return usableBend && [human.torsoLean, human.centerX, human.bodyScale,
       human.trackingConfidence, human.timestampMs, human.leftArmConfidence, human.rightArmConfidence].every(Number.isFinite)
       && human.timestampMs >= 0 && human.trackingConfidence >= CONFIG.confidenceThreshold && human.trackingConfidence <= 1
       && human.leftArmConfidence >= 0 && human.leftArmConfidence <= 1 && human.rightArmConfidence >= 0 && human.rightArmConfidence <= 1
-      && human.activeKneeAngle >= 0 && human.activeKneeAngle <= 180 && Math.abs(human.torsoLean) < 80
+      && Math.abs(human.torsoLean) < 80
       && human.centerX >= 0 && human.centerX <= 1 && human.bodyScale >= 0.025 && human.bodyScale <= 1
       && (human.torsoScale === undefined || (finite(human.torsoScale) && human.torsoScale >= .02))
       && (this.shoulderOnly ? shoulderKeys : armKeys)
@@ -242,21 +265,27 @@ export class MotionRetargeter {
     this.previousCandidateMs = human.timestampMs;
     this.samples = this.samples.filter(sample => human.timestampMs - sample.pose.timestampMs <= CONFIG.reference.captureMs * 3);
     if (this.samples[0]) this.samples[0].creditedMs = 0;
+    const standing = human.estimatedBendAmount === undefined
+      ? { name: 'standing-knee-min', value: human.activeKneeAngle, limit: profile.standingThreshold!,
+        pass: human.activeKneeAngle! >= profile.standingThreshold! }
+      : { name: 'standing-bend-estimate-max', value: human.estimatedBendAmount, limit: .2,
+        pass: human.estimatedBendAmount <= .2 + 1e-6 };
     const conditions: ReferenceCondition[] = [
-      { name: 'standing-knee-min', value: human.activeKneeAngle, limit: profile.standingThreshold,
-        pass: human.activeKneeAngle >= profile.standingThreshold },
+      standing,
       { name: 'torso-lean-max', value: Math.abs(human.torsoLean), limit: CONFIG.reference.maximumLeanDegrees,
         pass: Math.abs(human.torsoLean) <= CONFIG.reference.maximumLeanDegrees },
     ];
     for (const side of ['left', 'right'] as const) {
       const confidence = human[`${side}ArmConfidence`];
+      if (this.allowMissingArms && confidence < CONFIG.confidenceThreshold) continue;
       const length = human[`${side}ArmProjectedLength`];
       conditions.push({ name: `${side}-arm-confidence-min`, value: confidence, limit: CONFIG.confidenceThreshold,
         pass: confidence >= CONFIG.confidenceThreshold });
       conditions.push({ name: `${side}-projected-upper-length-min`, value: length, limit: CONFIG.reference.minimumProjectedArmLength,
         pass: length === undefined || length >= CONFIG.reference.minimumProjectedArmLength });
     }
-    const referenceKeys = this.shoulderOnly ? shoulderKeys : armKeys;
+    const referenceKeys = (this.shoulderOnly ? shoulderKeys : armKeys).filter(key =>
+      !this.allowMissingArms || human[key.startsWith('left') ? 'leftArmConfidence' : 'rightArmConfidence'] >= CONFIG.confidenceThreshold);
     for (const key of referenceKeys) {
       const value = referenceAngle(human, key);
       const limit = key.includes('Elbow') ? CONFIG.reference.relaxedElbowDegrees : CONFIG.reference.relaxedArmDegrees;
@@ -273,9 +302,11 @@ export class MotionRetargeter {
           limit: CONFIG.reference.scaleSpreadFraction },
         { name: 'torso-spread-max', value: Math.abs(human.torsoLean - median(this.samples.map(sample => sample.pose.torsoLean))),
           limit: CONFIG.reference.angularSpreadDegrees },
-        ...referenceKeys.map(key => ({ name: `${projectedKeys[key]}-spread-max`,
-          value: Math.abs(referenceAngle(human, key)! - median(this.samples.map(sample => referenceAngle(sample.pose, key)!))),
-          limit: CONFIG.reference.angularSpreadDegrees })),
+        ...referenceKeys.flatMap(key => {
+          const previous = this.samples.map(sample => referenceAngle(sample.pose, key)).filter(finite);
+          return previous.length ? [{ name: `${projectedKeys[key]}-spread-max`,
+            value: Math.abs(referenceAngle(human, key)! - median(previous)), limit: CONFIG.reference.angularSpreadDegrees }] : [];
+        }),
       ];
       conditions.push(...stable.map(condition => ({ ...condition, pass: condition.value <= condition.limit })));
     }

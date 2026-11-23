@@ -11,9 +11,9 @@ await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true,
   args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 const desktop = { width: 1512, height: 982 };
-const portrait = { width: 600, height: 800 };
+const smallDesktop = { width: 640, height: 360 };
 const report = {
-  status: 'RUNNING', url, suite, browser: browser.version(), desktop, portrait,
+  status: 'RUNNING', url, suite, browser: browser.version(), desktop, smallDesktop,
   keyboard: 'Native Playwright key events. A real 90-second round at Phaser timeScale 1.',
   camera: 'Chrome virtual camera with synthetic MediaPipe Landmarker output. Real stream, scheduling, extraction, retargeting and game rules.',
   humanWebcam: 'NOT VERIFIED',
@@ -151,10 +151,12 @@ function verifyGlow(value, goal) {
 async function verifyViewport() {
   const controls = await Promise.all([hud('time'), hud('score'), action('pause'), action('home'), hud('target')]
     .map(element => element.boundingBox()));
+  const frame = await page.locator('#game-frame').boundingBox();
+  assert.ok(Math.abs(frame.width / frame.height - 16 / 9) < .01);
   for (const box of controls) {
     assert.ok(box?.width > 0 && box?.height > 0);
-    assert.ok(box.x >= -1 && box.y >= -1 && box.x + box.width <= portrait.width + 1
-      && box.y + box.height <= portrait.height + 1, JSON.stringify(box));
+    assert.ok(box.x >= frame.x - 1 && box.y >= frame.y - 1 && box.x + box.width <= frame.x + frame.width + 1
+      && box.y + box.height <= frame.y + frame.height + 1, JSON.stringify(box));
   }
   for (let first = 0; first < controls.length; first++) {
     const a = controls[first];
@@ -313,11 +315,11 @@ async function keyboardRun() {
   check('Continuous picks replenish indefinitely, a constant-left RNG repeats twice then forces right, and both trees score through the same loop');
 
   await page.getByText(/🍎\s*\+1/).waitFor({ state: 'detached' });
-  await page.setViewportSize(portrait);
+  await page.setViewportSize(smallDesktop);
   await verifyViewport();
-  await capture('04-portrait-orchard');
+  await capture('04-small-desktop-orchard');
   await page.setViewportSize(desktop);
-  check('Portrait HUD is inside the first viewport and the timer, score, action buttons and direction remain disjoint');
+  check('A 640×360 desktop keeps the HUD inside the fitted 16:9 frame with no control collisions');
 
   await moveTo('left');
   await holdAndRelease('q');
@@ -373,7 +375,7 @@ async function keyboardRun() {
 async function installCameraFixture() {
   await page.evaluate(async () => {
     const { PoseEstimator } = await import('/src/game/vision/PoseEstimator.ts');
-    window.__appleCameraFixture = { shift: 0, left: false, right: false, lost: false };
+    window.__appleCameraFixture = { shift: 0, left: false, right: false, hideLeft: true, hideRight: true };
     window.__appleCameraStats = { requested: 0, models: 0, closed: 0, inferences: 0, streams: [] };
     const stats = window.__appleCameraStats;
     const fixture = window.__appleCameraFixture;
@@ -396,8 +398,9 @@ async function installCameraFixture() {
             stats.inferences++;
             if (fixture.lost) return { landmarks: [] };
             const point = (x, y, visibility = .99) => ({ x: x + fixture.shift, y, z: 0, visibility, presence: visibility });
-            const points = Array.from({ length: 33 }, () => point(.5, .5, .1));
-            points[11] = point(.58, .28); points[12] = point(.42, .28);
+            const points = Array.from({ length: 33 }, (_, index) => point(.5, index < 11 ? -.15 : .5, .1));
+            for (let index = 25; index <= 32; index++) points[index] = point(.5, 1.15);
+            points[11] = point(.58, .28, fixture.hideShoulder ? .1 : .99); points[12] = point(.42, .28);
             points[23] = point(.545, .52); points[24] = point(.455, .52);
             points[15] = point(fixture.left ? .70 : .6, fixture.left ? .24 : .51, fixture.hideLeft ? .1 : .99);
             points[16] = point(fixture.right ? .30 : .4, fixture.right ? .24 : .51, fixture.hideRight ? .1 : .99);
@@ -414,7 +417,7 @@ const fixture = patch => page.evaluate(patch => Object.assign(window.__appleCame
 const cameraResources = () => page.evaluate(() => {
   const { requested, models, closed, inferences, streams } = window.__appleCameraStats;
   return { requested, models, closed, inferences, tracks: streams.map(stream =>
-    stream.getTracks().map(track => track.readyState)), videoCount: document.querySelectorAll('video').length };
+    stream.getTracks().map(track => track.readyState)), videoCount: document.querySelectorAll('.apple-camera-source').length };
 });
 const cameraMove = async (shift, condition) => {
   await fixture({ shift });
@@ -429,9 +432,21 @@ async function cameraRun() {
   await enter();
   await seedLeft();
   await dialogAction('camera').click();
+  await until(value => value.input.status === 'acquiring-reference');
+  await page.waitForTimeout(600);
+  assert.equal((await snapshot()).input.hasReference, false);
+  assert.equal((await snapshot()).elapsedMs, 0);
+  await fixture({ hideLeft: false });
   const neutral = await until(value => value.active && value.input.hasReference && value.input.reliable
     && value.elapsedMs > 250 && Math.abs(value.playerX) < .05);
   assert.equal(neutral.mode, 'camera');
+  assert.equal(neutral.input.trackingMode, 'partial');
+  assert.equal(neutral.input.leftReliable, true);
+  assert.equal(neutral.input.rightReliable, false);
+  assert.equal(await hud('tracking').innerText(), 'Partial Tracking');
+  await fixture({ hideRight: false });
+  await until(value => value.input.trackingMode === 'full');
+  check('Out-of-frame head and legs do not block the Apple camera. A consistent visible lowered wrist starts the game');
   const left = await cameraMove(.18, x => x < -.63);
   const right = await cameraMove(-.18, x => x > .63);
   assert.ok(left.view.root.x < neutral.view.root.x && right.view.root.x > neutral.view.root.x);
@@ -445,8 +460,9 @@ async function cameraRun() {
   check('Synthetic webcam verifies mirrored movement and a right-wrist wrong-tree attempt with hidden elbows');
 
   const relaxedLeft = await cameraMove(.18, x => x < -.63);
-  await fixture({ left: true });
+  await fixture({ left: true, hideRight: true });
   const raised = await until(value => value.state === 'PICKING');
+  assert.equal(raised.input.trackingMode, 'partial');
   assert.deepEqual(raised.view.rig.forearmRotations, neutral.view.rig.forearmRotations);
   assert.ok(distance(raised.view.hands.left, relaxedLeft.view.hands.left) > 10);
   assert.ok(distance(raised.view.hands.right, relaxedLeft.view.hands.right) < 10);
@@ -459,12 +475,16 @@ async function cameraRun() {
   await capture('07-simulated-camera-picked');
 
   await cameraMove(0, x => Math.abs(x) < .095);
+  await fixture({ hideRight: false });
+  await until(value => value.input.trackingMode === 'full' && value.gestures.right === 'READY');
   await fixture({ right: true });
   await until(value => value.state === 'DEPOSITING');
-  await fixture({ lost: true, right: false });
+  await fixture({ hideShoulder: true, right: false });
+  await until(value => value.input.trackingMode === 'lost');
+  assert.match(await hud('hint').innerText(), /肩膊同腰部/);
   await page.waitForTimeout(550);
   assert.equal((await snapshot()).score, 0);
-  await fixture({ lost: false, right: true });
+  await fixture({ hideShoulder: false, right: true });
   await page.waitForTimeout(420);
   await fixture({ right: false });
   await page.waitForTimeout(650);
@@ -472,7 +492,7 @@ async function cameraRun() {
   assert.equal(sample.score, 0);
   assert.equal(Boolean(sample.carrying), true);
   assertHeld(sample);
-  check('Missing tracking cancels the pending basket gesture; returning raised and then lowering cannot score');
+  check('Low-confidence shoulder tracking cancels the pending basket gesture; returning raised and then lowering cannot score');
 
   await fixture({ right: true });
   await until(value => value.state === 'DEPOSITING');
@@ -537,6 +557,19 @@ async function cameraRun() {
   assert.equal(switched.videoCount, 0);
   await moveTo('left');
   check('Closing the camera from Pause releases its resources and resumes keyboard movement on the same clock', switched);
+
+  await action('home').click();
+  await enter();
+  await dialogAction('camera').click();
+  await until(value => value.active && value.input.hasReference);
+  await page.evaluate(() => window.__appleCameraStats.streams.at(-1).getVideoTracks()[0].dispatchEvent(new Event('ended')));
+  await dialogAction('keyboard').waitFor();
+  assert.match(await dialog().innerText(), /鏡頭未能使用/);
+  assert.equal((await cameraResources()).videoCount, 0);
+  assert.deepEqual((await cameraResources()).tracks.at(-1), ['ended']);
+  await dialogAction('keyboard').click();
+  await until(value => value.active && value.mode === 'keyboard');
+  check('A camera track ending pauses hand input, releases the stream and offers keyboard recovery');
   await context.close();
 }
 

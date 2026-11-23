@@ -8,6 +8,7 @@ import { CalibrationPanel } from '../calibration/CalibrationPanel';
 import { manualMotionRange } from '../settings/motionRange';
 import { GameIntroLayout } from '../ui/GameIntroLayout';
 import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
+import { TRACKING_MODE_LABEL } from '../vision/trackingMode';
 
 export interface MotionCaptureEvents {
   onFrame?: (frame: PoseFrame, pose: PoseSnapshot, profile: CalibrationProfile) => void;
@@ -34,8 +35,6 @@ export class MotionInputController implements MotionInput {
   private paused = false;
   private loading = false;
   private lastMessage = '';
-  private readonly orientation = document.querySelector<HTMLElement>('.orientation-note');
-  private readonly originalOrientation = this.orientation?.textContent ?? '';
 
   constructor(private readonly host: HTMLElement, onHome: () => void, private readonly capture: MotionCaptureEvents = {}) {
     this.panel = document.createElement('section');
@@ -44,7 +43,7 @@ export class MotionInputController implements MotionInput {
     this.intro = new GameIntroLayout('carrot', `
       <h2 id="motion-setup-title">體感模式</h2>
       <p>先淺屈膝，捉住蘿蔔，再慢慢企返起身。</p>
-      <p id="motion-setup-message" role="status">開啟鏡頭後，阿兔會帶你設定舒服嘅活動幅度。</p>
+      <p id="motion-setup-message" role="status">請讓鏡頭睇到肩膊、腰部同膝頭，阿兔會帶你設定舒服嘅活動幅度。</p>
       <p class="motion-safety game-intro-note">請保持地面清爽，旁邊最好有穩固椅子。</p>
       <p class="motion-privacy game-intro-detail">鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。</p>
       <div class="game-intro-actions">
@@ -99,7 +98,8 @@ export class MotionInputController implements MotionInput {
     if (status.mode === 'camera' && (!status.ready || status.suspended)) {
       const calibration = this.calibration?.pause(performance.now());
       if (calibration && calibration.state !== 'FAILED') this.calibrationPanel?.render({
-        ...calibration, message: '等候穩定姿勢，動作設定會自動繼續。',
+        ...calibration, message: status.trackingMode === 'lost'
+          ? '請讓鏡頭睇到肩膊、腰部同膝頭。' : '等候穩定姿勢，動作設定會自動繼續。',
       });
     }
     const calibrated = status.mode !== 'camera' || this.cameraPlaying;
@@ -140,7 +140,6 @@ export class MotionInputController implements MotionInput {
     this.intro.stopVideo();
     this.releaseInput();
     this.host.classList.remove('input-selecting', 'using-camera', 'calibrating');
-    if (this.orientation) this.orientation.textContent = this.originalOrientation;
     this.panel.remove();
     this.controls.remove();
     this.personStatus.remove();
@@ -155,7 +154,7 @@ export class MotionInputController implements MotionInput {
     this.host.classList.remove('using-camera', 'calibrating');
     this.panel.hidden = false;
     this.controls.hidden = true;
-    this.setupMessage('體感模式', '開啟鏡頭後，阿兔會帶你設定舒服嘅活動幅度。');
+    this.setupMessage('體感模式', '請讓鏡頭睇到肩膊、腰部同膝頭，阿兔會帶你設定舒服嘅活動幅度。');
     this.cameraButton.disabled = false;
     this.setKeyboardHints(false);
     this.cameraButton.focus({ preventScroll: true });
@@ -310,6 +309,7 @@ export class MotionInputController implements MotionInput {
     this.personStatus.hidden = status.mode !== 'camera';
     const state = status.trackingState ?? 'CAMERA_INITIALIZING';
     this.personStatus.dataset.trackingState = state;
+    this.personStatus.dataset.trackingMode = status.trackingMode ?? 'lost';
     const labels = {
       CAMERA_INITIALIZING: '正在準備鏡頭…', WAITING_FOR_PERSON: '未偵測到人物',
       PERSON_DETECTED: '已偵測到人物', TRACKING_UNSTABLE: '正在確認姿勢…',
@@ -317,14 +317,14 @@ export class MotionInputController implements MotionInput {
     };
     const displayedPerson = ['PERSON_DETECTED', 'TRACKING_UNSTABLE', 'TRACKING_READY'].includes(state);
     const text = status.cameraStatus === 'paused' ? '已暫停'
-      : displayedPerson && !status.calibrationReady ? '請先完成動作設定' : labels[state];
+      : displayedPerson && !status.calibrationReady ? '請先完成動作設定'
+      : status.calibrationReady && status.trackingMode
+        ? `${labels[state]} · ${TRACKING_MODE_LABEL[status.trackingMode]}` : labels[state];
     if (this.personStatus.textContent !== text) this.personStatus.textContent = text;
   }
   private setKeyboardHints(visible: boolean) {
     const hints = this.host.querySelector<HTMLElement>('.keyboard-hints');
     if (hints) hints.hidden = !visible || import.meta.env?.VITE_SHOW_KEYBOARD_HINTS === 'false';
-    if (this.orientation) this.orientation.textContent = visible ? this.originalOrientation
-      : this.active instanceof MediapipeMotionInput ? '橫向畫面更清楚。頭到腳盡量留喺畫面內。' : '橫向畫面更清楚。揀一個輸入模式先開始。';
   }
   private releaseInput() {
     this.capture.onReset?.();

@@ -6,6 +6,7 @@ import { PersonOnlyRenderer } from '../vision/PersonOnlyRenderer';
 import { PoseCamera } from '../vision/PoseCamera';
 import { PoseEstimator } from '../vision/PoseEstimator';
 import type { PoseFrame } from '../vision/poseTypes';
+import type { TrackingMode } from '../vision/trackingMode';
 import type { AppleHarvestRoundInput } from './AppleHarvestRound';
 import { APPLE_CONFIG as C } from './appleConfig';
 
@@ -126,10 +127,17 @@ export class AppleHarvestInput {
 
   get hasCameraReference() { return this.reference !== undefined; }
 
+  get trackingMode(): TrackingMode {
+    if (this.mode !== 'camera' || this.paused || this.destroyed || !this.sample.lateralReliable) return 'lost';
+    const wrists = Number(this.sample.left !== null) + Number(this.sample.right !== null);
+    return wrists === 2 ? 'full' : wrists === 1 ? 'partial' : 'lost';
+  }
+
   trackingSnapshot() {
     const enabled = !this.paused && !this.destroyed;
     return {
       mode: this.mode, status: this.destroyed ? 'closed' : this.paused ? 'paused' : this.mode === 'keyboard' ? 'keyboard' : this.status,
+      trackingMode: this.trackingMode,
       hasReference: this.hasCameraReference,
       reliable: enabled && (this.mode === 'keyboard' || this.sample.lateralReliable),
       leftReliable: enabled && (this.mode === 'keyboard' || this.sample.left !== null),
@@ -227,12 +235,15 @@ export class AppleHarvestInput {
   }
 
   private captureReference(human: ArmReachPose): void {
-    if (human.leftRaise === null || human.rightRaise === null
-      || human.leftRaise > C.lowerThreshold || human.rightRaise > C.lowerThreshold) {
+    const { leftRaise, rightRaise } = human;
+    if ((leftRaise === null && rightRaise === null)
+      || (leftRaise !== null && leftRaise > C.lowerThreshold) || (rightRaise !== null && rightRaise > C.lowerThreshold)) {
       this.candidates = [];
       return;
     }
-    const stable = this.candidates.every(candidate => candidate.orientation === human.orientation
+    const continuousWrist = (leftRaise !== null && this.candidates.every(candidate => candidate.leftRaise !== null))
+      || (rightRaise !== null && this.candidates.every(candidate => candidate.rightRaise !== null));
+    const stable = continuousWrist && this.candidates.every(candidate => candidate.orientation === human.orientation
       && Math.abs(human.centerX - candidate.centerX) <= candidate.shoulderWidth * .22
       && Math.abs(human.shoulderWidth / candidate.shoulderWidth - 1) <= .20
       && Math.abs(human.torsoHeight / candidate.torsoHeight - 1) <= .20);

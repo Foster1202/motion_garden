@@ -123,7 +123,7 @@ test('tracking loss and missing frames clear incomplete sampling and permit reac
   sample(controller, 0, 800, 155);
   controller.tick(1100);
   assert.equal(controller.getSnapshot().sampleCount, 0);
-  assert.match(controller.getSnapshot().message, /全身/);
+  assert.match(controller.getSnapshot().message, /肩膊、腰部同膝頭/);
   sample(controller, 1120, 3520, 155);
   assert.equal(controller.getSnapshot().state, 'BEND_INSTRUCTIONS');
 });
