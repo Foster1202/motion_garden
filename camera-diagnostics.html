@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#285744" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>鏡頭診斷 · 動態花園</title>
+  </head>
+  <body>
+    <main class="diagnostics">
+      <header>
+        <a href="./">返回動態花園</a>
+        <h1>鏡頭診斷</h1>
+        <p>此頁只播放原生鏡頭，不啟動遊戲或姿勢推論。影像只會在此裝置顯示。</p>
+      </header>
+      <section class="diagnostic-controls" aria-label="鏡頭設定">
+        <label>鏡頭<select id="camera-device"><option value="">瀏覽器預設鏡頭</option></select></label>
+        <label>擷取設定<select id="camera-profile"></select></label>
+        <div class="diagnostic-buttons">
+          <button id="camera-start" type="button">啟動鏡頭</button>
+          <button id="camera-stop" type="button" disabled>停止</button>
+          <button id="camera-save" type="button">儲存供遊戲使用</button>
+        </div>
+        <p id="camera-status" role="status">啟動後可選擇已授權的鏡頭。比較不同擷取設定時，請保持相同光線及站位。</p>
+        <p id="camera-saved" role="status"></p>
+      </section>
+      <div class="diagnostic-output">
+        <section class="diagnostic-preview" aria-label="本機預覽">
+          <video id="camera-video" autoplay muted playsinline></video>
+        </section>
+        <section class="diagnostic-readings" aria-labelledby="camera-metrics-title">
+          <h2 id="camera-metrics-title">即時數據</h2>
+          <pre id="camera-metrics">等候啟動鏡頭…</pre>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/src/cameraDiagnostics.ts"></script>
+  </body>
+</html>

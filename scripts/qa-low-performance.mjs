@@ -57,12 +57,14 @@ async function measure(mode, expectedWidth, expectedHeight) {
   const measurements = [];
   for (let sample = 0; sample < 3; sample++) {
     const summary = await panel.innerText();
-    const values = summary.match(/推論 ([\d.]+) ms · 平均 ([\d.]+) ms\s+Pose ([\d.]+) FPS\s+Phaser ([\d.]+) FPS · 3D ([\d.]+) FPS/);
-    assert.ok(values, summary);
-    const [inferenceMs, averageInferenceMs, poseFps, phaserFps, threeFps] = values.slice(1).map(Number);
+    const inference = summary.match(/推論 ([\d.]+) ms · P95 ([\d.]+) ms/);
+    const rates = summary.match(/Pose ([\d.]+) FPS.*\nPhaser ([\d.]+) FPS · 3D ([\d.]+) FPS/);
+    assert.ok(inference && rates, summary);
+    const [inferenceMs, p95InferenceMs] = inference.slice(1).map(Number);
+    const [poseFps, phaserFps, threeFps] = rates.slice(1).map(Number);
     assert.ok(phaserFps > 15 && threeFps > 10, summary);
     assert.match(summary, new RegExp(mode + '模式 · 相機 ' + expectedWidth + '×' + expectedHeight));
-    measurements.push({ inferenceMs, averageInferenceMs, poseFps, phaserFps, threeFps });
+    measurements.push({ inferenceMs, p95InferenceMs, poseFps, phaserFps, threeFps });
     await page.waitForTimeout(1100);
   }
   const details = await video.evaluate(video => {
@@ -76,7 +78,7 @@ async function measure(mode, expectedWidth, expectedHeight) {
   });
   assert.deepEqual(details.dimensions, [expectedWidth, expectedHeight]);
   assert.deepEqual([details.requested.width.ideal, details.requested.height.ideal], details.dimensions);
-  assert.equal(details.opacity, mode === '低效能' ? '1' : '0');
+  assert.equal(details.opacity, '1');
   report.samples[mode] = { ...details, measurements };
 }
 

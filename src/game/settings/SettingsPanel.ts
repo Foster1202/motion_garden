@@ -71,6 +71,12 @@ export class SettingsPanel {
       performance.append(field);
     }
     this.lowPerformanceMode.addEventListener('change', () => this.updateBackgroundMode());
+    const diagnostics = document.createElement('a');
+    diagnostics.className = 'game-settings-background-mode';
+    diagnostics.dataset.action = 'diagnostics';
+    diagnostics.href = `${import.meta.env.BASE_URL}camera-diagnostics.html`;
+    diagnostics.textContent = '鏡頭診斷及選擇鏡頭';
+    performance.append(diagnostics);
     fields.append(performance);
     const audio = document.createElement('fieldset');
     audio.className = 'game-settings-audio';

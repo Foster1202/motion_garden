@@ -1,0 +1,48 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #233d32;
+  background: #f3f5ee;
+}
+
+body { margin: 0; }
+a { color: #285744; }
+.diagnostics { max-width: 64rem; margin: 0 auto; padding: clamp(1rem, 4vw, 3rem); }
+.diagnostics h1 { margin-block: .6rem .25rem; font-size: clamp(1.7rem, 4vw, 2.4rem); }
+.diagnostics h2 { font-size: 1.15rem; }
+.diagnostics p { margin-block: .4rem; }
+.diagnostic-controls { padding: 1rem; background: #fff; border: 1px solid #ccdacd; border-radius: .65rem; }
+.diagnostic-controls label { display: inline-grid; gap: .35rem; margin: 0 .5rem .75rem 0; max-width: 100%; }
+.diagnostic-controls select, .diagnostic-controls button {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  max-width: 100%;
+  border: 1px solid #789384;
+  border-radius: .4rem;
+  padding: .35rem .65rem;
+  font: inherit;
+  color: inherit;
+  background: #f8fbf7;
+}
+.diagnostic-controls button { cursor: pointer; }
+.diagnostic-controls button:disabled { opacity: .6; cursor: default; }
+.diagnostic-controls #camera-start { background: #285744; color: #fff; }
+.diagnostic-buttons { display: flex; flex-wrap: wrap; gap: .5rem; }
+.diagnostic-output { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; align-items: start; }
+.diagnostic-preview {
+  display: grid;
+  place-items: center;
+  min-height: 10rem;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #142b22;
+  border-radius: .65rem;
+}
+.diagnostic-preview video { width: 100%; height: 100%; max-height: 75vh; object-fit: contain; transform: scaleX(-1); }
+.diagnostic-readings { padding-inline: 1rem; overflow-wrap: anywhere; min-width: 0; border: 1px solid #ccdacd; border-radius: .65rem; background: #fff; }
+.diagnostic-readings pre { white-space: pre-wrap; font: .85rem/1.65 ui-monospace, monospace; }
+
+@media (max-width: 690px) {
+  .diagnostic-output { grid-template-columns: 1fr; }
+}

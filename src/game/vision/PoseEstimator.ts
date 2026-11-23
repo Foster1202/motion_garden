@@ -1,25 +1,16 @@
-import type { PoseFrame, PoseLandmark } from './poseTypes';
+import { clearInferencePerformance, recordInferencePerformance } from '../performance/performanceMetrics';
+import { POSE_CONFIG } from './poseConfig';
+import { createPoseLandmarker, personMask, type PoseEstimatorAssets, type PoseLandmarkerResultLike } from './poseLandmarker';
+import type { PoseFrame } from './poseTypes';
+import { PoseWorkerClient } from './PoseWorkerClient';
+import type { PoseInference } from './poseWorkerMessages';
 
-export interface PoseSegmentationMaskLike {
-  width: number;
-  height: number;
-  getAsFloat32Array(): Float32Array;
-}
-
-export interface PoseLandmarkerResultLike {
-  landmarks: readonly (readonly PoseLandmark[])[];
-  segmentationMasks?: readonly PoseSegmentationMaskLike[];
-  close?(): void;
-}
+export { personMask } from './poseLandmarker';
+export type { PoseEstimatorAssets, PoseLandmarkerResultLike, PoseSegmentationMaskLike } from './poseLandmarker';
 
 export interface PoseLandmarkerLike {
   detectForVideo(video: HTMLVideoElement, timestampMs: number): PoseLandmarkerResultLike;
   close(): void;
-}
-
-export interface PoseEstimatorAssets {
-  wasmRoot: string;
-  modelPath: string;
 }
 
 export class PoseEstimatorError extends Error {
@@ -40,6 +31,8 @@ export interface PoseEstimatorOptions {
   outputSegmentationMasks?: boolean;
   baseUrl?: string;
   createLandmarker?: (assets: PoseEstimatorAssets, outputSegmentationMasks: boolean) => Promise<PoseLandmarkerLike>;
+  createWorker?: () => Worker;
+  createBitmap?: (video: HTMLVideoElement) => Promise<ImageBitmap>;
   requestFrame?: (callback: FrameRequestCallback) => number;
   cancelFrame?: (id: number) => void;
   now?: () => number;
@@ -50,34 +43,26 @@ export function poseEstimatorAssets(baseUrl: string): PoseEstimatorAssets {
   return { wasmRoot: `${root}/wasm`, modelPath: `${root}/models/pose_landmarker_lite.task` };
 }
 
-async function createLandmarker(assets: PoseEstimatorAssets, outputSegmentationMasks: boolean): Promise<PoseLandmarkerLike> {
-  const { FilesetResolver, PoseLandmarker } = await import('@mediapipe/tasks-vision');
-  const fileset = await FilesetResolver.forVisionTasks(assets.wasmRoot);
-  return PoseLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: assets.modelPath, delegate: 'CPU' },
-    runningMode: 'VIDEO',
-    numPoses: 1,
-    minPoseDetectionConfidence: 0.55,
-    minPosePresenceConfidence: 0.55,
-    minTrackingConfidence: 0.55,
-    outputSegmentationMasks,
-  });
+function createWorker(): Worker {
+  return new Worker(new URL('./poseInference.worker.ts', import.meta.url), { type: 'module' });
 }
 
-export function personMask(mask: PoseSegmentationMaskLike): PoseFrame['personMask'] {
-  const width = Math.floor(mask.width);
-  const height = Math.floor(mask.height);
-  const probabilities = mask.getAsFloat32Array();
-  if (width <= 0 || height <= 0 || probabilities.length !== width * height) return undefined;
-  const alpha = new Uint8ClampedArray(probabilities.length);
-  for (let index = 0; index < probabilities.length; index++) {
-    const probability = probabilities[index];
-    if (!Number.isFinite(probability)) continue;
-    const normalized = Math.max(0, Math.min(1, (probability - .15) / .7));
-    const feathered = normalized * normalized * (3 - 2 * normalized);
-    alpha[index] = Math.round(feathered * 255);
-  }
-  return { width, height, alpha };
+function captureBitmap(create: (video: HTMLVideoElement) => Promise<ImageBitmap>, video: HTMLVideoElement): Promise<ImageBitmap> {
+  return new Promise((resolve, reject) => {
+    let expired = false;
+    const timer = setTimeout(() => {
+      expired = true;
+      reject(new Error('Camera frame transfer timed out.'));
+    }, 2500);
+    Promise.resolve().then(() => create(video)).then(bitmap => {
+      clearTimeout(timer);
+      if (expired) bitmap.close();
+      else resolve(bitmap);
+    }, error => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
 }
 
 export class PoseEstimator {
@@ -88,13 +73,20 @@ export class PoseEstimator {
   private readonly intervalMs: number;
   private readonly outputSegmentationMasks: boolean;
   private landmarker?: PoseLandmarkerLike;
+  private worker?: PoseWorkerClient;
+  private workerBusy = false;
+  private fallbackReason?: string;
   private initializing?: Promise<void>;
   private video?: HTMLVideoElement;
   private frameId?: number;
+  private videoFrameId?: number;
+  private latestVideoFrame?: { count: number; timestampMs: number };
+  private sampledVideoFrame?: number;
   private running = false;
   private destroyed = false;
   private generation = 0;
   private startGeneration = 0;
+  private visibilityGeneration = 0;
   private lastVideoTime = -1;
   private lastInferenceMs = -Infinity;
   private lastTimestampMs = -Infinity;
@@ -116,14 +108,16 @@ export class PoseEstimator {
 
   initialize(): Promise<void> {
     if (this.destroyed) return Promise.reject(new PoseEstimatorError('cancelled'));
-    if (this.landmarker) return Promise.resolve();
     if (this.initializing) return this.initializing;
+    if (this.landmarker || this.worker) return Promise.resolve();
     const generation = this.generation;
     const assets = poseEstimatorAssets(this.options.baseUrl ?? import.meta.env?.BASE_URL ?? '/');
     const pending = (async () => {
       try {
-        const landmarker = await (this.options.createLandmarker ?? createLandmarker)(assets, this.outputSegmentationMasks);
-        if (this.destroyed || generation !== this.generation) {
+        if (this.shouldUseWorker() && await this.initializeWorker(assets, generation)) return;
+        this.requireGeneration(generation);
+        const landmarker = await (this.options.createLandmarker ?? createPoseLandmarker)(assets, this.outputSegmentationMasks);
+        if (generation !== this.generation) {
           landmarker.close();
           throw new PoseEstimatorError('cancelled');
         }
@@ -138,6 +132,41 @@ export class PoseEstimator {
       if (this.initializing === pending) this.initializing = undefined;
     }).catch(() => undefined);
     return pending;
+  }
+
+  private requireGeneration(generation: number): void {
+    if (generation !== this.generation) throw new PoseEstimatorError('cancelled');
+  }
+
+  private shouldUseWorker(): boolean {
+    const forcedMain = new URLSearchParams(globalThis.location?.search).get('poseBackend') === 'main';
+    if (forcedMain || this.fallbackReason || (this.options.createLandmarker && !this.options.createWorker)) return false;
+    if (!this.options.createWorker && (typeof Worker !== 'function' || typeof OffscreenCanvas !== 'function'
+      || typeof createImageBitmap !== 'function')) {
+      this.fallbackReason = 'unsupported';
+      return false;
+    }
+    return true;
+  }
+
+  private async initializeWorker(assets: PoseEstimatorAssets, generation: number): Promise<boolean> {
+    try {
+      const worker = new PoseWorkerClient((this.options.createWorker ?? createWorker)());
+      this.worker = worker;
+      const base = globalThis.document?.baseURI;
+      await worker.initialize({
+        wasmRoot: new URL(assets.wasmRoot, base).href,
+        modelPath: new URL(assets.modelPath, base).href,
+      }, this.outputSegmentationMasks);
+      this.requireGeneration(generation);
+      return true;
+    } catch {
+      this.worker?.close();
+      this.worker = undefined;
+      this.requireGeneration(generation);
+      this.fallbackReason = 'startup';
+      return false;
+    }
   }
 
   async start(video: HTMLVideoElement): Promise<void> {
@@ -157,15 +186,23 @@ export class PoseEstimator {
     ++this.startGeneration;
     this.running = false;
     if (this.frameId !== undefined) this.cancelFrame(this.frameId);
+    if (this.videoFrameId !== undefined) this.video?.cancelVideoFrameCallback(this.videoFrameId);
     this.frameId = undefined;
+    this.videoFrameId = undefined;
+    this.latestVideoFrame = undefined;
+    this.sampledVideoFrame = undefined;
+    globalThis.document?.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.previousFrameMs = undefined;
     this.poseFps = 0;
+    clearInferencePerformance(this);
   }
 
   resume(): void {
-    if (this.destroyed || this.running || !this.landmarker || !this.video) return;
+    if (this.destroyed || this.running || !this.video) return;
     this.running = true;
     this.lastInferenceMs = -Infinity;
+    globalThis.document?.addEventListener('visibilitychange', this.onVisibilityChange);
+    this.watchVideoFrames(this.video);
     this.schedule();
   }
 
@@ -176,6 +213,8 @@ export class PoseEstimator {
     this.pause();
     const landmarker = this.landmarker;
     this.landmarker = undefined;
+    this.worker?.close();
+    this.worker = undefined;
     this.video = undefined;
     try { landmarker?.close(); } catch {
       // Camera ownership is separate; callers must still be able to release it.
@@ -183,47 +222,139 @@ export class PoseEstimator {
   }
 
   private schedule(): void {
-    if (this.running && !this.destroyed) this.frameId = this.requestFrame(this.tick);
+    if (this.running && this.frameId === undefined) this.frameId = this.requestFrame(this.tick);
+  }
+
+  private readonly onVisibilityChange = (): void => {
+    if (!globalThis.document?.hidden) return;
+    this.visibilityGeneration++;
+    this.latestVideoFrame = undefined;
+    this.previousFrameMs = undefined;
+    this.poseFps = 0;
+    clearInferencePerformance(this);
+  };
+
+  private watchVideoFrames(video: HTMLVideoElement): void {
+    if (typeof video.requestVideoFrameCallback !== 'function' || typeof video.cancelVideoFrameCallback !== 'function') return;
+    const generation = this.startGeneration;
+    const observe: VideoFrameRequestCallback = (now, frame) => {
+      if (!this.running || generation !== this.startGeneration) return;
+      if (!globalThis.document?.hidden) {
+        const timestampMs = Number.isFinite(frame.presentationTime) ? Math.min(now, frame.presentationTime) : now;
+        this.latestVideoFrame = { count: frame.presentedFrames, timestampMs };
+      }
+      this.videoFrameId = video.requestVideoFrameCallback(observe);
+    };
+    this.videoFrameId = video.requestVideoFrameCallback(observe);
   }
 
   private readonly tick: FrameRequestCallback = (timestampMs): void => {
     this.frameId = undefined;
     if (!this.running || this.destroyed) return;
     const video = this.video;
-    if (video && this.landmarker && video.readyState >= 2 && video.videoWidth > 0
-      && video.currentTime !== this.lastVideoTime && timestampMs - this.lastInferenceMs >= this.intervalMs) {
+    const frame = this.latestVideoFrame;
+    const freshVideo = this.videoFrameId === undefined
+      ? video?.currentTime !== this.lastVideoTime
+      : frame && frame.count !== this.sampledVideoFrame && timestampMs - frame.timestampMs < POSE_CONFIG.maxDataAgeMs;
+    if (video && !globalThis.document?.hidden && (this.landmarker || (this.worker && !this.workerBusy))
+      && video.readyState >= 2 && video.videoWidth > 0
+      && freshVideo && timestampMs - this.lastInferenceMs >= this.intervalMs) {
       this.lastVideoTime = video.currentTime;
+      this.sampledVideoFrame = frame?.count;
       this.lastInferenceMs = timestampMs;
-      const modelTimestamp = Math.max(timestampMs, this.lastTimestampMs + 0.001);
-      this.lastTimestampMs = modelTimestamp;
-      try {
-        const startedMs = this.now();
-        const result = this.landmarker.detectForVideo(video, modelTimestamp);
-        try {
-          const inferenceMs = Math.max(0, this.now() - startedMs);
-          this.totalInferenceMs += inferenceMs;
-          this.inferenceCount++;
-          if (this.previousFrameMs !== undefined) {
-            const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
-            this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
-          }
-          this.previousFrameMs = timestampMs;
-          const mask = this.outputSegmentationMasks ? result.segmentationMasks?.[0] : undefined;
-          this.options.onFrame({
-            landmarks: result.landmarks[0],
-            personMask: mask ? personMask(mask) : undefined,
-            timestampMs, inferenceMs, poseFps: this.poseFps,
-            averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
-            imageWidth: video.videoWidth, imageHeight: video.videoHeight,
-          });
-        } finally {
-          result.close?.();
-        }
-      } catch (error) {
-        this.pause();
-        this.options.onError?.(new PoseEstimatorError('inference', { cause: error }));
-      }
+      const sampledAt = frame?.timestampMs ?? timestampMs;
+      if (this.worker) void this.inferWithWorker(this.worker, video, sampledAt);
+      else if (this.landmarker) this.inferOnMain(this.landmarker, video, sampledAt);
     }
     this.schedule();
   };
+
+  private modelTimestamp(timestampMs: number): number {
+    this.lastTimestampMs = Math.max(timestampMs, this.lastTimestampMs + 0.001);
+    return this.lastTimestampMs;
+  }
+
+  private emitFrame(inference: PoseInference, timestampMs: number, backend: 'worker' | 'main'): void {
+    this.totalInferenceMs += inference.inferenceMs;
+    this.inferenceCount++;
+    if (this.previousFrameMs !== undefined) {
+      const instantaneousFps = 1000 / Math.max(1, timestampMs - this.previousFrameMs);
+      this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
+    }
+    this.previousFrameMs = timestampMs;
+    this.options.onFrame({
+      ...inference, timestampMs, poseFps: this.poseFps,
+      averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
+      backend, fallbackReason: this.fallbackReason,
+    });
+  }
+
+  private failInference(error: unknown): void {
+    this.pause();
+    this.options.onError?.(new PoseEstimatorError('inference', { cause: error }));
+  }
+
+  private inferOnMain(landmarker: PoseLandmarkerLike, video: HTMLVideoElement, timestampMs: number): void {
+    try {
+      const startedMs = this.now();
+      const result = landmarker.detectForVideo(video, this.modelTimestamp(timestampMs));
+      try {
+        const completedAtMs = this.now();
+        const inferenceMs = Math.max(0, completedAtMs - startedMs);
+        recordInferencePerformance(this, { inferenceMs, completedAtMs, backend: 'main', fallbackReason: this.fallbackReason });
+        const mask = this.outputSegmentationMasks ? result.segmentationMasks?.[0] : undefined;
+        this.emitFrame({
+          landmarks: result.landmarks[0], personMask: mask ? personMask(mask) : undefined, inferenceMs,
+          imageWidth: video.videoWidth, imageHeight: video.videoHeight,
+        }, timestampMs, 'main');
+      } finally {
+        result.close?.();
+      }
+    } catch (error) {
+      this.failInference(error);
+    }
+  }
+
+  private async inferWithWorker(worker: PoseWorkerClient, video: HTMLVideoElement, timestampMs: number): Promise<void> {
+    this.workerBusy = true;
+    const generation = this.startGeneration;
+    const visibilityGeneration = this.visibilityGeneration;
+    const isCurrent = () => this.running && generation === this.startGeneration
+      && visibilityGeneration === this.visibilityGeneration && this.worker === worker && !globalThis.document?.hidden;
+    let inference: PoseInference;
+    try {
+      const bitmap = await captureBitmap(this.options.createBitmap ?? createImageBitmap, video);
+      if (!isCurrent() || this.now() - timestampMs >= POSE_CONFIG.maxDataAgeMs) {
+        bitmap.close();
+        return;
+      }
+      inference = await worker.detect(bitmap, this.modelTimestamp(timestampMs));
+    } catch {
+      if (this.worker === worker && !this.destroyed) this.fallbackToMain(worker);
+      return;
+    } finally {
+      this.workerBusy = false;
+    }
+    if (!isCurrent()) return;
+    const completedAtMs = this.now();
+    recordInferencePerformance(this, { inferenceMs: inference.inferenceMs, completedAtMs, backend: 'worker' });
+    if (completedAtMs - timestampMs >= POSE_CONFIG.maxDataAgeMs) return;
+    try {
+      this.emitFrame(inference, timestampMs, 'worker');
+    } catch (error) {
+      this.failInference(error);
+    }
+  }
+
+  private fallbackToMain(worker: PoseWorkerClient): void {
+    worker.close();
+    this.worker = undefined;
+    this.fallbackReason = 'runtime';
+    this.previousFrameMs = undefined;
+    this.poseFps = this.totalInferenceMs = this.inferenceCount = 0;
+    clearInferencePerformance(this);
+    void this.initialize().catch(error => {
+      if (!this.destroyed) this.failInference(error);
+    });
+  }
 }

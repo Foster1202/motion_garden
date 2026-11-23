@@ -36,6 +36,8 @@ npm run preview
 
 在首頁「設置」勾選「低效能模式」並儲存，下次開局套用。此選項預設關閉。開啟後，相機優先請求 320×240，姿勢推論約 10 FPS，背景處理暫停，3D 畫布降低解像度及更新頻率。可獨立勾選「顯示效能數據」比較兩種模式。Raspberry Pi 4GB／8GB 和 AMD GX-215JJ Windows 的部署、比較方法及驗證範圍見 [低效能模式部署與測試](docs/low-performance-mode.md)。
 
+「設置」的「鏡頭診斷及選擇鏡頭」會開啟獨立頁面，可測試原生預覽、比較解像度與幀率，並為遊戲選擇 USB 相機。Windows 更新指令與卡頓 A/B 方法見 [Windows USB 相機卡頓診斷](docs/windows-camera-stutter.md)。
+
 ## 輸入模式
 
 首頁「開始遊戲」→「拔蘿蔔」→ 選擇模式。鍵盤直接開始。鏡頭先等候人物入鏡，再自動進行自然站立及舒服淺屈膝設定。
@@ -82,20 +84,20 @@ Playwright 的鏡頭流程使用虛擬相機及合成關鍵點。真人體感驗
 
 鏡頭影像只會喺裝置上即時處理，不會上傳或儲存。沒有錄影、影像截圖功能、landmarks history、長期個人檔案、帳戶、後端或資料庫。個人膝角或大腿動作基準與 MotionReference 只保留於當次鏡頭 session，切換輸入或離開時清除。手動設置會儲存在本機瀏覽器。只保留當前／平滑處理所需的短期 runtime 資料及 FPS、延遲等數值，debug 不會把 landmark array 寫入 console。
 
-離開場景、切換到鍵盤或啟動失敗時停止所有 MediaStream tracks、取消推理 RAF、關閉模型及移除 preview。即使模型 teardown 發生異常也會釋放鏡頭。Pause 保留已授權 stream 供 preview 使用，但停止推理與遊戲輸入；resume 清除舊姿勢，重新確認後才繼續。完成畫面停止推理；重玩會重新選擇輸入。
+離開場景、切換到鍵盤或啟動失敗時停止 MediaStream tracks、取消推論排程、釋放 Worker 或主執行緒模型及預覽。暫停保留已授權 stream，隱藏預覽並停止接受姿勢；恢復後重新確認新姿勢。完成畫面停止推論，重玩會重新選擇輸入。
 
 ## MediaPipe 與模型
 
 使用官方 **`@mediapipe/tasks-vision@1.0.1`**，固定版本與 package-lock。`FilesetResolver`／`PoseLandmarker` 在選擇鏡頭時才 lazy import。
 
 - `runningMode: VIDEO`，`numPoses: 1`，CPU delegate。
-- Detection／presence／tracking confidence 均為 **0.55**。同一次推理會輸出人物 segmentation mask。Camera 小畫面及 Berry Camera 預覽共用此遮罩。首頁「設置」可獨立開啟身體關鍵點及背景處理，背景效果可選模糊或灰色，兩項預設關閉。遮罩只供顯示，動作判定仍只使用人體 landmarks。
+- Detection／presence／tracking confidence 均為 **0.55**。標準模式開啟背景處理時會輸出人物遮罩。首頁「設置」可獨立開啟身體關鍵點及背景處理，背景效果可選模糊或灰色，兩項預設關閉。動作判定只使用人體 landmarks。
 - 官方 **Pose Landmarker Lite float16 v1**：`public/mediapipe/models/pose_landmarker_lite.task`。
 - Package WASM 位於 `public/mediapipe/wasm/`，依 BASE_URL 載入；runtime 不使用 CDN 或外部模型網址。
 - 模型來源：[Google 官方模型](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task)。SHA256：`59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`。
 - API 實作依據：[Google 官方 Web guide](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/web_js)。
 
-推理在獨立 requestAnimationFrame loop 中，最高 **25 FPS**，只處理新 video frame。主執行緒的同步模型呼叫會佔用時間；慢裝置自然會降低實際 inference FPS，不降低 Phaser 的 1600×900 logical resolution。Preview 與 debug 顯示實際 Pose FPS、單幀／平均 inference ms；實際真人性能須另測。
+推論優先在 Web Worker 進行，標準模式最高 **25 FPS**，低效能模式約 **10 FPS**。Worker 忙碌時略過影格，下一次取最新影格，過期結果不送入遊戲。瀏覽器無法使用 Worker 時切回支援的主執行緒路徑。預設相機小畫面直接顯示原生 video，效能面板分開量度 Video、Pose、Phaser、3D FPS 及推論 P95。
 
 ## 姿勢訊號
 

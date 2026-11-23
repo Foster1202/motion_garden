@@ -36,6 +36,8 @@ export class PerformancePanel {
     this.windowStarted = undefined;
     this.renderedFrames = 0;
     setPerformanceMonitoring(this.enabled && !document.hidden);
+    delete this.element.dataset.poseBackend;
+    delete this.element.dataset.videoFps;
     this.element.textContent = this.enabled ? `${this.mode}模式 · 正在量度…` : '';
   };
 
@@ -44,24 +46,30 @@ export class PerformancePanel {
     const now = performance.now();
     if (this.windowStarted === undefined) {
       this.windowStarted = now;
-      readPerformanceWindow();
+      readPerformanceWindow(1000);
       return;
     }
     this.renderedFrames++;
     const elapsed = now - this.windowStarted;
     if (elapsed < 1000) return;
-    const { pose, threeFrames } = readPerformanceWindow();
+    const { pose, ai, camera, thread, threeFrames } = readPerformanceWindow(elapsed);
     const fps = (frames: number) => (frames * 1000 / elapsed).toFixed(1);
+    const metric = (value: number | undefined) => value === undefined ? '—' : value.toFixed(1);
     const freshPose = pose && now - pose.timestampMs <= POSE_CONFIG.maxDataAgeMs ? pose : undefined;
-    const inference = freshPose
-      ? `${freshPose.inferenceMs.toFixed(1)} ms · 平均 ${(freshPose.averageInferenceMs ?? freshPose.inferenceMs).toFixed(1)} ms`
-      : '—';
-    const camera = pose?.imageWidth && pose.imageHeight ? `${pose.imageWidth}×${pose.imageHeight}` : '—';
+    const latest = ai?.inferenceMs ?? freshPose?.inferenceMs;
+    const resolution = camera?.width && camera.height ? `${camera.width}×${camera.height}` : '—';
+    if (ai) this.element.dataset.poseBackend = ai.backend;
+    else delete this.element.dataset.poseBackend;
+    if (camera?.presentedFps !== undefined) this.element.dataset.videoFps = camera.presentedFps.toFixed(1);
+    else delete this.element.dataset.videoFps;
     const text = [
-      `${this.mode}模式 · 相機 ${camera}`,
-      `推論 ${inference}`,
-      `Pose ${freshPose?.poseFps ? freshPose.poseFps.toFixed(1) : '—'} FPS`,
+      `${this.mode}模式 · 相機 ${resolution} · 協商 ${metric(camera?.trackFps)} FPS`,
+      `Video ${metric(camera?.presentedFps)} FPS · 解碼 P95 ${metric(camera?.decodeP95Ms)} ms`,
+      `推論 ${metric(latest)} ms · P95 ${metric(ai?.p95Ms)} ms`,
+      `Pose ${metric(freshPose?.poseFps || undefined)} FPS · AI ${metric(ai?.completedFps)} FPS`
+        + (ai ? ` · ${ai.backend === 'worker' ? 'Worker' : '主線程'}${ai.fallbackReason ? ` (${ai.fallbackReason})` : ''}` : ''),
       `Phaser ${fps(this.renderedFrames)} FPS · 3D ${threeFrames ? fps(threeFrames) : '—'} FPS`,
+      `長任務 ${thread?.longTasks ?? '—'} · RAF 停頓 ${thread?.rafStalls ?? '—'} · 最長 ${metric(thread?.maxRafGapMs)} ms`,
     ].join('\n');
     if (this.element.textContent !== text) this.element.textContent = text;
     this.windowStarted = now;

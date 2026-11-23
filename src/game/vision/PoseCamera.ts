@@ -1,10 +1,14 @@
+import { attachCameraPerformance } from '../performance/performanceMetrics';
+import { getCameraPreferences, type CameraPreferences, type CameraProfile } from './cameraPreferences';
+
 export type PoseCameraErrorCode =
   | 'permission-denied' | 'no-camera' | 'camera-busy' | 'insecure-context'
-  | 'unsupported' | 'cancelled' | 'camera-error';
+  | 'unsupported' | 'cancelled' | 'camera-error' | 'selected-camera-unavailable';
 
 const CAMERA_MESSAGES: Record<PoseCameraErrorCode, string> = {
   'permission-denied': '未獲相機權限，請允許使用相機，或改用鍵盤模式。',
   'no-camera': '找不到相機，請連接相機，或改用鍵盤模式。',
+  'selected-camera-unavailable': '找不到所選相機。請重新接駁，或在「相機診斷」選另一部相機。',
   'camera-busy': '相機可能正被其他程式使用，請關閉該程式後重試。',
   'insecure-context': '相機模式需要 HTTPS 或 localhost，請改用鍵盤模式。',
   unsupported: '這個瀏覽器不支援相機模式，請改用鍵盤模式。',
@@ -37,16 +41,29 @@ export interface PoseCameraOptions {
   isSecureContext?: boolean;
   onEnded?: () => void;
   lowPerformanceMode?: boolean;
+  preferences?: CameraPreferences;
 }
+
+type ResolvedProfile = Exclude<CameraProfile, 'auto'>;
+
+const VIDEO_PROFILES: Record<ResolvedProfile, MediaTrackConstraints> = {
+  browser: {},
+  low: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 } },
+  vga: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+  wide: { width: { ideal: 640 }, height: { ideal: 360 } },
+};
 
 export class PoseCamera {
   readonly video: HTMLVideoElement;
   private readonly mediaDevices: Pick<MediaDevices, 'getUserMedia'> | undefined;
   private readonly secure: boolean;
   private readonly onEnded?: () => void;
-  private readonly lowPerformanceMode: boolean;
+  private readonly preferences: CameraPreferences;
+  private readonly requestedProfile: ResolvedProfile;
+  private activeProfile?: ResolvedProfile;
   private stream?: MediaStream;
   private pending?: Promise<HTMLVideoElement>;
+  private detachPerformance?: () => void;
   private generation = 0;
   private destroyed = false;
 
@@ -58,8 +75,15 @@ export class PoseCamera {
     this.mediaDevices = options.mediaDevices ?? globalThis.navigator?.mediaDevices;
     this.secure = options.isSecureContext ?? globalThis.isSecureContext;
     this.onEnded = options.onEnded;
-    this.lowPerformanceMode = options.lowPerformanceMode ?? false;
+    this.preferences = options.preferences ?? getCameraPreferences();
+    this.requestedProfile = this.preferences.profile === 'auto'
+      ? options.lowPerformanceMode ? 'low' : 'wide'
+      : this.preferences.profile;
   }
+
+  get resolvedProfile(): ResolvedProfile { return this.activeProfile ?? this.requestedProfile; }
+  get settings(): MediaTrackSettings | undefined { return this.stream?.getVideoTracks()[0]?.getSettings?.(); }
+  get capabilities(): MediaTrackCapabilities | undefined { return this.stream?.getVideoTracks()[0]?.getCapabilities?.(); }
 
   start(): Promise<HTMLVideoElement> {
     if (this.destroyed) return Promise.reject(new PoseCameraError('cancelled'));
@@ -91,26 +115,44 @@ export class PoseCamera {
     if (!this.mediaDevices?.getUserMedia) throw new PoseCameraError('unsupported');
     let acquired: MediaStream | undefined;
     try {
-      acquired = await this.mediaDevices.getUserMedia({
-        audio: false,
-        video: this.lowPerformanceMode
-          ? { facingMode: { ideal: 'user' }, width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 } }
-          : { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 360 } },
-      });
+      let profile = this.requestedProfile;
+      try {
+        acquired = await this.mediaDevices.getUserMedia(this.constraints(profile));
+      } catch (error) {
+        if (generation !== this.generation) throw new PoseCameraError('cancelled');
+        if (profile === 'browser' || !isProfileConstraintFailure(error)) throw error;
+        profile = 'browser';
+        acquired = await this.mediaDevices.getUserMedia(this.constraints(profile));
+      }
       if (generation !== this.generation || this.destroyed) {
         for (const track of acquired.getTracks()) track.stop();
         throw new PoseCameraError('cancelled');
       }
       this.stream = acquired;
+      this.activeProfile = profile;
       for (const track of acquired.getVideoTracks()) track.addEventListener('ended', this.handleEnded);
       this.video.srcObject = acquired;
+      this.detachPerformance = attachCameraPerformance(this.video);
       await this.video.play();
       if (generation !== this.generation || this.destroyed) throw new PoseCameraError('cancelled');
       return this.video;
     } catch (error) {
-      if (this.stream === acquired) this.releaseStream();
-      throw cameraError(error);
+      if (acquired && this.stream === acquired) this.releaseStream();
+      if (generation !== this.generation) throw new PoseCameraError('cancelled');
+      const failure = cameraError(error);
+      if (this.preferences.deviceId && failure.code === 'no-camera') {
+        throw new PoseCameraError('selected-camera-unavailable', { cause: error });
+      }
+      throw failure;
     }
+  }
+
+  private constraints(profile: ResolvedProfile): MediaStreamConstraints {
+    const { deviceId } = this.preferences;
+    const source = deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'user' } };
+    return { audio: false, video: profile === 'browser'
+      ? deviceId ? source : true
+      : { ...source, ...VIDEO_PROFILES[profile] } };
   }
 
   private readonly handleEnded = (): void => {
@@ -121,6 +163,9 @@ export class PoseCamera {
   private releaseStream(): void {
     const stream = this.stream;
     this.stream = undefined;
+    this.activeProfile = undefined;
+    this.detachPerformance?.();
+    this.detachPerformance = undefined;
     if (stream) {
       for (const track of stream.getTracks()) {
         track.removeEventListener('ended', this.handleEnded);
@@ -130,4 +175,9 @@ export class PoseCamera {
     this.video.pause();
     this.video.srcObject = null;
   }
+}
+
+function isProfileConstraintFailure(error: unknown): boolean {
+  return Boolean(error && typeof error === 'object' && 'name' in error && error.name === 'OverconstrainedError'
+    && (!('constraint' in error) || error.constraint !== 'deviceId'));
 }

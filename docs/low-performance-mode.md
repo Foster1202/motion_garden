@@ -2,6 +2,8 @@
 
 適用於 Raspberry Pi 4GB／8GB 和 AMD GX-215JJ 等較慢的 Windows 電腦。首頁「設置」可獨立開關「低效能模式」和「顯示效能數據」。兩者預設關閉並儲存在當前瀏覽器。畫質和鏡頭設定在下一次開局生效，效能數據會即時顯示。關閉低效能模式可恢復標準解像度和更新頻率，以及之前儲存的背景效果。
 
+兩種模式現均優先使用 Worker 推論和原生相機預覽。最新的部署方式及 Windows 比較方法見 [Windows USB 相機卡頓診斷](windows-camera-stutter.md)。下方舊版量測保留作歷史對照。
+
 ## 瓶頸與改動
 
 | 路徑 | 原有成本 | 低效能模式 |
@@ -18,11 +20,11 @@ CPU/GPU 佔用、卡頓和輸入延遲需要在實機量度。更小的相機畫
 
 低效能模式以實際取樣間隔調整完整膝角與部分追蹤的大腿訊號平滑係數。標準模式維持原有逐幀係數。姿勢確認仍按時間並要求有效新影格，Carrot 的預設屈膝及站立保持分別維持 650 ms 和 500 ms，失追期間暫停動作進度。250 ms 的資料過期及間隔保護維持原值。以 10 FPS 取 30 個不同影格時，站立和屈膝取樣各約需 3 秒，另加指引及穩定確認。很短的動作可能落在兩次取樣之間。若低模式下舒適淺屈膝頻繁漏判，記錄鏡頭構圖與實際 Pose FPS，並用同一組動作和站位比較標準模式。
 
-### Worker 可行性
+### 原有 Worker 可行性實驗
 
-本分支先進行獨立實驗。釘選的 MediaPipe Tasks Vision 1.0.1 使用本地模組 WASM 及 Lite 模型，在 macOS arm64 的 Chrome 158.0.8127.36 headless 成功初始化。主執行緒用 `createImageBitmap(video)` 把 320×240 虛擬相機影格逐一轉移給 module Worker，Worker 使用 `FilesetResolver.forVisionTasks(wasmRoot, true)`、CPU/VIDEO 模式，以及單調時間戳呼叫 `detectForVideo()`，用完釋放 bitmap，最後關閉模型。
+加入正式 Worker 前曾進行獨立實驗。釘選的 MediaPipe Tasks Vision 1.0.1 使用本地模組 WASM 及 Lite 模型，在 macOS arm64 的 Chrome 158.0.8127.36 headless 成功初始化。主執行緒用 `createImageBitmap(video)` 把 320×240 虛擬相機影格逐一轉移給 module Worker，Worker 使用 `FilesetResolver.forVisionTasks(wasmRoot, true)`、CPU/VIDEO 模式，以及單調時間戳呼叫 `detectForVideo()`，用完釋放 bitmap，最後關閉模型。
 
-模型約 384 ms 初始化。11 次推論中首幀約 118 ms，後 10 幀推論中位數 16.1 ms，建立 bitmap 約 0.1 ms，含推論的來回傳送中位數約 16.4 ms。虛擬畫面無人物，這組數字只證明同版本載入和傳幀可行。正式版在主執行緒限頻。模組載入路徑使用 SIMD WASM，Worker 的 OffscreenCanvas/WebGL2 和影格轉移仍需在目標瀏覽器驗證。若日後採用 Worker，需測試只有一個在途影格、排隊過期影格丟棄、暫停／退出釋放及載入／運行失敗時切回主執行緒。 [Google Web Pose Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker?tab=Web) · [Google Pose Landmarker Worker 範例](https://github.com/google-ai-edge/mediapipe-samples-web/blob/main/src/workers/pose-landmarker.worker.ts)
+模型約 384 ms 初始化。11 次推論中首幀約 118 ms，後 10 幀推論中位數 16.1 ms，建立 bitmap 約 0.1 ms，含推論的來回傳送中位數約 16.4 ms。虛擬畫面無人物，這組數字只證明同版本載入和傳幀可行。模組載入路徑使用 SIMD WASM。Worker 的 OffscreenCanvas/WebGL2 和影格轉移仍需在目標瀏覽器驗證。 [Google Web Pose Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker?tab=Web) · [Google Pose Landmarker Worker 範例](https://github.com/google-ai-edge/mediapipe-samples-web/blob/main/src/workers/pose-landmarker.worker.ts)
 
 ## 部署
 
@@ -30,7 +32,7 @@ CPU/GPU 佔用、卡頓和輸入延遲需要在實機量度。更小的相機畫
 2. 用 Node.js 22.12 或以上在開發電腦建置；也可以在已有適用 Node.js 和 npm 的 Pi 上使用相同指令。資產同步會使用倉庫內已匯出的模型。
 
    ```sh
-   git clone --branch low_performance_mode --single-branch https://github.com/Foster1202/motion_garden.git
+   git clone https://github.com/Foster1202/motion_garden.git
    cd motion_garden
    npm ci
    npm run sync:assets

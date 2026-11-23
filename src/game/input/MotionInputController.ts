@@ -120,14 +120,14 @@ export class MotionInputController implements MotionInput {
     this.paused = true;
     this.intro.setPaused(true);
     this.active?.pause?.();
-    this.preview?.clear();
+    this.preview?.setPaused(true);
     this.active?.reset();
     this.calibration?.pause(performance.now());
   }
   resume() {
     this.paused = false;
     this.intro.setPaused(false);
-    this.preview?.clear();
+    this.preview?.setPaused(false);
     this.active?.reset();
     this.active?.resume?.();
     this.calibration?.resume(performance.now());
@@ -189,6 +189,21 @@ export class MotionInputController implements MotionInput {
     this.cameraButton.disabled = true;
     this.setupMessage('體感模式', '正在準備鏡頭…');
     const options: MediapipeInputOptions = {
+      onCameraReady: video => {
+        if (generation !== this.generation || this.destroyed) return;
+        this.preview = new PoseDebugOverlay(this.host, video, { paused: this.paused });
+        this.host.classList.add('using-camera');
+        this.host.classList.remove('input-selecting', 'calibrating');
+        this.panel.hidden = true;
+        this.controls.hidden = false;
+        this.controls.querySelector<HTMLInputElement>('input')!.checked = !this.preview.root.hidden;
+        this.controls.querySelector<HTMLElement>('.motion-mode-label')!.textContent = '體感模式';
+        this.controls.querySelector<HTMLElement>('.preview-toggle')!.hidden = false;
+        this.controls.querySelector<HTMLElement>('[data-input-action="recalibrate"]')!.hidden = true;
+        this.setKeyboardHints(false);
+        this.getStatus();
+        this.focusPause();
+      },
       onFrame: (frame, pose) => {
         if (generation !== this.generation || this.destroyed) return;
         this.preview?.update(frame, pose);
@@ -207,23 +222,13 @@ export class MotionInputController implements MotionInput {
     this.active = input;
     if (this.paused) input.pause();
     try {
-      const video = await input.start();
+      await input.start();
       if (this.destroyed || generation !== this.generation) { input.destroy(); return; }
       this.loading = false;
-      this.preview = new PoseDebugOverlay(this.host, video);
-      this.controls.querySelector<HTMLInputElement>('input')!.checked = !this.preview.root.hidden;
-      this.host.classList.add('using-camera');
-      this.panel.hidden = true;
-      this.controls.hidden = false;
-      this.controls.querySelector<HTMLElement>('.motion-mode-label')!.textContent = '體感模式';
-      this.controls.querySelector<HTMLElement>('.preview-toggle')!.hidden = false;
       this.controls.querySelector<HTMLElement>('[data-input-action="recalibrate"]')!.hidden = false;
-      this.setKeyboardHints(false);
       input.setMotionRange(manualMotionRange());
       this.calibration = new CalibrationController();
-      this.host.classList.remove('input-selecting', 'calibrating');
       this.getStatus();
-      this.focusPause();
     } catch (error) {
       if (generation === this.generation && !this.destroyed) this.cameraFailed(error);
     }
@@ -299,7 +304,8 @@ export class MotionInputController implements MotionInput {
     reference.hidden = !(status.mode === 'camera' && status.calibrationReady
       && this.capture.onReferenceReset && this.capture.isContinuousPreview?.());
     reference.disabled = this.paused;
-    const message = this.waitingForStanding ? '動作設定完成，請自然企直、雙手放鬆，阿兔會自動跟隨。'
+    const message = this.loading ? '正在準備動作偵測…'
+      : this.waitingForStanding ? '動作設定完成，請自然企直、雙手放鬆，阿兔會自動跟隨。'
       : this.cameraPlaying && !status.suspended && this.capture.isContinuousPreview?.()
       ? this.capture.getMotionHint?.() ?? '即時動作預覽，按自己舒適幅度活動。' : status.message;
     if (message !== this.lastMessage) {

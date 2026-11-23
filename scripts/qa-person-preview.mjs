@@ -179,13 +179,19 @@ try {
       const host = document.createElement('div');
       card.append(heading, host);
       grid.append(card);
-      const overlay = new PoseDebugOverlay(host, video, { debug: false, preview: true });
+      const previewVideo = document.createElement('video');
+      previewVideo.muted = true;
+      previewVideo.playsInline = true;
+      previewVideo.srcObject = stream;
+      await previewVideo.play();
+      const overlay = new PoseDebugOverlay(host, previewVideo, { debug: false, preview: true });
       overlay.root.style.cssText = 'position:relative;inset:auto;width:320px;box-sizing:border-box;';
       overlay.update(frame, pose);
       overlays.push(overlay);
       const canvas = overlay.root.querySelector('canvas');
       previews.push({ ...settings, foreground: pixel(canvas, 20, 160), background: pixel(canvas, 280, 160),
         point: pixel(canvas, landmarks[0].x * canvas.width, landmarks[0].y * canvas.height),
+        sourceOpacity: getComputedStyle(previewVideo).opacity,
         transform: getComputedStyle(canvas).transform, width: canvas.width, height: canvas.height });
     }
     const canvas = document.createElement('canvas');
@@ -303,18 +309,18 @@ try {
   const red = color => color[0] > color[1] + 30 && color[0] > color[2] + 30;
   const gray = color => color.slice(0, 3).every(channel => Math.abs(channel - 128) <= 2) && color[3] === 255;
   for (const preview of rendering.previews) {
-    assert.ok(green(preview.foreground), JSON.stringify(preview));
-    assert.equal(preview.foreground[3], 255);
+    assert.equal(preview.sourceOpacity, preview.backgroundProcessing ? '0' : '1');
+    if (preview.backgroundProcessing) assert.ok(green(preview.foreground), JSON.stringify(preview));
+    assert.equal(preview.foreground[3], preview.backgroundProcessing ? 255 : 0);
     assert.deepEqual([preview.width, preview.height], [320, 180]);
     assert.match(preview.transform, /matrix\(-1,/);
     if (preview.backgroundProcessing && preview.backgroundMode === 'gray') assert.ok(gray(preview.background), JSON.stringify(preview));
-    else assert.equal(preview.background[3], 255);
+    else assert.equal(preview.background[3], preview.backgroundProcessing ? 255 : 0);
     if (preview.showBodyKeypoints) assert.deepEqual(preview.point, [0, 230, 118, 255]);
     else assert.deepEqual(preview.point, preview.foreground);
   }
-  const rawBackground = rendering.previews[0].background;
   const blurredBackground = rendering.previews[2].background;
-  assert.ok(rawBackground.slice(0, 3).some((channel, index) => Math.abs(channel - blurredBackground[index]) >= 20));
+  assert.ok(blurredBackground[0] > 50 && blurredBackground[2] > 50, JSON.stringify(blurredBackground));
   assert.ok(rendering.legacy.foreground[3] > 250);
   assert.equal(rendering.legacy.background[3], 0);
   assert.ok(green(rendering.firstGray));

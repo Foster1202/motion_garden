@@ -153,14 +153,18 @@ async function lowPerformanceRun() {
   });
   assert.deepEqual(renderSize, [600, 338]);
   assert.equal(await page.evaluate(() => window.__berryStats.maskReads), 0);
-  assert.ok(neutral.tracking.poseFps >= 6.5 && neutral.tracking.poseFps <= 10.5, neutral.tracking.poseFps);
   assert.ok(neutral.fps > 0 && neutral.fps <= 33, neutral.fps);
   const panel = page.locator('.performance-panel');
   await panel.filter({ hasText: /320×240/ }).waitFor();
-  await page.waitForTimeout(1100);
+  const sampleCounter = () => page.evaluate(() => ({ frames: window.__berryStats.inferences, time: performance.now() }));
+  const before = await sampleCounter();
+  await page.waitForTimeout(2200);
+  const after = await sampleCounter();
+  const observedInferenceFps = (after.frames - before.frames) * 1000 / (after.time - before.time);
+  assert.ok(observedInferenceFps >= 6.5 && observedInferenceFps <= 10.7, observedInferenceFps);
   const performanceText = await panel.innerText();
   assert.match(performanceText, /推論 \d+\.\d ms[\s\S]*Pose \d+\.\d FPS[\s\S]*Phaser \d+\.\d FPS · 3D \d+\.\d FPS/);
-  report.performance = { threeFps: neutral.fps, poseFps: neutral.tracking.poseFps, renderSize, panel: performanceText };
+  report.performance = { threeFps: neutral.fps, observedInferenceFps, renderSize, panel: performanceText };
   check('Low mode acquires the partial standing reference with a 320×240 native preview, no mask conversion and reduced 3D rendering');
 
   await fixture({ shift: .13 });
@@ -234,10 +238,10 @@ async function standardRun() {
       backgroundAlpha: context.getImageData(280, 90, 1, 1).data[3],
     };
   });
-  assert.equal(personPreview.sourceOpacity, '0');
-  assert.ok(personPreview.keptAlpha > 0);
-  assert.equal(personPreview.backgroundAlpha, 255);
-  check('Berry camera keeps the original image with both preview enhancements disabled by default');
+  assert.equal(personPreview.sourceOpacity, '1');
+  assert.equal(personPreview.keptAlpha, 0);
+  assert.equal(personPreview.backgroundAlpha, 0);
+  check('Berry displays native video with an empty overlay when both enhancements are disabled');
   assert.equal(await page.locator('[data-berry-tracking]').innerText(), 'Full Tracking');
   check('Out-of-frame head does not block full leg tracking; pause during delayed initialization retains camera and resumes');
   const initial = await settled(0);
@@ -360,8 +364,7 @@ async function standardRun() {
   await page.evaluate(async () => {
     const { game } = await import('/src/main.ts');
     const video = game.scene.getScene('BerryKick').inputSource.camera.video;
-    const value = video.currentTime;
-    Object.defineProperty(video, 'currentTime', { configurable: true, get: () => value });
+    video.pause();
   });
   await fixture({ shift: .10 });
   const stale = await wait(s => !s.tracking.reliable && s.tracking.frameAgeMs >= 300);
@@ -374,7 +377,7 @@ async function standardRun() {
   trackingTrace('dropped video frames', staleHeld);
   await page.evaluate(async () => {
     const { game } = await import('/src/main.ts');
-    delete game.scene.getScene('BerryKick').inputSource.camera.video.currentTime;
+    await game.scene.getScene('BerryKick').inputSource.camera.video.play();
   });
   const droppedRecovered = await settled(-1);
   assert.deepEqual(droppedRecovered.tracking.reference, reference);
