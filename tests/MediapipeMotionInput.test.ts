@@ -58,6 +58,36 @@ test('pose input is inactive until explicit start and maps only stable fresh pos
   f.input.destroy();
 });
 
+test('raw preview receives the camera before model initialization completes', async () => {
+  const video = {} as HTMLVideoElement;
+  const order: string[] = [];
+  let completeModel!: () => void;
+  const input = new MediapipeMotionInput({
+    onCameraReady: actualVideo => {
+      assert.equal(actualVideo, video);
+      order.push('preview');
+    },
+    createCamera: () => ({ start: async () => video, destroy: () => undefined }),
+    createEstimator: () => ({
+      initialize: () => new Promise<void>(resolve => {
+        order.push('loading model');
+        completeModel = resolve;
+      }),
+      start: async () => { order.push('pose started'); },
+      pause: () => undefined, resume: () => undefined, destroy: () => undefined,
+    }),
+  });
+  const started = input.start();
+  await Promise.resolve();
+  assert.deepEqual(order, ['preview', 'loading model']);
+  assert.equal(input.getStatus().ready, false);
+  completeModel();
+  await started;
+  assert.deepEqual(order, ['preview', 'loading model', 'pose started']);
+  assert.equal(input.getStatus().ready, true);
+  input.destroy();
+});
+
 test('camera mapping preserves hold durations and freezes progress during loss and reacquisition', async () => {
   const f = fixture();
   const round = new CarrotRound();

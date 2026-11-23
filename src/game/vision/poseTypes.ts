@@ -24,6 +24,8 @@ export interface PoseFrame {
   poseFps: number;
   imageWidth?: number;
   imageHeight?: number;
+  backend?: 'worker' | 'main';
+  fallbackReason?: string;
 }
 
 export interface PoseSnapshot {

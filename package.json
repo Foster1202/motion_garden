@@ -30,6 +30,7 @@
     "qa:apple": "node scripts/qa-apple-harvest.mjs",
     "qa:desktop-layout": "node scripts/qa-desktop-layout.mjs",
     "qa:low-performance": "node scripts/qa-low-performance.mjs",
+    "qa:camera-stutter": "node scripts/qa-camera-stutter.mjs",
     "build:berry-art": "bash model/scripts/build_berry_art.sh"
   },
   "dependencies": {

@@ -10,6 +10,7 @@ interface PersonPreviewCanvasOptions {
   width?: number;
   height?: number;
   nativeVideo?: boolean;
+  paused?: boolean;
 }
 
 // MediaPipe's 33-landmark pose topology, including face, hands and feet.
@@ -39,9 +40,11 @@ export class PersonOnlyRenderer {
   private readonly automaticAspect: boolean;
   private readonly width: number;
   private readonly nativeVideo: boolean;
+  private paused = false;
+  private hasPixels = false;
 
   constructor(private readonly video: HTMLVideoElement, readonly canvas: HTMLCanvasElement,
-    { width = 320, height, nativeVideo = false }: PersonPreviewCanvasOptions = {}) {
+    { width = 320, height, nativeVideo = false, paused = false }: PersonPreviewCanvasOptions = {}) {
     this.width = width;
     this.nativeVideo = nativeVideo;
     this.automaticAspect = height === undefined;
@@ -51,9 +54,9 @@ export class PersonOnlyRenderer {
     const context = canvas.getContext('2d');
     if (!context) throw new Error('未能建立人物預覽畫布。');
     this.context = context;
-    if (nativeVideo) {
-      video.classList.add('camera-preview-native');
-    } else {
+    video.classList.toggle('camera-preview-native', nativeVideo);
+    this.setPaused(paused);
+    if (!nativeVideo) {
       const maskContext = document.createElement('canvas').getContext('2d');
       if (!maskContext) throw new Error('未能建立人物預覽畫布。');
       this.maskContext = maskContext;
@@ -62,6 +65,17 @@ export class PersonOnlyRenderer {
 
   render(frame: PoseFrame, options: PersonPreviewOptions = {}): CanvasRenderingContext2D {
     const { context, canvas, video } = this;
+    if (this.paused) return context;
+    this.clearPixels();
+    if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+      this.resetMask();
+      return context;
+    }
+    const background = this.nativeVideo ? 'none' : (options.background ?? 'transparent');
+    if (background === 'none' && !options.showBodyKeypoints) {
+      this.resetMask();
+      return context;
+    }
     if (this.automaticAspect) {
       const size = this.sizeFor(frame.imageWidth ?? video.videoWidth, frame.imageHeight ?? video.videoHeight);
       if (canvas.width !== size.width || canvas.height !== size.height) {
@@ -70,23 +84,9 @@ export class PersonOnlyRenderer {
         this.resetMask();
       }
     }
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
-      this.resetMask();
-      if (this.nativeVideo) video.classList.remove('camera-preview-active');
-      return context;
-    }
-    if (this.nativeVideo) {
-      video.classList.add('camera-preview-active');
-      if (options.showBodyKeypoints) this.drawKeypoints(frame.landmarks, options.confidenceThreshold ?? .5);
-      return context;
-    }
-    const background = options.background ?? 'transparent';
+    this.hasPixels = true;
     try {
-      if (background === 'none') {
-        this.resetMask();
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      } else {
+      if (background !== 'none') {
         this.drawPerson(frame);
         context.save();
         context.globalCompositeOperation = 'destination-over';
@@ -99,6 +99,8 @@ export class PersonOnlyRenderer {
           context.drawImage(video, -padding, -padding, canvas.width + padding * 2, canvas.height + padding * 2);
         }
         context.restore();
+      } else {
+        this.resetMask();
       }
       if (options.showBodyKeypoints) this.drawKeypoints(frame.landmarks, options.confidenceThreshold ?? .5);
     } catch {
@@ -109,10 +111,21 @@ export class PersonOnlyRenderer {
     return context;
   }
 
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    this.video.classList.toggle('camera-preview-active', this.nativeVideo && !paused);
+    if (paused) this.clear();
+  }
+
   clear(): void {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.clearPixels();
     this.resetMask();
-    if (this.nativeVideo) this.video.classList.remove('camera-preview-active');
+  }
+
+  private clearPixels(): void {
+    if (!this.hasPixels) return;
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.hasPixels = false;
   }
 
   private sizeFor(width: number, height: number): { width: number; height: number } {

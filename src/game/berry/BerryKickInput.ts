@@ -75,11 +75,13 @@ export class BerryKickInput {
       const video = await camera.start();
       if (generation !== this.generation || this.destroyed) return;
       video.className = 'berry-camera-source';
+      video.setAttribute('aria-hidden', 'true');
       const canvas = document.createElement('canvas');
       canvas.className = 'berry-camera';
+      canvas.setAttribute('aria-hidden', 'true');
       host.append(video, canvas);
       this.previewCanvas = canvas;
-      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: lowPerformanceMode });
+      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: !outputSegmentationMasks, paused: this.paused });
       await estimator.initialize();
       if (generation !== this.generation || this.destroyed) return;
       await estimator.start(video);
@@ -132,7 +134,7 @@ export class BerryKickInput {
     this.preview?.clear();
   }
   pause() {
-    this.paused = true; this.keys.clear(); this.estimator?.pause(); this.preview?.clear();
+    this.paused = true; this.keys.clear(); this.estimator?.pause(); this.preview?.setPaused(true);
     clearPosePerformance(this);
     if (this.mode === 'camera') {
       this.stale = true;
@@ -143,7 +145,7 @@ export class BerryKickInput {
     this.paused = false;
     this.sample = { ...this.sample, leftLegExtensionAmount: 0, rightLegExtensionAmount: 0,
       lateralReliable: false, reliable: false };
-    this.preview?.clear(); this.estimator?.resume();
+    this.preview?.setPaused(false); this.estimator?.resume();
   }
   private releaseCamera() {
     this.lastFrame = undefined; this.stale = true; this.poseFps = 0;

@@ -76,7 +76,7 @@ export class AppleHarvestInput {
       const canvas = document.createElement('canvas');
       canvas.className = 'apple-camera';
       canvas.setAttribute('aria-hidden', 'true');
-      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: lowPerformanceMode });
+      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: !outputSegmentationMasks, paused: this.paused });
       host.append(video, canvas);
       const estimator = new PoseEstimator({
         maxFps: lowPerformanceMode ? 10 : undefined,
@@ -156,14 +156,14 @@ export class AppleHarvestInput {
     this.paused = true;
     this.keys.clear();
     this.estimator?.pause();
-    this.preview?.clear();
+    this.preview?.setPaused(true);
     clearPosePerformance(this);
     this.interrupt('waiting-for-frames');
   }
 
   resume(): void {
     this.paused = false;
-    this.preview?.clear();
+    this.preview?.setPaused(false);
     this.estimator?.resume();
   }
 

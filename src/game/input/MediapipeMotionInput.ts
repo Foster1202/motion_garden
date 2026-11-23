@@ -20,6 +20,7 @@ export interface EstimatorDriver {
   destroy(): void;
 }
 export interface MediapipeInputOptions {
+  onCameraReady?: (video: HTMLVideoElement) => void;
   onFrame?: (frame: PoseFrame, pose: PoseSnapshot) => void;
   onError?: (error: Error) => void;
   createCamera?: (options: PoseCameraOptions) => CameraDriver;
@@ -67,6 +68,7 @@ export class MediapipeMotionInput implements MotionInput {
     try {
       const video = await this.camera.start();
       if (this.destroyed) throw new Error('鏡頭啟動已取消。');
+      this.options.onCameraReady?.(video);
       await this.estimator.initialize();
       if (this.destroyed) throw new Error('鏡頭啟動已取消。');
       this.started = true;
