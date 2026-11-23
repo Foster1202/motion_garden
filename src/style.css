@@ -68,6 +68,22 @@ button:focus-visible {
   pointer-events:auto;
 }
 
+.performance-panel {
+  position:absolute;
+  z-index:3;
+  bottom:9%;
+  left:2%;
+  max-width:96%;
+  padding:.45em .65em;
+  border-radius:8px;
+  background:#1a3329ed;
+  color:#fffbed;
+  font:clamp(10px,1.05cqw,16px)/1.35 system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+  white-space:pre-line;
+  pointer-events:none;
+}
+
 .home-cover-media {
   position:absolute;
   inset:0;
@@ -965,6 +981,7 @@ kbd {
   transform:scaleX(-1);
 }
 .pose-video { opacity:0; pointer-events:none; }
+.camera-preview-native.camera-preview-active { opacity:1; }
 
 .pose-preview-label,
 .pose-metrics {
@@ -1187,5 +1204,6 @@ kbd {
 .berry-tracking-status { right:16.5%; bottom:9%; font-size:clamp(10px,1cqw,16px); padding:.35em .65em; }
 .berry-tracking-debug { position:absolute; top:23%; right:2%; max-width:56%; padding:.65em .9em; background:#fffbeded; color:#294d3a; border-radius:.6em; font:clamp(9px, 1cqw, 15px)/1.4 monospace; white-space:pre-wrap; pointer-events:none; }
 .berry-camera-source { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.berry-camera-source.camera-preview-native { right:2%; bottom:9%; width:13%; height:auto; border:4px solid #fffbed; border-radius:14px; transform:scaleX(-1); }
 
 .berry-card-image { width:66%; height:66%; object-fit:contain; }

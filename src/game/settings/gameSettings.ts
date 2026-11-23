@@ -15,6 +15,8 @@ export interface GameSettings {
   showBodyKeypoints: boolean;
   backgroundProcessing: boolean;
   backgroundMode: 'blur' | 'gray';
+  lowPerformanceMode: boolean;
+  showPerformanceMetrics: boolean;
   berryDurationSeconds: (typeof C.durationOptions)[number];
   appleDurationSeconds: (typeof APPLE_CONFIG.durationOptions)[number];
   sfxEnabled: boolean;
@@ -25,13 +27,14 @@ export interface GameSettings {
 
 export type NumericGameSetting = Exclude<keyof GameSettings,
   'showBodyKeypoints' | 'backgroundProcessing' | 'backgroundMode' | 'berryDurationSeconds' | 'appleDurationSeconds'
-  | 'sfxEnabled' | 'sfxVolume' | 'voiceEnabled' | 'voiceVolume'>;
+  | 'lowPerformanceMode' | 'showPerformanceMetrics' | 'sfxEnabled' | 'sfxVolume' | 'voiceEnabled' | 'voiceVolume'>;
 
 export const DEFAULT_GAME_SETTINGS: Readonly<GameSettings> = Object.freeze({
   standingAngle: 160, bendingAngle: 150, bendHoldMs: 650, standHoldMs: 500,
   smoothingAlpha: 0.35, debounceMs: 200, confidenceThreshold: 0.5,
   mocapGain: 1, mocapSmoothingAlpha: 0.35, rabbitScale: 1,
   showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
+  lowPerformanceMode: false, showPerformanceMetrics: false,
   berryDurationSeconds: C.defaultDurationSeconds,
   appleDurationSeconds: APPLE_CONFIG.defaultDurationSeconds,
   sfxEnabled: true, sfxVolume: 0.6, voiceEnabled: true, voiceVolume: 0.8,
@@ -59,6 +62,8 @@ export function validateGameSettings(value: unknown): value is GameSettings {
     && typeof input.showBodyKeypoints === 'boolean'
     && typeof input.backgroundProcessing === 'boolean'
     && (input.backgroundMode === 'blur' || input.backgroundMode === 'gray')
+    && typeof input.lowPerformanceMode === 'boolean'
+    && typeof input.showPerformanceMetrics === 'boolean'
     && typeof input.sfxEnabled === 'boolean'
     && typeof input.sfxVolume === 'number' && Number.isFinite(input.sfxVolume)
     && input.sfxVolume >= 0 && input.sfxVolume <= 1
@@ -73,6 +78,7 @@ function supportedSettings(value: GameSettings): GameSettings {
   const numeric = Object.fromEntries(Object.keys(GAME_SETTING_LIMITS).map(key => [key, value[key as NumericGameSetting]])) as Pick<GameSettings, NumericGameSetting>;
   return { ...numeric, showBodyKeypoints: value.showBodyKeypoints,
     backgroundProcessing: value.backgroundProcessing, backgroundMode: value.backgroundMode,
+    lowPerformanceMode: value.lowPerformanceMode, showPerformanceMetrics: value.showPerformanceMetrics,
     berryDurationSeconds: value.berryDurationSeconds, appleDurationSeconds: value.appleDurationSeconds,
     sfxEnabled: value.sfxEnabled, sfxVolume: value.sfxVolume,
     voiceEnabled: value.voiceEnabled, voiceVolume: value.voiceVolume };
@@ -83,6 +89,7 @@ export function getGameSettings(): GameSettings {
     const stored: unknown = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? 'null');
     if (stored && typeof stored === 'object') {
       const settings = { showBodyKeypoints: false, backgroundProcessing: false, backgroundMode: 'blur',
+        lowPerformanceMode: false, showPerformanceMetrics: false,
         berryDurationSeconds: C.defaultDurationSeconds, appleDurationSeconds: APPLE_CONFIG.defaultDurationSeconds,
         sfxEnabled: true, sfxVolume: 0.6,
         voiceEnabled: true, voiceVolume: 0.8, ...stored };

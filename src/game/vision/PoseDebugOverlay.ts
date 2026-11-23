@@ -30,11 +30,11 @@ export class PoseDebugOverlay {
     this.canvas = document.createElement('canvas');
     this.canvas.setAttribute('aria-hidden', 'true');
     media.append(this.canvas);
-    this.personRenderer = new PersonOnlyRenderer(video, this.canvas);
+    this.personRenderer = new PersonOnlyRenderer(video, this.canvas, { nativeVideo: this.settings.lowPerformanceMode });
     this.root.style.setProperty('--pose-preview-aspect', String(this.canvas.width / this.canvas.height));
     this.metrics = this.root.querySelector<HTMLElement>('.pose-metrics')!;
     this.metrics.hidden = !this.debug;
-    if (this.settings.backgroundProcessing) {
+    if (!this.settings.lowPerformanceMode && this.settings.backgroundProcessing) {
       this.root.querySelector('.pose-preview-label')!.textContent = this.settings.backgroundMode === 'gray'
         ? '鏡頭小畫面 · 灰色背景 · 本機處理' : '鏡頭小畫面 · 背景模糊 · 本機處理';
     }
@@ -55,7 +55,7 @@ export class PoseDebugOverlay {
   update(frame: PoseFrame, pose: PoseSnapshot) {
     if (this.root.hidden) return;
     this.personRenderer.render(frame, {
-      background: this.settings.backgroundProcessing ? this.settings.backgroundMode : 'none',
+      background: this.settings.lowPerformanceMode || !this.settings.backgroundProcessing ? 'none' : this.settings.backgroundMode,
       showBodyKeypoints: this.settings.showBodyKeypoints,
       confidenceThreshold: this.settings.confidenceThreshold,
     });

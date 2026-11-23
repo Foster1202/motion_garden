@@ -6,6 +6,7 @@ import { chromium } from 'playwright';
 const url = process.env.QA_URL ?? 'http://127.0.0.1:5173/';
 const output = resolve(process.env.QA_OUTPUT ?? '/tmp/motion-garden-apple-qa');
 const suite = process.env.QA_SUITE ?? 'all';
+const lowPerformanceMode = process.env.QA_LOW_PERFORMANCE === '1';
 assert.ok(['all', 'keyboard', 'camera'].includes(suite), 'QA_SUITE must be all, keyboard, or camera');
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true,
@@ -13,7 +14,8 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true,
 const desktop = { width: 1512, height: 982 };
 const smallDesktop = { width: 640, height: 360 };
 const report = {
-  status: 'RUNNING', url, suite, browser: browser.version(), desktop, smallDesktop,
+  status: 'RUNNING', url, suite, browser: browser.version(), desktop, smallDesktop, lowPerformanceMode,
+  browserPlugin: 'Browser plugin not available; installed Chrome through Playwright',
   keyboard: 'Native Playwright key events. A real 90-second round at Phaser timeScale 1.',
   camera: 'Chrome virtual camera with synthetic MediaPipe Landmarker output. Real stream, scheduling, extraction, retargeting and game rules.',
   humanWebcam: 'NOT VERIFIED',
@@ -373,8 +375,12 @@ async function keyboardRun() {
 }
 
 async function installCameraFixture() {
-  await page.evaluate(async () => {
+  await page.evaluate(async lowPerformanceMode => {
     const { PoseEstimator } = await import('/src/game/vision/PoseEstimator.ts');
+    if (lowPerformanceMode) {
+      const { DEFAULT_GAME_SETTINGS, saveGameSettings } = await import('/src/game/settings/gameSettings.ts');
+      saveGameSettings({ ...DEFAULT_GAME_SETTINGS, lowPerformanceMode, backgroundProcessing: true, showPerformanceMetrics: true });
+    }
     window.__appleCameraFixture = { shift: 0, left: false, right: false, hideLeft: true, hideRight: true };
     window.__appleCameraStats = { requested: 0, models: 0, closed: 0, inferences: 0, streams: [] };
     const stats = window.__appleCameraStats;
@@ -410,7 +416,7 @@ async function installCameraFixture() {
       };
       return initialize.call(this);
     };
-  });
+  }, lowPerformanceMode);
 }
 
 const fixture = patch => page.evaluate(patch => Object.assign(window.__appleCameraFixture, patch), patch);
@@ -444,6 +450,21 @@ async function cameraRun() {
   assert.equal(neutral.input.leftReliable, true);
   assert.equal(neutral.input.rightReliable, false);
   assert.equal(await hud('tracking').innerText(), 'Partial Tracking');
+  if (lowPerformanceMode) {
+    assert.deepEqual(await page.locator('.apple-camera-source').evaluate(video => ({
+      dimensions: [video.videoWidth, video.videoHeight], opacity: getComputedStyle(video).opacity,
+    })), { dimensions: [320, 240], opacity: '1' });
+    assert.deepEqual(neutral.view.renderSize, { width: 560, height: 315 });
+    assert.ok(neutral.input.poseFps >= 6.5 && neutral.input.poseFps <= 10.5, neutral.input.poseFps);
+    const panel = page.locator('.performance-panel');
+    await panel.filter({ hasText: /320×240/ }).waitFor();
+    await page.waitForTimeout(1100);
+    const performanceText = await panel.innerText();
+    const threeFps = Number(performanceText.match(/3D (\d+\.\d) FPS/)?.[1]);
+    assert.ok(threeFps > 0 && threeFps <= 33, performanceText);
+    report.performance = { threeFps, poseFps: neutral.input.poseFps, renderSize: neutral.view.renderSize, panel: performanceText };
+    check('Low mode shows the native 320×240 camera and reduced 3D rendering while retaining the single-wrist reference');
+  }
   await fixture({ hideRight: false });
   await until(value => value.input.trackingMode === 'full');
   check('Out-of-frame head and legs do not block the Apple camera. A consistent visible lowered wrist starts the game');
@@ -481,7 +502,7 @@ async function cameraRun() {
   await until(value => value.state === 'DEPOSITING');
   await fixture({ hideShoulder: true, right: false });
   await until(value => value.input.trackingMode === 'lost');
-  assert.match(await hud('hint').innerText(), /肩膊同腰部/);
+  await hud('hint').filter({ hasText: /肩膊同腰部/ }).waitFor();
   await page.waitForTimeout(550);
   assert.equal((await snapshot()).score, 0);
   await fixture({ hideShoulder: false, right: true });

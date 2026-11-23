@@ -4,11 +4,13 @@ import { chromium } from 'playwright';
 
 const url = process.env.QA_URL ?? 'http://127.0.0.1:5175/';
 const output = process.env.QA_OUTPUT ?? '/tmp/berry-camera-qa';
+const lowPerformanceMode = process.env.QA_LOW_PERFORMANCE === '1';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true,
   args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 const page = await browser.newPage({ viewport: { width: 1512, height: 982 } });
-const report = { status: 'RUNNING', browser: browser.version(),
+const report = { status: 'RUNNING', url, browser: browser.version(), lowPerformanceMode,
+  browserPlugin: 'Browser plugin not available; installed Chrome through Playwright',
   input: 'Virtual webcam and synthetic MediaPipe landmarks; real scheduler, extractor, retargeter, rig, projection and round. NOT human webcam validation.',
   checks: [], errors: [], warnings: [], trackingTrace: [] };
 page.on('pageerror', error => report.errors.push(String(error)));
@@ -61,16 +63,17 @@ const enter = async () => {
     };
   });
 };
-try {
+async function installCameraFixture() {
   const debugUrl = new URL(url);
   debugUrl.searchParams.set('berryTrackingDebug', '1');
   await page.goto(debugUrl.toString());
-  await page.evaluate(async () => {
+  await page.evaluate(async lowPerformanceMode => {
     const { PoseEstimator } = await import('/src/game/vision/PoseEstimator.ts');
-    const { DEFAULT_GAME_SETTINGS, SETTINGS_STORAGE_KEY } = await import('/src/game/settings/gameSettings.ts');
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds: 120 }));
+    const { DEFAULT_GAME_SETTINGS, saveGameSettings } = await import('/src/game/settings/gameSettings.ts');
+    saveGameSettings({ ...DEFAULT_GAME_SETTINGS, berryDurationSeconds: 120, lowPerformanceMode,
+      backgroundProcessing: lowPerformanceMode, showPerformanceMetrics: lowPerformanceMode });
     window.__berryFixture = { left: 0, right: 0, shift: 0, scale: 1, lost: false, delay: 900 };
-    window.__berryStats = { models: 0, closed: 0, requested: 0, inferences: 0, spikes: [], streams: [] };
+    window.__berryStats = { models: 0, closed: 0, requested: 0, inferences: 0, maskReads: 0, spikes: [], streams: [] };
     const getMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = async options => {
       const dimensions = window.__berryFixture.dimensions;
@@ -117,7 +120,10 @@ try {
             return {
               landmarks: [points],
               segmentationMasks: [{ width: 4, height: 2,
-                getAsFloat32Array: () => Float32Array.of(1, 1, 0, 0, 1, 1, 0, 0) }],
+                getAsFloat32Array: () => {
+                  window.__berryStats.maskReads++;
+                  return Float32Array.of(1, 1, 0, 0, 1, 1, 0, 0);
+                } }],
               close() {},
             };
           },
@@ -125,7 +131,82 @@ try {
       };
       return initialize.call(this);
     };
+  }, lowPerformanceMode);
+}
+
+async function lowPerformanceRun() {
+  await fixture({ delay: 0, cropAnkles: true });
+  await enter();
+  await page.locator('[data-action=camera]').click();
+  const neutral = await wait(s => s.active && s.armed.left && s.armed.right && s.fps > 0);
+  assert.ok(neutral.tracking.reference);
+  assert.equal(neutral.tracking.mode, 'partial');
+  assert.equal(neutral.renderMode, '3d');
+  assert.equal(neutral.target, 'left');
+  assert.equal(neutral.score, 0);
+  assert.deepEqual(await page.locator('.berry-camera-source').evaluate(video => ({
+    dimensions: [video.videoWidth, video.videoHeight], opacity: getComputedStyle(video).opacity,
+  })), { dimensions: [320, 240], opacity: '1' });
+  const renderSize = await page.evaluate(async () => {
+    const { renderer } = (await import('/src/main.ts')).game.scene.getScene('BerryKick').view;
+    return [renderer.domElement.width, renderer.domElement.height];
   });
+  assert.deepEqual(renderSize, [600, 338]);
+  assert.equal(await page.evaluate(() => window.__berryStats.maskReads), 0);
+  assert.ok(neutral.tracking.poseFps >= 6.5 && neutral.tracking.poseFps <= 10.5, neutral.tracking.poseFps);
+  assert.ok(neutral.fps > 0 && neutral.fps <= 33, neutral.fps);
+  const panel = page.locator('.performance-panel');
+  await panel.filter({ hasText: /320×240/ }).waitFor();
+  await page.waitForTimeout(1100);
+  const performanceText = await panel.innerText();
+  assert.match(performanceText, /推論 \d+\.\d ms[\s\S]*Pose \d+\.\d FPS[\s\S]*Phaser \d+\.\d FPS · 3D \d+\.\d FPS/);
+  report.performance = { threeFps: neutral.fps, poseFps: neutral.tracking.poseFps, renderSize, panel: performanceText };
+  check('Low mode acquires the partial standing reference with a 320×240 native preview, no mask conversion and reduced 3D rendering');
+
+  await fixture({ shift: .13 });
+  await wait(s => s.rootX < 540 && s.tracking.reliable);
+  await fixture({ left: .07 });
+  const hit = await wait(s => s.score === 3);
+  assert.ok(hit.feet.left.x >= hit.zones.left.x && hit.feet.left.x <= hit.zones.left.x + hit.zones.left.width);
+  assert.equal(hit.counts.left, 1);
+  assert.equal(hit.target, 'right');
+  await page.waitForTimeout(500);
+  assert.equal((await snapshot()).score, 3);
+  await page.screenshot({ path: `${output}/low-performance-partial-hit.png` });
+  check('A sustained cropped-ankle kick projects into the target and scores exactly once');
+
+  await fixture({ lost: true });
+  const lost = await wait(s => !s.tracking.reliable);
+  assert.equal(lost.armed.left, false);
+  assert.deepEqual(lost.tracking.reference, neutral.tracking.reference);
+  await fixture({ lost: false, left: 0, shift: 0 });
+  await settled(0);
+  await page.locator('[data-action=pause]').click();
+  const paused = await snapshot();
+  const stopped = await page.evaluate(() => window.__berryStats.inferences);
+  await page.waitForTimeout(550);
+  assert.equal((await snapshot()).clock, paused.clock);
+  assert.equal(await page.evaluate(() => window.__berryStats.inferences), stopped);
+  await page.locator('dialog [data-action=resume]').click();
+  const resumed = await wait(s => s.tracking.reliable && s.clock > paused.clock);
+  assert.equal(resumed.score, 3);
+  assert.deepEqual(resumed.tracking.reference, neutral.tracking.reference);
+  check('Tracking loss and explicit pause preserve score and standing reference, and pause stops inference');
+
+  await page.locator('[data-action=home]').click();
+  await page.locator('[data-action=start]').waitFor();
+  assert.equal(await page.locator('.berry-camera-source').count(), 0);
+  const resources = await page.evaluate(async () => ({
+    models: window.__berryStats.models, closed: window.__berryStats.closed,
+    tracks: window.__berryStats.streams.flatMap(stream => stream.getTracks().map(track => track.readyState)),
+    textures: (await import('/src/main.ts')).game.textures.getTextureKeys().filter(key => key.startsWith('berry-rabbit-')),
+  }));
+  assert.deepEqual(resources, { models: 1, closed: 1, tracks: ['ended'], textures: [] });
+  report.resources = resources;
+  check('Home removes the preview and releases the camera, pose model and rabbit texture');
+}
+
+async function standardRun() {
   await enter(); await page.locator('[data-action=camera]').click();
   await page.waitForFunction(() => window.__berryStats.streams.length === 1);
   await page.locator('[data-action=pause]').click();
@@ -474,6 +555,12 @@ try {
   assert.equal(resources.models, resources.closed); assert.ok(resources.tracks.every(state => state === 'ended'));
   assert.deepEqual(resources.textures, []); report.resources = resources;
   check('Camera can reopen; ended track offers keyboard fallback; keyboard remains playable; all resources released');
+}
+
+try {
+  await installCameraFixture();
+  if (lowPerformanceMode) await lowPerformanceRun();
+  else await standardRun();
   assert.deepEqual(report.errors, []); report.status = 'PASS';
 } catch (error) {
   report.status = 'FAIL'; report.failure = String(error);

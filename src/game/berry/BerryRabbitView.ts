@@ -3,6 +3,10 @@ import { AmbientLight, DirectionalLight, HemisphereLight, NeutralToneMapping, Or
 import { Rabbit3D } from '../3d/Rabbit3D';
 import { RabbitFootTracker } from '../3d/RabbitFootTracker';
 import { BERRY_CONFIG as C } from './berryConfig';
+import { getThreeRenderSize, LowPerformanceDrawGate } from '../3d/threeRenderQuality';
+import { getGameSettings } from '../settings/gameSettings';
+import { recordThreeFrame } from '../performance/performanceMetrics';
+
 export class BerryRabbitView {
   readonly camera = new OrthographicCamera();
   readonly world = new Scene();
@@ -12,6 +16,7 @@ export class BerryRabbitView {
   rootX = 800;
   targetRootX: number | null = null;
   fps = 0;
+  renderedFrames = 0;
   private frames = 0;
   private elapsed = 0;
   private readonly key = `berry-rabbit-${crypto.randomUUID()}`;
@@ -19,10 +24,15 @@ export class BerryRabbitView {
   private readonly image!: Phaser.GameObjects.Image;
   private disposed = false;
   private readonly lost: (event: Event) => void;
+  private readonly drawGate?: LowPerformanceDrawGate;
+
   constructor(private readonly scene: Phaser.Scene, readonly rabbit: Rabbit3D, failure: () => void) {
-    this.renderer = new WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
+    const lowPerformance = getGameSettings().lowPerformanceMode;
+    if (lowPerformance) this.drawGate = new LowPerformanceDrawGate();
+    const { width, height } = getThreeRenderSize({ width: 1200, height: 675 }, lowPerformance);
+    this.renderer = new WebGLRenderer({ alpha: true, antialias: !lowPerformance, powerPreference: 'low-power' });
     try {
-    this.renderer.setPixelRatio(1); this.renderer.setSize(1200, 675); this.renderer.setClearColor(0, 0);
+    this.renderer.setPixelRatio(1); this.renderer.setSize(width, height); this.renderer.setClearColor(0, 0);
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = NeutralToneMapping;
     const p = rabbit.pixelsPerUnit;
     Object.assign(this.camera, { left: -800 / p, right: 800 / p, top: C.feetY / p,
@@ -38,7 +48,7 @@ export class BerryRabbitView {
     rabbit.rig.resetPose(true);
     // Keep the standing foot outside the actual trunk; extension closes half its available reach.
     this.maxTravel = 800 - (C.tree.left + C.tree.width * .045 + (800 - rest) + (rest - extended) * .5);
-    this.texture = scene.textures.createCanvas(this.key, 1200, 675)!;
+    this.texture = scene.textures.createCanvas(this.key, width, height)!;
     this.image = scene.add.image(0, 0, this.key).setOrigin(0).setDisplaySize(1600, 900).setDepth(5);
     this.lost = event => { event.preventDefault(); failure(); };
     this.renderer.domElement.addEventListener('webglcontextlost', this.lost);
@@ -60,9 +70,17 @@ export class BerryRabbitView {
       this.rootX = 800 + next;
     }
     this.rabbit.rig.setLegExtension('left', left); this.rabbit.rig.setLegExtension('right', right);
-    this.rabbit.rig.update(dt); this.renderer.render(this.world, this.camera);
-    this.texture.context.clearRect(0, 0, 1200, 675); this.texture.context.drawImage(this.renderer.domElement, 0, 0); this.texture.refresh();
-    this.elapsed += dt; this.frames++;
+    this.rabbit.rig.update(dt);
+    if (!this.drawGate || this.drawGate.isDue()) {
+      this.renderer.render(this.world, this.camera);
+      this.texture.context.clearRect(0, 0, this.texture.width, this.texture.height);
+      this.texture.context.drawImage(this.renderer.domElement, 0, 0);
+      this.texture.refresh();
+      recordThreeFrame();
+      this.renderedFrames++;
+      this.frames++;
+    }
+    this.elapsed += dt;
     if (this.elapsed >= 1) { this.fps = this.frames / this.elapsed; this.frames = 0; this.elapsed = 0; }
     return this.tracker.sample();
   }

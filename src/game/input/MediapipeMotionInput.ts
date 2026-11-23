@@ -5,6 +5,8 @@ import { PoseClassifier } from '../vision/PoseClassifier';
 import { POSE_CONFIG } from '../vision/poseConfig';
 import type { PoseFrame, PoseSnapshot } from '../vision/poseTypes';
 import type { CalibrationProfile } from '../calibration/calibrationTypes';
+import { getGameSettings } from '../settings/gameSettings';
+import { clearPosePerformance, recordPosePerformance } from '../performance/performanceMetrics';
 
 export interface CameraDriver {
   start(): Promise<HTMLVideoElement>;
@@ -26,7 +28,7 @@ export interface MediapipeInputOptions {
 }
 
 export class MediapipeMotionInput implements MotionInput {
-  private readonly classifier = new PoseClassifier(true);
+  private readonly classifier: PoseClassifier;
   private readonly now: () => number;
   private readonly camera: CameraDriver;
   private readonly estimator: EstimatorDriver;
@@ -44,11 +46,17 @@ export class MediapipeMotionInput implements MotionInput {
   private trackingStateSince = 0;
 
   constructor(private readonly options: MediapipeInputOptions = {}) {
+    const settings = getGameSettings();
+    const { lowPerformanceMode } = settings;
+    this.classifier = new PoseClassifier(true, lowPerformanceMode);
     this.now = options.now ?? (() => performance.now());
     this.camera = (options.createCamera ?? (settings => new PoseCamera(settings)))({
+      lowPerformanceMode,
       onEnded: () => this.fail(new Error('鏡頭已中斷，你可以重新開啟鏡頭，或者使用鍵盤操作。')),
     });
     this.estimator = (options.createEstimator ?? (settings => new PoseEstimator(settings)))({
+      maxFps: lowPerformanceMode ? 10 : undefined,
+      outputSegmentationMasks: !lowPerformanceMode && settings.backgroundProcessing,
       onFrame: frame => this.acceptFrame(frame),
       onError: error => this.fail(error),
     });
@@ -144,7 +152,7 @@ export class MediapipeMotionInput implements MotionInput {
     this.lastReliableTimestampMs = undefined;
   }
 
-  pause() { this.paused = true; this.estimator.pause(); this.reset(); }
+  pause() { this.paused = true; this.estimator.pause(); clearPosePerformance(this); this.reset(); }
   resume() { if (this.destroyed) return; this.paused = false; this.reset(); this.estimator.resume(); }
 
   destroy() {
@@ -156,11 +164,13 @@ export class MediapipeMotionInput implements MotionInput {
     }
     this.classifier.setCalibration(undefined);
     this.lastFrame = undefined;
+    clearPosePerformance(this);
     this.camera.destroy();
   }
 
   private acceptFrame(frame: PoseFrame) {
     if (this.destroyed || this.paused) return;
+    recordPosePerformance(this, frame);
     const personDetected = !!frame.landmarks?.length;
     this.lastFrame = { timestampMs: frame.timestampMs, poseFps: frame.poseFps, personDetected };
     this.framesReceived++;

@@ -9,6 +9,8 @@ test('manual defaults allow a shallow bend and form valid separated thresholds',
   assert.equal(DEFAULT_GAME_SETTINGS.showBodyKeypoints, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundProcessing, false);
   assert.equal(DEFAULT_GAME_SETTINGS.backgroundMode, 'blur');
+  assert.equal(DEFAULT_GAME_SETTINGS.lowPerformanceMode, false);
+  assert.equal(DEFAULT_GAME_SETTINGS.showPerformanceMetrics, false);
   assert.equal(DEFAULT_GAME_SETTINGS.berryDurationSeconds, 120);
   assert.equal(DEFAULT_GAME_SETTINGS.appleDurationSeconds, 120);
   assert.equal(DEFAULT_GAME_SETTINGS.sfxEnabled, true);
@@ -24,6 +26,8 @@ test('settings reject nonfinite, missing, excessive and overlapping thresholds',
     { standingAngle: 150, bendingAngle: 150 }, { standingAngle: 150, bendingAngle: 148 },
     { showBodyKeypoints: 'true' }, { backgroundProcessing: 1 }, { backgroundMode: 'transparent' },
     { showBodyKeypoints: undefined }, { backgroundProcessing: null }, { backgroundMode: undefined },
+    { lowPerformanceMode: 'true' }, { lowPerformanceMode: undefined },
+    { showPerformanceMetrics: 1 }, { showPerformanceMetrics: undefined },
     { berryDurationSeconds: 30 }, { berryDurationSeconds: 61 }, { berryDurationSeconds: 0 },
     { berryDurationSeconds: 121 }, { berryDurationSeconds: '60' }, { berryDurationSeconds: NaN },
     { berryDurationSeconds: Infinity }, { berryDurationSeconds: undefined }, { berryDurationSeconds: null },
@@ -51,9 +55,13 @@ test('persist only supported settings, recover invalid storage, reset defaults',
   } });
   try {
     assert.deepEqual(getGameSettings(), DEFAULT_GAME_SETTINGS);
-    const settings = { ...DEFAULT_GAME_SETTINGS, bendingAngle: 155, rawPose: ['never store'] };
+    const settings = { ...DEFAULT_GAME_SETTINGS, bendingAngle: 155,
+      lowPerformanceMode: true, showPerformanceMetrics: true, backgroundProcessing: true, rawPose: ['never store'] };
     saveGameSettings(settings);
     assert.equal(getGameSettings().bendingAngle, 155);
+    assert.equal(getGameSettings().lowPerformanceMode, true);
+    assert.equal(getGameSettings().showPerformanceMetrics, true);
+    assert.equal(getGameSettings().backgroundProcessing, true);
     assert.equal(values.get(SETTINGS_STORAGE_KEY)?.includes('rawPose'), false);
     assert.throws(() => saveGameSettings({ ...settings, standingAngle: 155 }));
     values.set(SETTINGS_STORAGE_KEY, '{broken');
@@ -69,7 +77,8 @@ test('persist only supported settings, recover invalid storage, reset defaults',
 });
 
 test('legacy numeric settings retain values and add preview, duration and audio defaults', () => {
-  const { showBodyKeypoints, backgroundProcessing, backgroundMode, berryDurationSeconds, sfxEnabled, sfxVolume, voiceEnabled, voiceVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
+  const { showBodyKeypoints, backgroundProcessing, backgroundMode, lowPerformanceMode, showPerformanceMetrics,
+    berryDurationSeconds, sfxEnabled, sfxVolume, voiceEnabled, voiceVolume, ...legacy } = DEFAULT_GAME_SETTINGS;
   const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
     getItem: () => JSON.stringify({ ...legacy, bendingAngle: 155, mocapGain: 1.25, rawPose: [1, 2, 3] }),
@@ -79,6 +88,8 @@ test('legacy numeric settings retain values and add preview, duration and audio 
     assert.equal(showBodyKeypoints, false);
     assert.equal(backgroundProcessing, false);
     assert.equal(backgroundMode, 'blur');
+    assert.equal(lowPerformanceMode, false);
+    assert.equal(showPerformanceMetrics, false);
     assert.equal(berryDurationSeconds, 120);
     assert.equal(sfxEnabled, true);
     assert.equal(sfxVolume, 0.6);

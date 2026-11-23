@@ -164,6 +164,22 @@ test('coordinate EMA damps point jitter, returns isolated snapshots and resets w
   assert.equal(smoother.updateLandmarks([{ ...original, x: 0.8 }])[0].x, 0.8);
 });
 
+test('elapsed-time coordinate smoothing gives the same response across uneven pose samples', () => {
+  const regular = new PoseSmoother(.35);
+  const uneven = new PoseSmoother(.35);
+  const standing = [{ x: .4, y: .6, z: .1 }];
+  const bending = [{ x: .48, y: .52, z: .3 }];
+  regular.updateLandmarks(standing);
+  uneven.updateLandmarks(standing);
+  for (let sample = 0; sample < 4; sample++) regular.updateLandmarks(bending);
+  const expected = regular.updateLandmarks(bending)[0];
+  uneven.updateLandmarks(bending, 92);
+  const actual = uneven.updateLandmarks(bending, 108)[0];
+  for (const coordinate of ['x', 'y', 'z'] as const) {
+    assert.ok(Math.abs(actual[coordinate]! - expected[coordinate]!) < 1e-12);
+  }
+});
+
 test('unknown torso or leaned upper body cannot drive knee output', () => {
   for (const type of ['missing', 'leaning', 'inverted'] as const) {
     const points = landmarks(140);

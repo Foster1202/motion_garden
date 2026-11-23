@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { personMask, PoseEstimator, PoseEstimatorError, poseEstimatorAssets, type PoseLandmarkerLike } from '../src/game/vision/PoseEstimator';
+import { personMask, PoseEstimator, PoseEstimatorError, poseEstimatorAssets, type PoseEstimatorOptions,
+  type PoseLandmarkerLike } from '../src/game/vision/PoseEstimator';
 import type { PoseFrame } from '../src/game/vision/poseTypes';
 
-function setupEstimator(detect?: PoseLandmarkerLike['detectForVideo']) {
+function setupEstimator(detect?: PoseLandmarkerLike['detectForVideo'],
+  options?: Pick<PoseEstimatorOptions, 'maxFps' | 'outputSegmentationMasks'>) {
   const pendingFrames = new Map<number, FrameRequestCallback>();
   let nextId = 0;
   let createCount = 0;
@@ -12,12 +14,15 @@ function setupEstimator(detect?: PoseLandmarkerLike['detectForVideo']) {
   const timestamps: number[] = [];
   const frames: PoseFrame[] = [];
   const errors: PoseEstimatorError[] = [];
+  const maskOptions: boolean[] = [];
   const video = { readyState: 2, videoWidth: 640, videoHeight: 360, currentTime: 0 } as HTMLVideoElement;
   const estimator = new PoseEstimator({
+    ...options,
     onFrame: (frame) => frames.push(frame), onError: (error) => errors.push(error),
     baseUrl: '/motion-garden/', now: () => { clock += 4; return clock; },
-    createLandmarker: async (assets) => {
+    createLandmarker: async (assets, outputSegmentationMasks) => {
       assert.equal(assets.modelPath, '/motion-garden/mediapipe/models/pose_landmarker_lite.task');
+      maskOptions.push(outputSegmentationMasks);
       createCount++;
       return {
         detectForVideo: detect ?? ((_video, timestampMs) => { timestamps.push(timestampMs); return { landmarks: [[{ x: 0.5, y: 0.5 }]] }; }),
@@ -34,7 +39,7 @@ function setupEstimator(detect?: PoseLandmarkerLike['detectForVideo']) {
     pendingFrames.delete(id);
     callback(timestamp);
   };
-  return { estimator, video, frames, errors, timestamps, pendingFrames, tick,
+  return { estimator, video, frames, errors, timestamps, pendingFrames, maskOptions, tick,
     createCount: () => createCount, closeCount: () => closeCount };
 }
 
@@ -96,6 +101,38 @@ test('person segmentation is copied into a feathered alpha mask and inference re
     width: 2, height: 2, alpha: new Uint8ClampedArray([0, 0, 128, 255]),
   });
   assert.equal(resultClosed, 1);
+  assert.deepEqual(fixture.maskOptions, [true]);
+  fixture.estimator.destroy();
+});
+
+test('low cadence keeps fresh frames near 10 FPS and skips disabled mask conversion', async () => {
+  const times: number[] = [];
+  let closed = 0;
+  const fixture = setupEstimator((_video, timestamp) => {
+    times.push(timestamp);
+    return {
+      landmarks: [[{ x: .5, y: .5 }]],
+      segmentationMasks: [{ width: 1, height: 1, getAsFloat32Array: () => assert.fail('Unexpected mask conversion') }],
+      close: () => { closed++; },
+    };
+  }, { maxFps: 10, outputSegmentationMasks: false });
+  Object.assign(fixture.video, { videoWidth: 424, videoHeight: 240 });
+  await fixture.estimator.start(fixture.video);
+  fixture.tick(0, 0);
+  fixture.tick(50, 1);
+  fixture.tick(98.7, 2);
+  fixture.tick(99.9, 2);
+  fixture.tick(199.8, 2);
+  fixture.tick(215, 3);
+  assert.deepEqual(fixture.maskOptions, [false]);
+  assert.deepEqual(times, [0, 99.9, 215]);
+  assert.equal(closed, 3);
+  assert.equal(fixture.frames[2].personMask, undefined);
+  assert.deepEqual(fixture.frames[2].landmarks, [{ x: .5, y: .5 }]);
+  assert.ok(fixture.frames[2].poseFps > 9 && fixture.frames[2].poseFps < 10.1);
+  assert.equal(fixture.frames[2].averageInferenceMs, 4);
+  assert.equal(fixture.frames[2].imageWidth, 424);
+  assert.equal(fixture.frames[2].imageHeight, 240);
   fixture.estimator.destroy();
 });
 

@@ -1,6 +1,6 @@
 import { POSE_CONFIG, POSE_LANDMARK } from './poseConfig';
 import { imagePoint, calculateAngle, landmarkConfidence, torsoLean } from './poseMath';
-import { PoseSmoother } from './PoseSmoother';
+import { PoseSmoother, poseSmoothingAlpha } from './PoseSmoother';
 import type { PoseCandidateState, PoseFrame, PoseLandmark, PoseSnapshot } from './poseTypes';
 import { copyCalibrationProfile, type CalibrationProfile } from '../calibration/calibrationTypes';
 import { observePartialBend } from './partialBend';
@@ -21,7 +21,7 @@ export class PoseClassifier {
   private fullStandingSince?: number;
   private partialSignal?: number;
 
-  constructor(private readonly requireTorsoPair = false) {}
+  constructor(private readonly requireTorsoPair = false, private readonly lowPerformanceMode = false) {}
 
   setCalibration(profile?: CalibrationProfile): void {
     if (profile !== undefined && !validateCalibration(profile)) {
@@ -51,6 +51,8 @@ export class PoseClassifier {
     }
     if (this.lastValidTimestamp !== undefined
       && frame.timestampMs - this.lastValidTimestamp > POSE_CONFIG.maxFrameGapMs) this.clearSignal();
+    const elapsedMs = this.lowPerformanceMode && this.lastValidTimestamp !== undefined
+      ? frame.timestampMs - this.lastValidTimestamp : undefined;
 
     const landmarks = frame.landmarks;
     const width = frame.imageWidth ?? 1;
@@ -60,8 +62,8 @@ export class PoseClassifier {
     }
     const torso = this.torso(landmarks, width, height);
     if (!torso) return this.loseTracking(nowMs, 'unreliable-or-leaning-torso', frame);
-    const left = this.leg(landmarks, 'left', width, height);
-    const right = this.leg(landmarks, 'right', width, height);
+    const left = this.leg(landmarks, 'left', width, height, elapsedMs);
+    const right = this.leg(landmarks, 'right', width, height, elapsedMs);
     if (!left) this.leftSmoother.reset();
     if (!right) this.rightSmoother.reset();
     const calibratedSide = this.calibration?.reliableSide;
@@ -82,7 +84,7 @@ export class PoseClassifier {
         ? 'calibrated-legs-unavailable' : 'unreliable-legs', frame);
     } else {
       const signal = this.partialSignal ?? partial.signal;
-      this.partialSignal = signal + (partial.signal - signal) * POSE_CONFIG.smoothingAlpha;
+      this.partialSignal = signal + (partial.signal - signal) * poseSmoothingAlpha(POSE_CONFIG.smoothingAlpha, elapsedMs);
     }
 
     // Return to exact angles only at a stable standing pose in both calibrated metrics.
@@ -154,7 +156,8 @@ export class PoseClassifier {
     this.current = this.emptySnapshot();
   }
 
-  private leg(points: readonly PoseLandmark[], side: 'left' | 'right', width: number, height: number): { angle: number; confidence: number } | undefined {
+  private leg(points: readonly PoseLandmark[], side: 'left' | 'right', width: number, height: number,
+    elapsedMs?: number): { angle: number; confidence: number } | undefined {
     const hip = points[POSE_LANDMARK[`${side}Hip`]];
     const knee = points[POSE_LANDMARK[`${side}Knee`]];
     const ankle = points[POSE_LANDMARK[`${side}Ankle`]];
@@ -162,7 +165,7 @@ export class PoseClassifier {
     if (confidence < POSE_CONFIG.confidenceThreshold) return undefined;
     if (calculateAngle(imagePoint(hip, width, height), imagePoint(knee, width, height), imagePoint(ankle, width, height)) === undefined) return undefined;
     const smoother = side === 'left' ? this.leftSmoother : this.rightSmoother;
-    const [smoothHip, smoothKnee, smoothAnkle] = smoother.updateLandmarks([hip, knee, ankle]);
+    const [smoothHip, smoothKnee, smoothAnkle] = smoother.updateLandmarks([hip, knee, ankle], elapsedMs);
     const angle = calculateAngle(imagePoint(smoothHip, width, height), imagePoint(smoothKnee, width, height), imagePoint(smoothAnkle, width, height));
     return angle === undefined ? undefined : { angle, confidence };
   }

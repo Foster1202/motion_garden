@@ -22,6 +22,9 @@ export class SettingsPanel {
   private readonly backgroundProcessing = document.createElement('input');
   private readonly backgroundMode = document.createElement('select');
   private readonly backgroundModeLabel = document.createElement('label');
+  private readonly backgroundModeHint = document.createElement('small');
+  private readonly lowPerformanceMode = document.createElement('input');
+  private readonly showPerformanceMetrics = document.createElement('input');
   private readonly berryDuration = document.createElement('select');
   private readonly appleDuration = document.createElement('select');
   private readonly sfxEnabled = document.createElement('input');
@@ -41,10 +44,34 @@ export class SettingsPanel {
     heading.id = 'game-settings-title';
     heading.textContent = '設置';
     const intro = document.createElement('p');
-    intro.textContent = '毋須校準，使用預設值即可開始。只需舒適輕屈膝，保持雙腳着地；如有不適請休息。設定會儲存在此瀏覽器。音效及語音儲存後即時套用，其餘選項於下一次開始遊戲時套用。';
+    intro.textContent = '毋須校準，使用預設值即可開始。只需舒適輕屈膝，保持雙腳着地；如有不適請休息。設定會儲存在此瀏覽器。音效、語音及效能數據儲存後即時套用，其餘選項於下一次開始遊戲時套用。';
     form.append(heading, intro);
     const fields = document.createElement('div');
     fields.className = 'game-settings-fields';
+    const performance = document.createElement('fieldset');
+    performance.className = 'game-settings-preview';
+    const performanceLegend = document.createElement('legend');
+    performanceLegend.textContent = '效能';
+    performance.append(performanceLegend);
+    for (const [input, name, title, hint] of [
+      [this.lowPerformanceMode, 'lowPerformanceMode', '低效能模式', '適合 Raspberry Pi 或較慢的電腦。降低相機解像度、姿勢取樣頻率及 3D 畫質。'],
+      [this.showPerformanceMetrics, 'showPerformanceMetrics', '顯示效能數據', '顯示推論時間、畫面更新率及相機實際解像度。'],
+    ] as const) {
+      const field = document.createElement('div');
+      const label = document.createElement('label');
+      label.className = 'game-settings-switch';
+      input.type = 'checkbox';
+      input.name = name;
+      const help = document.createElement('small');
+      help.id = `settings-help-${name}`;
+      help.textContent = hint;
+      input.setAttribute('aria-describedby', help.id);
+      label.append(input, title);
+      field.append(label, help);
+      performance.append(field);
+    }
+    this.lowPerformanceMode.addEventListener('change', () => this.updateBackgroundMode());
+    fields.append(performance);
     const audio = document.createElement('fieldset');
     audio.className = 'game-settings-audio';
     const audioLegend = document.createElement('legend');
@@ -124,7 +151,11 @@ export class SettingsPanel {
       this.backgroundMode.append(option);
     }
     this.backgroundModeLabel.append(modeCaption, this.backgroundMode);
-    preview.append(this.backgroundModeLabel);
+    this.backgroundModeHint.className = 'game-settings-background-mode';
+    this.backgroundModeHint.textContent = '低效能模式會暫停背景處理。';
+    this.backgroundModeHint.id = 'settings-background-mode-hint';
+    this.backgroundProcessing.setAttribute('aria-describedby', this.backgroundModeHint.id);
+    preview.append(this.backgroundModeLabel, this.backgroundModeHint);
     this.backgroundProcessing.addEventListener('change', () => this.updateBackgroundMode());
     fields.append(preview);
     for (const [key, title, help, step] of FIELDS) {
@@ -167,6 +198,8 @@ export class SettingsPanel {
       event.preventDefault();
       const numeric = Object.fromEntries([...this.inputs].map(([key, input]) => [key, input.valueAsNumber])) as Pick<GameSettings, NumericGameSetting>;
       const settings: GameSettings = { ...numeric,
+        lowPerformanceMode: this.lowPerformanceMode.checked,
+        showPerformanceMetrics: this.showPerformanceMetrics.checked,
         showBodyKeypoints: this.showBodyKeypoints.checked,
         backgroundProcessing: this.backgroundProcessing.checked,
         backgroundMode: this.backgroundMode.value as GameSettings['backgroundMode'],
@@ -188,6 +221,8 @@ export class SettingsPanel {
 
   private setValues(settings: Readonly<GameSettings>): void {
     for (const [key, input] of this.inputs) input.value = String(settings[key]);
+    this.lowPerformanceMode.checked = settings.lowPerformanceMode;
+    this.showPerformanceMetrics.checked = settings.showPerformanceMetrics;
     this.showBodyKeypoints.checked = settings.showBodyKeypoints;
     this.backgroundProcessing.checked = settings.backgroundProcessing;
     this.backgroundMode.value = settings.backgroundMode;
@@ -214,8 +249,11 @@ export class SettingsPanel {
   }
 
   private updateBackgroundMode(): void {
-    this.backgroundMode.disabled = !this.backgroundProcessing.checked;
-    this.backgroundModeLabel.hidden = !this.backgroundProcessing.checked;
+    const low = this.lowPerformanceMode.checked;
+    this.backgroundProcessing.disabled = low;
+    this.backgroundModeHint.hidden = !low;
+    this.backgroundMode.disabled = low || !this.backgroundProcessing.checked;
+    this.backgroundModeLabel.hidden = this.backgroundMode.disabled;
   }
 
   destroy(): void {

@@ -36,6 +36,7 @@ export interface PoseCameraOptions {
   mediaDevices?: Pick<MediaDevices, 'getUserMedia'>;
   isSecureContext?: boolean;
   onEnded?: () => void;
+  lowPerformanceMode?: boolean;
 }
 
 export class PoseCamera {
@@ -43,6 +44,7 @@ export class PoseCamera {
   private readonly mediaDevices: Pick<MediaDevices, 'getUserMedia'> | undefined;
   private readonly secure: boolean;
   private readonly onEnded?: () => void;
+  private readonly lowPerformanceMode: boolean;
   private stream?: MediaStream;
   private pending?: Promise<HTMLVideoElement>;
   private generation = 0;
@@ -56,6 +58,7 @@ export class PoseCamera {
     this.mediaDevices = options.mediaDevices ?? globalThis.navigator?.mediaDevices;
     this.secure = options.isSecureContext ?? globalThis.isSecureContext;
     this.onEnded = options.onEnded;
+    this.lowPerformanceMode = options.lowPerformanceMode ?? false;
   }
 
   start(): Promise<HTMLVideoElement> {
@@ -90,7 +93,9 @@ export class PoseCamera {
     try {
       acquired = await this.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 360 } },
+        video: this.lowPerformanceMode
+          ? { facingMode: { ideal: 'user' }, width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 } }
+          : { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 360 } },
       });
       if (generation !== this.generation || this.destroyed) {
         for (const track of acquired.getTracks()) track.stop();

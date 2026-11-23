@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { cameraError, PoseCamera, PoseCameraError } from '../src/game/vision/PoseCamera';
 
-function setupCamera(getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>) {
+function setupCamera(getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>, lowPerformanceMode = false) {
   const track = new EventTarget() as EventTarget & { stop(): void; stops: number };
   track.stops = 0;
   track.stop = () => { track.stops++; };
@@ -12,7 +12,7 @@ function setupCamera(getUserMedia?: (constraints: MediaStreamConstraints) => Pro
   const calls: MediaStreamConstraints[] = [];
   let ended = 0;
   const camera = new PoseCamera({
-    video, isSecureContext: true, onEnded: () => { ended++; },
+    video, isSecureContext: true, lowPerformanceMode, onEnded: () => { ended++; },
     mediaDevices: { getUserMedia: getUserMedia ?? (async (constraints = {}) => { calls.push(constraints); return stream; }) },
   });
   return { camera, track, stream, video, calls, plays: () => plays, ended: () => ended };
@@ -33,6 +33,15 @@ test('camera activates only on start, requests no audio, reuses startup, and sto
   assert.equal(fixture.video.srcObject, null);
   fixture.camera.destroy();
   await assert.rejects(fixture.camera.start(), (error: PoseCameraError) => error.code === 'cancelled');
+});
+
+test('low mode requests small ideal frames and leaves capture independent of pose cadence', async () => {
+  const fixture = setupCamera(undefined, true);
+  await fixture.camera.start();
+  assert.deepEqual(fixture.calls, [{ audio: false, video: {
+    facingMode: { ideal: 'user' }, width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 30 },
+  } }]);
+  fixture.camera.destroy();
 });
 
 test('a cancelled pending permission request stops the late stream without attaching or playing it', async () => {

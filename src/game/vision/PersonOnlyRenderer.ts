@@ -6,6 +6,12 @@ export interface PersonPreviewOptions {
   confidenceThreshold?: number;
 }
 
+interface PersonPreviewCanvasOptions {
+  width?: number;
+  height?: number;
+  nativeVideo?: boolean;
+}
+
 // MediaPipe's 33-landmark pose topology, including face, hands and feet.
 const POSE_CONNECTIONS = [
   [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10],
@@ -27,23 +33,31 @@ function confidence(point: PoseLandmark): number {
 
 export class PersonOnlyRenderer {
   private readonly context: CanvasRenderingContext2D;
-  private readonly maskCanvas = document.createElement('canvas');
-  private readonly maskContext: CanvasRenderingContext2D;
+  private readonly maskContext?: CanvasRenderingContext2D;
   private maskImage?: ImageData;
   private lastMaskTimestamp?: number;
   private readonly automaticAspect: boolean;
+  private readonly width: number;
+  private readonly nativeVideo: boolean;
 
   constructor(private readonly video: HTMLVideoElement, readonly canvas: HTMLCanvasElement,
-    private readonly width = 320, height?: number) {
+    { width = 320, height, nativeVideo = false }: PersonPreviewCanvasOptions = {}) {
+    this.width = width;
+    this.nativeVideo = nativeVideo;
     this.automaticAspect = height === undefined;
     const size = this.sizeFor(video.videoWidth, video.videoHeight);
     canvas.width = height === undefined ? size.width : width;
     canvas.height = height ?? size.height;
     const context = canvas.getContext('2d');
-    const maskContext = this.maskCanvas.getContext('2d');
-    if (!context || !maskContext) throw new Error('未能建立人物預覽畫布。');
+    if (!context) throw new Error('未能建立人物預覽畫布。');
     this.context = context;
-    this.maskContext = maskContext;
+    if (nativeVideo) {
+      video.classList.add('camera-preview-native');
+    } else {
+      const maskContext = document.createElement('canvas').getContext('2d');
+      if (!maskContext) throw new Error('未能建立人物預覽畫布。');
+      this.maskContext = maskContext;
+    }
   }
 
   render(frame: PoseFrame, options: PersonPreviewOptions = {}): CanvasRenderingContext2D {
@@ -59,6 +73,12 @@ export class PersonOnlyRenderer {
     context.clearRect(0, 0, canvas.width, canvas.height);
     if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
       this.resetMask();
+      if (this.nativeVideo) video.classList.remove('camera-preview-active');
+      return context;
+    }
+    if (this.nativeVideo) {
+      video.classList.add('camera-preview-active');
+      if (options.showBodyKeypoints) this.drawKeypoints(frame.landmarks, options.confidenceThreshold ?? .5);
       return context;
     }
     const background = options.background ?? 'transparent';
@@ -92,6 +112,7 @@ export class PersonOnlyRenderer {
   clear(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.resetMask();
+    if (this.nativeVideo) this.video.classList.remove('camera-preview-active');
   }
 
   private sizeFor(width: number, height: number): { width: number; height: number } {
@@ -104,15 +125,17 @@ export class PersonOnlyRenderer {
 
   private drawPerson(frame: PoseFrame): void {
     const mask = frame.personMask;
-    if (!frame.landmarks?.length || !mask || !Number.isInteger(mask.width) || !Number.isInteger(mask.height)
+    const maskContext = this.maskContext;
+    if (!maskContext || !frame.landmarks?.length || !mask || !Number.isInteger(mask.width) || !Number.isInteger(mask.height)
       || mask.width <= 0 || mask.height <= 0 || mask.alpha.length !== mask.width * mask.height) {
       this.resetMask();
       return;
     }
-    if (!this.maskImage || this.maskCanvas.width !== mask.width || this.maskCanvas.height !== mask.height) {
-      this.maskCanvas.width = mask.width;
-      this.maskCanvas.height = mask.height;
-      this.maskImage = this.maskContext.createImageData(mask.width, mask.height);
+    const maskCanvas = maskContext.canvas;
+    if (!this.maskImage || maskCanvas.width !== mask.width || maskCanvas.height !== mask.height) {
+      maskCanvas.width = mask.width;
+      maskCanvas.height = mask.height;
+      this.maskImage = maskContext.createImageData(mask.width, mask.height);
       this.lastMaskTimestamp = undefined;
       for (let index = 0; index < mask.alpha.length; index++) {
         this.maskImage.data[index * 4] = 255;
@@ -130,14 +153,14 @@ export class PersonOnlyRenderer {
         ? Math.round(alpha * .8 + previous * .2) : alpha;
     }
     this.lastMaskTimestamp = frame.timestampMs;
-    this.maskContext.putImageData(this.maskImage, 0, 0);
+    maskContext.putImageData(this.maskImage, 0, 0);
     const { context, canvas } = this;
     context.drawImage(this.video, 0, 0, canvas.width, canvas.height);
     context.save();
     context.globalCompositeOperation = 'destination-in';
     context.imageSmoothingEnabled = true;
     context.filter = 'blur(0.65px)';
-    context.drawImage(this.maskCanvas, 0, 0, canvas.width, canvas.height);
+    context.drawImage(maskCanvas, 0, 0, canvas.width, canvas.height);
     context.restore();
   }
 

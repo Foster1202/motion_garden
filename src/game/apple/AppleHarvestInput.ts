@@ -2,6 +2,7 @@ import { HumanPoseExtractor, type ArmReachPose } from '../mocap/HumanPoseExtract
 import { MotionRetargeter } from '../mocap/MotionRetargeter';
 import { neutralRabbitPose, type RabbitPose } from '../mocap/RabbitPose';
 import { getGameSettings, type GameSettings } from '../settings/gameSettings';
+import { clearPosePerformance, recordPosePerformance } from '../performance/performanceMetrics';
 import { PersonOnlyRenderer } from '../vision/PersonOnlyRenderer';
 import { PoseCamera } from '../vision/PoseCamera';
 import { PoseEstimator } from '../vision/PoseEstimator';
@@ -63,7 +64,9 @@ export class AppleHarvestInput {
       this.releaseCamera();
       this.onError(message);
     };
-    const camera = new PoseCamera({ onEnded: () => fail('相機已中斷，請重新開啟或改用鍵盤。') });
+    const { lowPerformanceMode } = settings;
+    const outputSegmentationMasks = !lowPerformanceMode && settings.backgroundProcessing;
+    const camera = new PoseCamera({ lowPerformanceMode, onEnded: () => fail('相機已中斷，請重新開啟或改用鍵盤。') });
     this.camera = camera;
     try {
       const video = await camera.start();
@@ -73,9 +76,11 @@ export class AppleHarvestInput {
       const canvas = document.createElement('canvas');
       canvas.className = 'apple-camera';
       canvas.setAttribute('aria-hidden', 'true');
-      this.preview = new PersonOnlyRenderer(video, canvas);
+      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: lowPerformanceMode });
       host.append(video, canvas);
       const estimator = new PoseEstimator({
+        maxFps: lowPerformanceMode ? 10 : undefined,
+        outputSegmentationMasks,
         onFrame: frame => { if (isCurrent() && !this.paused) this.onFrame(frame, settings); },
         onError: error => fail(error.message),
       });
@@ -152,6 +157,7 @@ export class AppleHarvestInput {
     this.keys.clear();
     this.estimator?.pause();
     this.preview?.clear();
+    clearPosePerformance(this);
     this.interrupt('waiting-for-frames');
   }
 
@@ -202,8 +208,9 @@ export class AppleHarvestInput {
     if (gap >= C.maximumFrameGapMs) this.interrupt('recovering');
     this.lastFrame = timestamp;
     this.poseFps = frame.poseFps;
+    recordPosePerformance(this, frame);
     this.preview?.render(frame, {
-      background: settings.backgroundProcessing ? settings.backgroundMode : 'none',
+      background: settings.lowPerformanceMode || !settings.backgroundProcessing ? 'none' : settings.backgroundMode,
       showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
     });
 
@@ -268,6 +275,7 @@ export class AppleHarvestInput {
   private releaseCamera(): void {
     this.estimator?.destroy();
     this.estimator = undefined;
+    clearPosePerformance(this);
     this.preview?.clear();
     this.preview?.canvas.remove();
     this.preview = undefined;

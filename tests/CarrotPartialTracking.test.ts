@@ -4,15 +4,19 @@ import { CalibrationController } from '../src/game/calibration/CalibrationContro
 import { calibrationThresholds, partialMotionRange, validateCalibration } from '../src/game/calibration/calibrationMath';
 import type { CalibrationProfile, PartialCalibrationProfile } from '../src/game/calibration/calibrationTypes';
 import { PoseClassifier } from '../src/game/vision/PoseClassifier';
+import { POSE_CONFIG } from '../src/game/vision/poseConfig';
 import { observePartialBend } from '../src/game/vision/partialBend';
 import type { PoseFrame, PoseLandmark } from '../src/game/vision/poseTypes';
 
-type FrameOptions = { cropped?: boolean; ankle?: boolean; offset?: number; scale?: number; kneeAngle?: number };
+type FrameOptions = { cropped?: boolean; ankle?: boolean; offset?: number; scale?: number; kneeAngle?: number; lowResolution?: boolean };
 function frame(time: number, hipDrop = 0, options: FrameOptions = {}): PoseFrame & { landmarks: PoseLandmark[] } {
   const points = Array.from({ length: 33 }, () => ({ x: .5, y: -.1, visibility: .99 }));
   const scale = options.scale ?? 1;
   const center = .5 + (options.offset ?? 0);
-  const point = (x: number, y: number) => ({ x: center + (x - .5) * scale, y: .4 + (y - .4) * scale, visibility: .99 });
+  const imageWidth = options.lowResolution ? 320 : 1000;
+  const imageHeight = options.lowResolution ? 240 : 1000;
+  const point = (x: number, y: number) => ({ x: center + (x - .5) * scale * imageHeight / imageWidth,
+    y: .4 + (y - .4) * scale, visibility: .99 });
   const angle = (options.kneeAngle ?? 170) * Math.PI / 180;
   for (const [s, h, k, a, x] of [[11, 23, 25, 27, .65], [12, 24, 26, 28, .35]]) {
     points[s] = point(x, .18 + hipDrop);
@@ -21,7 +25,7 @@ function frame(time: number, hipDrop = 0, options: FrameOptions = {}): PoseFrame
     points[a] = point(x + .14 * Math.sin(angle), options.cropped ? 1.25 : .68 - .14 * Math.cos(angle));
   }
   if (options.ankle === false) points[28].visibility = .1;
-  return { landmarks: points, timestampMs: time, poseFps: 25, inferenceMs: 5, imageWidth: 1000, imageHeight: 1000 };
+  return { landmarks: points, timestampMs: time, poseFps: options.lowResolution ? 10 : 25, inferenceMs: 5, imageWidth, imageHeight };
 }
 const signal = (drop: number) => observePartialBend(frame(0, drop).landmarks, 1000, 1000)!.signal;
 const partialProfile: PartialCalibrationProfile = {
@@ -141,4 +145,58 @@ test('partial stance rejects necessary-point loss and stale frames, then require
   assert.equal(run(classifier, 680, 840, .03, { cropped: true }).state, 'TRANSITION');
   assert.equal(classifier.update(frame(880, .03, { cropped: true })).state, 'BENDING');
   assert.equal(classifier.snapshot(1131).trackingMode, 'lost');
+});
+
+test('jittered 10 Hz calibration and shallow bend stay reliable with full or cropped tracking', () => {
+  for (const cropped of [false, true]) {
+    const classifier = new PoseClassifier(true, true);
+    const calibration = new CalibrationController();
+    const intervals = [94, 109, 96, 108];
+    let time = 0;
+    let index = 0;
+    const sample = (bending: boolean) => {
+      const pose = classifier.update(frame(time, bending ? .03 : 0,
+        { cropped, lowResolution: true, kneeAngle: bending ? 158 : 170 }));
+      time += intervals[index++ % intervals.length];
+      return pose;
+    };
+    const calibrate = (bending: boolean) => {
+      for (let i = 0; i < 38; i++) {
+        const pose = sample(bending);
+        calibration.update(pose, pose.timestampMs);
+      }
+    };
+    const confirm = (bending: boolean, expected: 'STANDING' | 'BENDING') => {
+      let pose = sample(bending);
+      const start = pose.timestampMs;
+      assert.notEqual(pose.state, expected);
+      while (pose.state !== expected && time - start <= 430) pose = sample(bending);
+      assert.equal(pose.state, expected);
+      assert.ok(pose.candidateMs >= POSE_CONFIG.debounceMs);
+      return pose;
+    };
+
+    calibration.begin(time);
+    calibrate(false);
+    assert.equal(calibration.getSnapshot().state, 'BEND_INSTRUCTIONS');
+    calibration.startBending(time);
+    calibrate(true);
+    const result = calibration.getSnapshot();
+    assert.equal(result.state, 'COMPLETE');
+    const profile = result.profile!;
+    assert.equal(validateCalibration(profile), true);
+    assert.equal(profile.metric === 'partial', cropped);
+    assert.ok(profile.partial);
+    classifier.setCalibration(profile);
+
+    confirm(false, 'STANDING');
+    assert.notEqual(sample(true).state, 'BENDING');
+    for (let i = 0; i < 4; i++) assert.notEqual(sample(false).state, 'BENDING');
+    confirm(true, 'BENDING');
+    const standing = confirm(false, 'STANDING');
+
+    time = standing.timestampMs + POSE_CONFIG.maxDataAgeMs + 1;
+    assert.equal(classifier.snapshot(time).state, 'TRACKING_LOST');
+    confirm(true, 'BENDING');
+  }
 });

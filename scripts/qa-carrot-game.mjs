@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const production = process.env.QA_PRODUCTION === '1';
+const lowPerformance = process.env.QA_LOW_PERFORMANCE === '1';
 const base = process.env.QA_URL ?? (production ? 'http://127.0.0.1:5179/' : 'http://127.0.0.1:5178/');
 const output = process.env.QA_OUTPUT ?? '/private/tmp/motion-garden-4d2-qa';
 await mkdir(output, { recursive: true });
@@ -15,7 +16,7 @@ const report = {
   browserPlugin: 'Browser plugin not available; installed Chrome through Playwright',
   input: 'Virtual camera with deterministic Landmarker output through the existing PoseEstimator scheduler, calibration, classifier, mocap and CarrotRound.',
   humanWebcamQA: 'NOT VERIFIED',
-  checks: [], screenshots: [], rounds: [], resources: [], errors: [], expectedDiagnostics: [], warnings: [], requests: [],
+  lowPerformance, checks: [], screenshots: [], rounds: [], resources: [], errors: [], expectedDiagnostics: [], warnings: [], requests: [],
 };
 const expectedFailureUrls = new Set();
 page.on('pageerror', error => report.errors.push(String(error)));
@@ -51,6 +52,12 @@ async function capture(name) {
 }
 async function enter(search = '?carrotGameDebug=1') {
   await page.goto(`${base}${search}`);
+  if (lowPerformance) {
+    await page.locator('[data-action=settings]').click();
+    await page.locator('[name=lowPerformanceMode]').check();
+    await page.locator('[name=showPerformanceMetrics]').check();
+    await page.locator('.game-settings [type=submit]').click();
+  }
   await page.locator('[data-action=start]').click();
   await page.locator('[data-action=carrot]').click();
 }
@@ -376,7 +383,12 @@ async function measurePerformance() {
     threeFps: summary('threeFps'), mediaPipeFps: summary('mediaPipeFps'), ikMs: summary('ikMs'), gameplayMs: summary('gameplayMs'),
     inferenceKind: 'Synthetic model output through the existing real camera and PoseEstimator scheduler',
     viewport: after.rabbit3d.viewport };
-  assert.ok(report.performance.observedRenderFps > 35);
+  if (lowPerformance) {
+    assert.ok(report.performance.observedRenderFps >= 20 && report.performance.observedRenderFps <= 32, JSON.stringify(report.performance));
+    assert.ok(report.performance.observedInferenceFps >= 8 && report.performance.observedInferenceFps <= 10.7, JSON.stringify(report.performance));
+  } else {
+    assert.ok(report.performance.observedRenderFps > 35);
+  }
   check('The real game render clock and shared inference scheduler remain live', report.performance);
 }
 async function visualFacts() {
@@ -389,7 +401,7 @@ async function visualFacts() {
     const canvas = document.createElement('canvas');
     canvas.width = overlay.viewport.width; canvas.height = overlay.viewport.height;
     const context = canvas.getContext('2d');
-    context.drawImage(overlay.renderer.domElement, 0, 0);
+    context.drawImage(overlay.renderer.domElement, 0, 0, canvas.width, canvas.height);
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
     const soilRow = 681 - gameplay.soilWorldY * overlay.rabbit.pixelsPerUnit - overlay.viewport.y;
     let orangePixels = 0;
@@ -707,6 +719,12 @@ async function partialBodyGameplay() {
 
   const profile = await calibrateWithVisibleThighs(true);
   assert.match(await page.locator('.person-status').innerText(), /Partial Tracking/);
+  if (lowPerformance) {
+    await measurePerformance();
+    const view = await snapshot();
+    assert.deepEqual(view.rabbit3d.renderSize, { width: 650, height: 360 });
+    assert.match(await page.locator('.performance-panel').innerText(), /相機 320×240/);
+  }
   await capture('partial-calibrated-ready');
   check('Cropped head, arms and ankles permit automatic personal calibration and real 3D control', profile);
   await fixture({ shift: .018 });

@@ -22,6 +22,8 @@ import { CarrotPull3DCoordinator } from './gameplay/CarrotPull3DCoordinator';
 import { CarrotPull3DEnvironment } from './gameplay/CarrotPull3DEnvironment';
 import { neutralRabbitPose } from '../mocap/RabbitPose';
 import type { RoundState } from '../systems/CarrotRound';
+import { getGameSettings } from '../settings/gameSettings';
+import { recordThreeFrame } from '../performance/performanceMetrics';
 
 export type RabbitRenderMode = '3d' | 'sprite';
 export class Rabbit3DPreview {
@@ -70,6 +72,7 @@ export class Rabbit3DPreview {
   private readonly label = document.createElement('span');
   private readonly select = document.createElement('select');
   private readonly textureKey = `rabbit-three-${crypto.randomUUID()}`;
+  private readonly lowPerformance = getGameSettings().lowPerformanceMode;
 
   get isMocapActive() { return this.mode === '3d' && this.mocapEnabled; }
   get motionHint() {
@@ -149,11 +152,13 @@ export class Rabbit3DPreview {
       const viewport = purpose === 'game' ? CARROT_GAME_VIEWPORT : DEV_CARROT_GRAB_DEBUG ? CARROT_GRAB_VIEWPORT : RABBIT_VIEWPORT;
       try { this.overlay = new ThreeOverlay(rabbit, () => {
         if (generation === this.generation && !this.destroyed) this.fallback('WebGL context lost');
-      }, viewport); }
+      }, viewport, { lowPerformance: this.lowPerformance }); }
       catch (error) { rabbit.dispose(); throw error; }
-      this.texture = this.scene.textures.createCanvas(this.textureKey, viewport.width, viewport.height)!;
+      const { width, height } = this.overlay.renderSize;
+      this.texture = this.scene.textures.createCanvas(this.textureKey, width, height)!;
       if (!this.texture) throw new Error('Unable to allocate rabbit texture');
-      this.image = this.scene.add.image(viewport.x, viewport.y, this.textureKey).setOrigin(0).setDepth(CARROT_PULL_DEPTHS.rabbit);
+      this.image = this.scene.add.image(viewport.x, viewport.y, this.textureKey).setOrigin(0)
+        .setDisplaySize(viewport.width, viewport.height).setDepth(CARROT_PULL_DEPTHS.rabbit);
       this.mode = '3d'; this.status = 'ready'; this.sprite.root.setVisible(false); this.sprite.pause();
       rabbit.rig.setIKEnabled(rabbit.rig.version === 'v3' && (purpose === 'game' || new URLSearchParams(location.search).get('rabbitIK') !== '0'));
       rabbit.rig.setArmInwardEnabled(purpose === 'game' || DEV_CARROT_GRAB_DEBUG);
@@ -266,7 +271,10 @@ export class Rabbit3DPreview {
       this.coordinator.preparePose(deltaSeconds, pose.bendAmount, pose, this.roundProgress);
       preparationMs = performance.now() - started;
     }
-    if (!this.overlay || !this.texture || !this.overlay.render(deltaSeconds, step => {
+    const overlay = this.overlay;
+    const texture = this.texture;
+    if (!overlay || !texture) return;
+    const rendered = overlay.render(deltaSeconds, step => {
       const started = performance.now();
       if (this.coordinator) {
         this.coordinator.afterPose(step);
@@ -277,15 +285,16 @@ export class Rabbit3DPreview {
         this.grabDebug?.update(step);
         this.grabUpdateMs = performance.now() - started;
       }
-    })) return;
+    });
     if (this.pendingFallback) { this.fallback(this.pendingFallback); return; }
-    const context = this.texture.context;
-    const viewport = this.overlay.viewport;
-    context.clearRect(0, 0, viewport.width, viewport.height);
-    context.drawImage(this.overlay.renderer.domElement, 0, 0);
-    this.texture.refresh();
+    if (!rendered) return;
+    const context = texture.context;
+    context.clearRect(0, 0, texture.width, texture.height);
+    context.drawImage(overlay.renderer.domElement, 0, 0);
+    texture.refresh();
+    recordThreeFrame();
     this.mocap?.recordRenderedFrame();
-    this.debug?.update(this.overlay.fps);
+    this.debug?.update(overlay.fps);
     this.ikDebug?.update(deltaSeconds);
     this.gameDebug?.update(deltaSeconds);
     this.updateMocapDiagnostics();
@@ -415,6 +424,7 @@ export class Rabbit3DPreview {
 
   snapshot() {
     return { mode: this.mode, status: this.status, fps: this.overlay?.fps ?? 0, renderedFrames: this.overlay?.renderedFrames ?? 0,
+      renderSize: this.overlay?.renderSize,
       renderMode: this.mode === 'sprite' ? 'sprite' : this.isGameplay ? '3d-game' : '3d-debug',
       purpose: this.purpose, gameplayReady: this.gameplayReady, gameplaySelected: this.gameplaySelected,
       bones: this.overlay ? [...this.overlay.rabbit.rig.bones.keys()] : [],

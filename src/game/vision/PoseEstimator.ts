@@ -37,8 +37,9 @@ export interface PoseEstimatorOptions {
   onFrame: (frame: PoseFrame) => void;
   onError?: (error: PoseEstimatorError) => void;
   maxFps?: number;
+  outputSegmentationMasks?: boolean;
   baseUrl?: string;
-  createLandmarker?: (assets: PoseEstimatorAssets) => Promise<PoseLandmarkerLike>;
+  createLandmarker?: (assets: PoseEstimatorAssets, outputSegmentationMasks: boolean) => Promise<PoseLandmarkerLike>;
   requestFrame?: (callback: FrameRequestCallback) => number;
   cancelFrame?: (id: number) => void;
   now?: () => number;
@@ -49,7 +50,7 @@ export function poseEstimatorAssets(baseUrl: string): PoseEstimatorAssets {
   return { wasmRoot: `${root}/wasm`, modelPath: `${root}/models/pose_landmarker_lite.task` };
 }
 
-async function createLandmarker(assets: PoseEstimatorAssets): Promise<PoseLandmarkerLike> {
+async function createLandmarker(assets: PoseEstimatorAssets, outputSegmentationMasks: boolean): Promise<PoseLandmarkerLike> {
   const { FilesetResolver, PoseLandmarker } = await import('@mediapipe/tasks-vision');
   const fileset = await FilesetResolver.forVisionTasks(assets.wasmRoot);
   return PoseLandmarker.createFromOptions(fileset, {
@@ -59,7 +60,7 @@ async function createLandmarker(assets: PoseEstimatorAssets): Promise<PoseLandma
     minPoseDetectionConfidence: 0.55,
     minPosePresenceConfidence: 0.55,
     minTrackingConfidence: 0.55,
-    outputSegmentationMasks: true,
+    outputSegmentationMasks,
   });
 }
 
@@ -85,6 +86,7 @@ export class PoseEstimator {
   private readonly cancelFrame: (id: number) => void;
   private readonly now: () => number;
   private readonly intervalMs: number;
+  private readonly outputSegmentationMasks: boolean;
   private landmarker?: PoseLandmarkerLike;
   private initializing?: Promise<void>;
   private video?: HTMLVideoElement;
@@ -106,7 +108,10 @@ export class PoseEstimator {
     this.requestFrame = options.requestFrame ?? requestAnimationFrame.bind(globalThis);
     this.cancelFrame = options.cancelFrame ?? cancelAnimationFrame.bind(globalThis);
     this.now = options.now ?? (() => performance.now());
-    this.intervalMs = 1000 / Math.max(1, Math.min(25, options.maxFps ?? 25));
+    const maxFps = Math.max(1, Math.min(25, options.maxFps ?? 25));
+    // Allow a 1 ms margin for refresh timestamps rounded just below the 10 FPS interval.
+    this.intervalMs = 1000 / maxFps - (maxFps === 10 ? 1 : 0);
+    this.outputSegmentationMasks = options.outputSegmentationMasks ?? true;
   }
 
   initialize(): Promise<void> {
@@ -117,7 +122,7 @@ export class PoseEstimator {
     const assets = poseEstimatorAssets(this.options.baseUrl ?? import.meta.env?.BASE_URL ?? '/');
     const pending = (async () => {
       try {
-        const landmarker = await (this.options.createLandmarker ?? createLandmarker)(assets);
+        const landmarker = await (this.options.createLandmarker ?? createLandmarker)(assets, this.outputSegmentationMasks);
         if (this.destroyed || generation !== this.generation) {
           landmarker.close();
           throw new PoseEstimatorError('cancelled');
@@ -203,9 +208,10 @@ export class PoseEstimator {
             this.poseFps = this.poseFps === 0 ? instantaneousFps : this.poseFps * 0.8 + instantaneousFps * 0.2;
           }
           this.previousFrameMs = timestampMs;
+          const mask = this.outputSegmentationMasks ? result.segmentationMasks?.[0] : undefined;
           this.options.onFrame({
             landmarks: result.landmarks[0],
-            personMask: result.segmentationMasks?.[0] ? personMask(result.segmentationMasks[0]) : undefined,
+            personMask: mask ? personMask(mask) : undefined,
             timestampMs, inferenceMs, poseFps: this.poseFps,
             averageInferenceMs: this.totalInferenceMs / this.inferenceCount,
             imageWidth: video.videoWidth, imageHeight: video.videoHeight,

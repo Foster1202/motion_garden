@@ -7,6 +7,8 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../layout';
 import { neutralRabbitPose, type RabbitPose } from '../mocap/RabbitPose';
 import { APPLE_CONFIG } from './appleConfig';
 import { AppleOrchardEnvironment, ORCHARD_PIXELS_PER_UNIT as P, ORCHARD_X_TRAVEL } from './AppleOrchardEnvironment';
+import { getGameSettings } from '../settings/gameSettings';
+import { recordThreeFrame } from '../performance/performanceMetrics';
 
 type Side = 'left' | 'right';
 type Goal = Side | 'basket';
@@ -46,6 +48,7 @@ const WALK_SPEED = 8;
 export class AppleOrchardView {
   private readonly abort = new AbortController();
   private readonly textureKey = 'apple-orchard-frame';
+  private readonly lowPerformance = getGameSettings().lowPerformanceMode;
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private readonly reaches: Partial<Record<Side, ReachSample>> = {};
   private overlay?: ThreeOverlay;
@@ -73,9 +76,11 @@ export class AppleOrchardView {
     try {
       rabbit = await Rabbit3D.load(`${import.meta.env.BASE_URL}assets/rabbit3d/rabbit_carrot.glb`, this.abort.signal);
       if (this.destroyed) { rabbit.dispose(); return false; }
-      const overlay = new ThreeOverlay(rabbit, this.onFailure, VIEWPORT);
+      const overlay = new ThreeOverlay(rabbit, this.onFailure, VIEWPORT, {
+        lowPerformance: this.lowPerformance,
+        outputSize: { width: TEXTURE_WIDTH, height: TEXTURE_HEIGHT },
+      });
       this.overlay = overlay;
-      overlay.renderer.setSize(TEXTURE_WIDTH, TEXTURE_HEIGHT, false);
       overlay.renderer.domElement.dataset.appleOrchard = 'true';
       Object.assign(overlay.camera, {
         left: -GAME_WIDTH / (2 * P), right: GAME_WIDTH / (2 * P),
@@ -92,7 +97,8 @@ export class AppleOrchardView {
       this.tracker = new RabbitHandTracker(rabbit);
       this.orchard = new AppleOrchardEnvironment();
       overlay.scene.add(this.orchard.root);
-      this.texture = this.scene.textures.createCanvas(this.textureKey, TEXTURE_WIDTH, TEXTURE_HEIGHT)!;
+      const { width, height } = overlay.renderSize;
+      this.texture = this.scene.textures.createCanvas(this.textureKey, width, height)!;
       this.image = this.scene.add.image(0, 0, this.textureKey).setOrigin(0).setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
       this.update(0, { x: 0, target: null, pose: neutralRabbitPose() });
       return true;
@@ -249,9 +255,10 @@ export class AppleOrchardView {
 
   private upload() {
     if (!this.texture || !this.overlay) return;
-    this.texture.context.clearRect(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    this.texture.context.clearRect(0, 0, this.texture.width, this.texture.height);
     this.texture.context.drawImage(this.overlay.renderer.domElement, 0, 0);
     this.texture.refresh();
+    recordThreeFrame();
     this.frames++;
   }
 
@@ -272,7 +279,7 @@ export class AppleOrchardView {
         visibleApples: tree.highAppleCount + tree.reachableApples.filter(apple => apple.visible).length };
     };
     return {
-      renderedFrames: this.frames, x: this.x, target: this.target,
+      renderedFrames: this.frames, renderSize: overlay.renderSize, x: this.x, target: this.target,
       root: this.project(new Vector3(overlay.rabbit.pivot.position.x, 0, 0)),
       hands: { left: this.project(this.hands.leftGripPosition), right: this.project(this.hands.rightGripPosition) },
       glow: { left: orchard.trees.left.glow.opacity, right: orchard.trees.right.glow.opacity,

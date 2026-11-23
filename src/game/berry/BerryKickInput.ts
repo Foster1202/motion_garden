@@ -5,6 +5,7 @@ import { PoseCamera } from '../vision/PoseCamera';
 import { PoseEstimator } from '../vision/PoseEstimator';
 import { PersonOnlyRenderer } from '../vision/PersonOnlyRenderer';
 import { getGameSettings } from '../settings/gameSettings';
+import { clearPosePerformance, recordPosePerformance } from '../performance/performanceMetrics';
 import type { TrackingMode } from '../vision/trackingMode';
 const neutral = (): BerryMotionSample => ({ leftLegExtensionAmount: 0, rightLegExtensionAmount: 0,
   lateralOffset: 0, lateralReliable: false, reliable: false, timestampMs: 0 });
@@ -47,9 +48,11 @@ export class BerryKickInput {
       this.sample = neutral();
       this.onError(message);
     };
-    const camera = new PoseCamera({ onEnded: () => fail('相機已中斷，請重新開啟或使用鍵盤。') });
+    const { lowPerformanceMode } = settings;
+    const outputSegmentationMasks = !lowPerformanceMode && settings.backgroundProcessing;
+    const camera = new PoseCamera({ lowPerformanceMode, onEnded: () => fail('相機已中斷，請重新開啟或使用鍵盤。') });
     this.camera = camera;
-    const estimator = new PoseEstimator({ onFrame: frame => {
+    const estimator = new PoseEstimator({ maxFps: lowPerformanceMode ? 10 : undefined, outputSegmentationMasks, onFrame: frame => {
       if (generation !== this.generation || this.paused || this.destroyed) return;
       const age = performance.now() - frame.timestampMs;
       if (!Number.isFinite(age) || age < 0 || age >= LEG_EXTENSION_CONFIG.maximumGapMs
@@ -60,9 +63,10 @@ export class BerryKickInput {
       this.lastFrame = frame.timestampMs;
       this.stale = false;
       this.poseFps = frame.poseFps;
+      recordPosePerformance(this, frame);
       this.sample = this.retargeter.retargetLegMotion(this.extractor.extractLegMotion(frame));
       this.preview?.render(frame, {
-        background: settings.backgroundProcessing ? settings.backgroundMode : 'none',
+        background: outputSegmentationMasks ? settings.backgroundMode : 'none',
         showBodyKeypoints: settings.showBodyKeypoints, confidenceThreshold: settings.confidenceThreshold,
       });
     }, onError: error => fail(error.message) });
@@ -75,7 +79,7 @@ export class BerryKickInput {
       canvas.className = 'berry-camera';
       host.append(video, canvas);
       this.previewCanvas = canvas;
-      this.preview = new PersonOnlyRenderer(video, canvas);
+      this.preview = new PersonOnlyRenderer(video, canvas, { nativeVideo: lowPerformanceMode });
       await estimator.initialize();
       if (generation !== this.generation || this.destroyed) return;
       await estimator.start(video);
@@ -129,6 +133,7 @@ export class BerryKickInput {
   }
   pause() {
     this.paused = true; this.keys.clear(); this.estimator?.pause(); this.preview?.clear();
+    clearPosePerformance(this);
     if (this.mode === 'camera') {
       this.stale = true;
       this.sample = this.extractor.suspendLegMotion('paused');
@@ -142,6 +147,7 @@ export class BerryKickInput {
   }
   private releaseCamera() {
     this.lastFrame = undefined; this.stale = true; this.poseFps = 0;
+    clearPosePerformance(this);
     this.estimator?.destroy(); this.estimator = undefined; this.preview?.clear(); this.preview = undefined;
     this.previewCanvas?.remove(); this.previewCanvas = undefined; this.camera?.destroy(); this.camera = undefined;
   }

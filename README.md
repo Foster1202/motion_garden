@@ -32,6 +32,10 @@ npm run preview
 
 `sync:assets` 同步 Rabbit atlas、rabbit3d GLB、Berry 圖層、Carrot Pull 七張 PNG／metadata，以及 MediaPipe WASM。`sync:mediapipe` 可單獨同步 WASM，並驗證模型 SHA256。Runtime 只讀 public 資產，不讀 model 目錄。
 
+## 低效能模式
+
+在首頁「設置」勾選「低效能模式」並儲存，下次開局套用。此選項預設關閉。開啟後，相機優先請求 320×240，姿勢推論約 10 FPS，背景處理暫停，3D 畫布降低解像度及更新頻率。可獨立勾選「顯示效能數據」比較兩種模式。Raspberry Pi 4GB／8GB 和 AMD GX-215JJ Windows 的部署、比較方法及驗證範圍見 [低效能模式部署與測試](docs/low-performance-mode.md)。
+
 ## 輸入模式
 
 首頁「開始遊戲」→「拔蘿蔔」→ 選擇模式。鍵盤直接開始。鏡頭先等候人物入鏡，再自動進行自然站立及舒服淺屈膝設定。
@@ -70,7 +74,7 @@ Playwright 的鏡頭流程使用虛擬相機及合成關鍵點。真人體感驗
 
 鏡頭需要 **HTTPS 或 localhost** secure context，以及 `navigator.mediaDevices.getUserMedia`。目前 QA 使用 macOS Chrome；Safari、Firefox、實體 Raspberry Pi 及真人 webcam 流程仍需各自驗證。非 localhost 的純 HTTP LAN 網址不能假定可用鏡頭。
 
-只有 video 權限，`audio:false`，不申請麥克風。前置鏡頭理想輸入 **640×360**，不要求 exact resolution；實際尺寸由裝置決定。權限拒絕、沒有相機、相機忙碌、不安全環境、瀏覽器不支援及模型失敗均顯示香港繁體中文提示並保留鍵盤選項。可在瀏覽器網站權限設定重新允許鏡頭後重試。
+只有 video 權限，`audio:false`，不申請麥克風。前置鏡頭理想輸入為標準模式 **640×360**、低效能模式 **320×240**，兩者的實際尺寸由瀏覽器和相機協商。權限拒絕、沒有相機、相機忙碌、不安全環境、瀏覽器不支援及模型失敗均顯示香港繁體中文提示並保留鍵盤選項。可在瀏覽器網站權限設定重新允許鏡頭後重試。
 
 開始時的安全提示為「請保持地面清爽，旁邊最好有穩固椅子。」
 
