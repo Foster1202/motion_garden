@@ -43,10 +43,11 @@ export class BerryRabbitView {
     const light = new DirectionalLight(0xffe9cc, 2.4); light.position.set(-3, 5, 7); this.world.add(light);
     this.tracker = new RabbitFootTracker(rabbit, this.camera, { x: 0, y: 0, width: 1600, height: 900 });
     const rest = this.tracker.sample().left.x;
+    this.tracker.samplePaws();
     rabbit.rig.setLegExtension('left', 1); rabbit.rig.update(10);
     const extended = this.tracker.sample().left.x;
     rabbit.rig.resetPose(true);
-    // Keep the standing foot outside the actual trunk; extension closes half its available reach.
+    // Preserve the existing movement span independently of the paw contact point.
     this.maxTravel = 800 - (C.tree.left + C.tree.width * .045 + (800 - rest) + (rest - extended) * .5);
     this.texture = scene.textures.createCanvas(this.key, width, height)!;
     this.image = scene.add.image(0, 0, this.key).setOrigin(0).setDisplaySize(1600, 900).setDepth(5);
@@ -82,7 +83,7 @@ export class BerryRabbitView {
     }
     this.elapsed += dt;
     if (this.elapsed >= 1) { this.fps = this.frames / this.elapsed; this.frames = 0; this.elapsed = 0; }
-    return this.tracker.sample();
+    return this.tracker.samplePaws();
   }
   destroy() {
     if (this.disposed) return; this.disposed = true;

@@ -23,6 +23,7 @@ export const LEG_EXTENSION_CONFIG = {
   maximumGapMs: 300,
   recoveryFrames: 3,
   deadzoneLegLengths: 0.07,
+  fullStandingOffset: 0.12,
   fullExtensionLegLengths: 0.28,
   maximumSupportOffset: 0.17,
   maximumLeanDegrees: 25,
@@ -339,8 +340,12 @@ function isNaturalThigh(thigh: ThighPose) {
 }
 
 function fullMotion(outward: number): KickMotion {
-  const amount = clamp((outward - C.deadzoneLegLengths) / (C.fullExtensionLegLengths - C.deadzoneLegLengths));
-  return { mode: 'full', amount, extended: amount >= .4, retracted: amount <= .15 };
+  const span = C.fullExtensionLegLengths - C.deadzoneLegLengths;
+  const qualifyingOffset = C.deadzoneLegLengths + .4 * span;
+  // A stance accepted for the reference must also be able to rearm the kick.
+  const amount = outward >= qualifyingOffset ? clamp((outward - C.deadzoneLegLengths) / span)
+    : .4 * clamp((outward - C.fullStandingOffset) / (qualifyingOffset - C.fullStandingOffset));
+  return { mode: 'full', amount, extended: outward >= qualifyingOffset, retracted: outward <= C.fullStandingOffset };
 }
 
 function partialMotion(thigh: ThighPose, reference: ThighPose): KickMotion {
@@ -365,7 +370,7 @@ function measureSingleLeg(hip: Point, knee: Point | undefined, ankle: Point | un
   const valid = scale >= .06 && Math.abs(hipWidth) / scale >= .08 && Math.abs(shoulderWidth) / scale >= .12
     && lean <= C.maximumLeanDegrees && (ankle.y - hip.y) / scale >= .55 && outward >= -.15
     && (outward <= .12 || (kneeOut >= -.05 && kneeOut <= outward + .12));
-  const standing = valid && Math.abs(outward) <= .12 && (calculateAngle(hip, knee, ankle) ?? 0) >= 155;
+  const standing = valid && Math.abs(outward) <= C.fullStandingOffset && (calculateAngle(hip, knee, ankle) ?? 0) >= 155;
   return { outward, valid, standing };
 }
 
@@ -388,7 +393,7 @@ function measureLegs(lh: Point, rh: Point, lk: Point, rk: Point, la: Point, ra: 
     && (leftOut <= C.maximumSupportOffset || rightOut <= C.maximumSupportOffset)
     && (leftOut <= .12 || (leftKneeOut >= -.05 && leftKneeOut <= leftOut + .12))
     && (rightOut <= .12 || (rightKneeOut >= -.05 && rightKneeOut <= rightOut + .12));
-  const standing = valid && Math.max(Math.abs(leftOut), Math.abs(rightOut)) <= .12
+  const standing = valid && Math.max(Math.abs(leftOut), Math.abs(rightOut)) <= C.fullStandingOffset
     && (calculateAngle(lh, lk, la) ?? 0) >= 155 && (calculateAngle(rh, rk, ra) ?? 0) >= 155;
   return { scale, leftOut, rightOut, valid, standing };
 }

@@ -300,3 +300,20 @@ test('cross-body ankle and inward knee are not outward leg extensions', () => {
   (bad.landmarks![25] as PoseLandmark).x = .50;
   assert.equal(detector.update(bad).reliable, false);
 });
+
+test('full tracking rearms from the slightly wide stance accepted by its own standing reference', () => {
+  const detector = new LegExtensionDetector();
+  let sample = detector.update(frame(0, .025, .025));
+  for (let t = 40; t <= 400; t += 40) sample = detector.update(frame(t, .025, .025));
+  assert.equal(detector.hasReference, true);
+  assert.deepEqual(sample.legTracking, { left: { mode: 'full', reliable: true }, right: { mode: 'full', reliable: true } });
+  assert.equal(sample.leftLegExtensionAmount, 0);
+  assert.equal(sample.rightLegExtensionAmount, 0);
+  for (let t = 440; t <= 840; t += 40) sample = detector.update(frame(t, .04, .025));
+  assert.ok(sample.leftLegExtensionAmount > .4 && sample.leftLegExtensionAmount < .6);
+  assert.equal(sample.rightLegExtensionAmount, 0);
+  detector.interrupt('paused');
+  for (let t = 1000; t <= 1400; t += 40) sample = detector.update(frame(t, .025, .025));
+  assert.equal(sample.legTracking?.left.reliable, true);
+  assert.ok(sample.leftLegExtensionAmount <= .15);
+});

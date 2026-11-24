@@ -58,7 +58,11 @@ const enter = async () => {
     const update = scene.round.update.bind(scene.round);
     scene.round.update = (...args) => {
       const contact = update(...args);
-      if (contact) window.__cameraContacts.push(contact);
+      if (contact) {
+        const { side } = contact;
+        window.__cameraContacts.push({ ...contact, paw: args[1].feet[side],
+          ankle: scene.view.tracker.sample()[side], extension: args[1][side] });
+      }
       return contact;
     };
   });
@@ -398,10 +402,17 @@ async function standardRun() {
   assert.equal(await page.evaluate(() => window.__cameraTargetDraws), 1);
   await page.screenshot({ path: `${output}/camera-wrong-right.png` });
   check('Camera projected contact on the wrong tree retains the target and RNG state and produces one feedback event while held');
-  await fixture({ right: 0, shift: .13, cropAnkles: true });
-  await wait(s => s.rootX < 540 && s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
+  await fixture({ right: 0, shift: .0985, cropAnkles: true });
+  await wait(s => s.rootX > 498 && s.rootX < 508 && s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
   assert.equal((await snapshot()).score, 0);
-  await fixture({ left: .07 }); const left = await wait(s => s.score === 3);
+  await fixture({ left: .048 }); const left = await wait(s => s.score === 3);
+  const pawContact = await page.evaluate(() => window.__cameraContacts.find(contact => contact.kind === 'harvest'));
+  assert.ok(pawContact.extension >= .4 && pawContact.extension < .75, JSON.stringify(pawContact));
+  assert.ok(pawContact.ankle.x > left.zones.left.x + left.zones.left.width, JSON.stringify(pawContact));
+  assert.ok(pawContact.paw.x <= left.zones.left.x + left.zones.left.width, JSON.stringify(pawContact));
+  assert.equal(await page.evaluate(async () =>
+    (await import('/src/main.ts')).game.scene.getScene('BerryKick').trees.left.falling.size), 3);
+  report.pawContact = pawContact;
   assert.equal(left.tracking.legTracking.left.mode, 'partial');
   assert.equal(left.tracking.legTracking.right.mode, 'partial');
   assert.ok(left.feet.left.x >= left.zones.left.x && left.feet.left.x <= left.zones.left.x + left.zones.left.width);
@@ -417,7 +428,7 @@ async function standardRun() {
   assert.equal((await snapshot()).target, 'right');
   assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'right');
   await page.screenshot({ path: `${output}/camera-left-contact.png` });
-  check('Both ankles cropped: thigh extension drives the actual left bone and virtual contact; restoring full tracking retains the held leg without duplicate scoring');
+  check('A modest thigh kick with cropped ankles scores and drops three berries when the paw touches before the ankle; restoring full tracking cannot double-score');
   await fixture({ left: 0 }); await wait(s => s.armed.left);
   await fixture({ shift: -.13, hidden: [27] });
   await wait(s => s.rootX > 1060 && s.tracking.legTracking.left.mode === 'partial'
