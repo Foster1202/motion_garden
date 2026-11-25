@@ -235,7 +235,12 @@ export class AppleHarvestInput {
       this.status = 'recovering';
       return;
     }
-    const { x, pose } = this.retargeter.retargetArmReach(human, this.reference);
+    // A comfortable chest-height gesture still reaches the orchard branch on screen.
+    const forAvatar = (raise: number | null) => raise === null ? null
+      : Math.max(0, Math.min(1, (raise - C.lowerThreshold) / (C.raiseThreshold - C.lowerThreshold)));
+    const { x, pose } = this.retargeter.retargetArmReach({
+      ...human, leftRaise: forAvatar(human.leftRaise), rightRaise: forAvatar(human.rightRaise),
+    }, this.reference);
     this.sample = { x: clampTravel(x), pose, lateralReliable: true, left: human.leftRaise,
       right: human.rightRaise, timestampMs: timestamp };
     this.status = 'tracking';

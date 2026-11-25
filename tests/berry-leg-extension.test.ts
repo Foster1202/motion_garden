@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { BERRY_CONFIG } from '../src/game/berry/berryConfig';
 import { LegExtensionDetector } from '../src/game/mocap/LegExtensionDetector';
 import { HumanPoseExtractor } from '../src/game/mocap/HumanPoseExtractor';
 import { MotionRetargeter } from '../src/game/mocap/MotionRetargeter';
@@ -104,6 +105,15 @@ test('low confidence, invalid coordinates, duplicate timestamps and unstable wid
   assert.equal(detector.update(frame(440, .07, .07)).reliable, false);
 });
 
+test('two slightly spread legs cannot both qualify as full kicks', () => {
+  const detector = new LegExtensionDetector(); establish(detector);
+  const sample = settle(detector, .032, .032);
+  assert.equal(sample.lateralReliable, true);
+  assert.equal(sample.reliable, false);
+  assert.equal(sample.leftLegExtensionAmount, 0);
+  assert.equal(sample.rightLegExtensionAmount, 0);
+});
+
 test('natural stance has a deadzone and retraction returns amounts to zero', () => {
   const detector = new LegExtensionDetector(); establish(detector);
   assert.equal(settle(detector, .01).leftLegExtensionAmount, 0);
@@ -111,6 +121,29 @@ test('natural stance has a deadzone and retraction returns amounts to zero', () 
   let sample = detector.update(frame(1200));
   for (let t = 1240; t < 1600; t += 40) sample = detector.update(frame(t));
   assert.ok(sample.leftLegExtensionAmount < .01);
+});
+
+test('a short step at standing ankle height qualifies in full or cropped tracking', () => {
+  for (const crop of [[], [27, 28]]) {
+    const detector = new LegExtensionDetector();
+    establish(detector, false, 1, crop);
+    let sample = detector.update(hide(frame(440, .027), ...crop));
+    for (let time = 480; time <= 840; time += 40) sample = detector.update(hide(frame(time, .027), ...crop));
+    assert.ok(sample.leftLegExtensionAmount < BERRY_CONFIG.extensionThreshold);
+    for (let time = 880; time <= 1320; time += 40) sample = detector.update(hide(frame(time, .032), ...crop));
+    assert.ok(sample.legTracking?.left.reliable);
+    assert.ok(sample.leftLegExtensionAmount >= BERRY_CONFIG.extensionThreshold && sample.leftLegExtensionAmount < .4);
+    assert.equal(sample.rightLegExtensionAmount, 0);
+  }
+});
+
+test('a cropped kick confirms after 80ms of fresh thigh samples', () => {
+  const detector = new LegExtensionDetector();
+  establish(detector, false, 1, [27, 28]);
+  const kicked = (timestamp: number) => detector.update(hide(frame(timestamp, .07), 27, 28));
+  assert.equal(kicked(440).leftLegExtensionAmount, 0);
+  assert.equal(kicked(480).leftLegExtensionAmount, 0);
+  assert.ok(kicked(520).leftLegExtensionAmount >= BERRY_CONFIG.extensionThreshold);
 });
 
 test('existing named extractor and retargeter support Berry without any calibration profile', () => {
@@ -201,7 +234,7 @@ test('standing with a cropped head and both ankles calibrates independent thigh 
       for (let t = from + 40; t <= to; t += 40) sample = detector.update(hide(frame(t, left, right, .045, mirror, scale), ...hidden));
       return sample;
     };
-    const spike = run(880, 960, .07);
+    const spike = run(880, 920, .07);
     assert.equal(spike.leftLegExtensionAmount, 0);
     assert.equal(run(1000, 1160, 0).leftLegExtensionAmount, 0);
     const left = run(1200, 1560, .07);

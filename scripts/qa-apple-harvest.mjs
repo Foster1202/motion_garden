@@ -45,13 +45,13 @@ const check = (name, detail) => report.checks.push({ name, detail });
 const handKey = side => side === 'left' ? 'q' : 'e';
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-async function until(predicate, timeoutMs = 12000) {
+async function until(predicate, timeoutMs = 12000, intervalMs = 65) {
   const deadline = Date.now() + timeoutMs;
   let last;
   while (Date.now() < deadline) {
     last = await snapshot();
     if (predicate(last)) return last;
-    await page.waitForTimeout(65);
+    await page.waitForTimeout(intervalMs);
   }
   throw new Error(`Timed out waiting for ${predicate.toString()}: ${JSON.stringify(last)}`);
 }
@@ -104,10 +104,10 @@ async function moveTo(zone, nearEdge = false) {
   const toward = zone === 'basket' ? (playerX < 0 ? 'd' : 'a') : zone === 'left' ? 'a' : 'd';
   await page.keyboard.down(toward);
   try {
-    const treeThreshold = nearEdge ? .493 : .63;
+    const treeThreshold = nearEdge ? .376 : .63;
     const basketThreshold = nearEdge ? .288 : .08;
     await until(value => zone === 'basket' ? Math.abs(value.playerX) <= basketThreshold :
-      (zone === 'left' ? value.playerX < -treeThreshold : value.playerX > treeThreshold));
+      (zone === 'left' ? value.playerX < -treeThreshold : value.playerX > treeThreshold), 12000, nearEdge ? 24 : 65);
   } finally {
     await page.keyboard.up(toward);
   }
@@ -146,10 +146,45 @@ function assertPickContact(value, tree, hand) {
 
 function verifyGlow(value, goal) {
   assert.equal(value.view.target, goal);
-  assert.ok(value.view.glow[goal] > .86);
+  assert.ok(value.view.glow[goal] > .78);
   for (const other of ['left', 'right', 'basket']) {
     if (other !== goal) assert.ok(value.view.glow[other] < .07);
   }
+}
+
+async function measureCrownPulse(duration, goal) {
+  const start = (await snapshot()).elapsedMs;
+  const alphas = [];
+  await until(value => {
+    assert.equal(value.view.target, goal);
+    assert.ok(value.view.crownGlow[goal === 'left' ? 'right' : 'left'] < .07);
+    alphas.push(value.view.crownGlow[goal]);
+    return value.elapsedMs - start >= duration;
+  }, duration + 6000);
+  return { min: Math.min(...alphas), max: Math.max(...alphas), samples: alphas.length };
+}
+
+async function verifyZoneCircles() {
+  const rings = await page.evaluate(async () => {
+    const { game } = await import('/src/main.ts');
+    const { appleZoneBounds } = await import('/src/game/apple/appleConfig.ts');
+    const { ORCHARD_X_TRAVEL } = await import('/src/game/apple/AppleOrchardEnvironment.ts');
+    const { orchard } = game.scene.getScene('AppleHarvest').view;
+    return Object.fromEntries(['left', 'right', 'basket'].map(zone => {
+      const marker = (zone === 'basket' ? orchard.basket : orchard.trees[zone]).zoneMarker;
+      const { innerRadius: inner, outerRadius: outer } = marker.geometry.parameters;
+      const center = (marker.parent.position.x + marker.position.x) / ORCHARD_X_TRAVEL;
+      const radius = marker.scale.x / ORCHARD_X_TRAVEL;
+      return [zone, { bounds: appleZoneBounds(zone), inner, outer, center, radius }];
+    }));
+  });
+  for (const { bounds, inner, outer, center, radius } of Object.values(rings)) {
+    assert.ok(outer - inner < .10 && outer > inner);
+    assert.ok(Math.abs(center - radius - bounds.minX) < .001);
+    assert.ok(Math.abs(center + radius - bounds.maxX) < .001);
+  }
+  assert.ok(rings.left.bounds.maxX > -.47 && rings.right.bounds.minX < .47);
+  check('Apple uses thin ground ring bands and wider left/right interaction limits', rings);
 }
 
 async function verifyViewport() {
@@ -204,7 +239,7 @@ async function keyboardRun() {
   await seedLeft();
   const started = Date.now();
   await dialogAction('keyboard').click();
-  const initial = await until(value => value.active && value.view?.renderedFrames > 2 && value.view.glow.left > .86);
+  const initial = await until(value => value.active && value.view?.renderedFrames > 2 && value.view.glow.left > .78);
   assert.equal(initial.mode, 'keyboard');
   assert.equal(initial.target, 'left');
   assert.match(await hud('target').innerText(), /←\s*左/);
@@ -215,6 +250,14 @@ async function keyboardRun() {
   assert.equal(initial.view.rig.armControl, 'shoulder');
   await capture('01-keyboard-orchard');
   check('Left target, 3D orchard, rabbit, trees, fruit and central basket', initial.view);
+  await verifyZoneCircles();
+  const pulse = await measureCrownPulse(3900, 'left');
+  assert.ok(pulse.min > .15 && pulse.max - pulse.min > .35, JSON.stringify(pulse));
+  await until(value => value.view.crownGlow.left > pulse.max - .035);
+  await capture('left-crown-pulse-high');
+  await until(value => value.view.crownGlow.left < pulse.min + .035);
+  await capture('left-crown-pulse-low');
+  check('The active crown has a strong, always-visible game-clock breathing pulse', pulse);
 
   await moveTo('right');
   await holdAndRelease('e');
@@ -244,10 +287,12 @@ async function keyboardRun() {
     assert.equal(raised.score, 0);
     assert.deepEqual(raised.view.rig.forearmRotations, initial.view.rig.forearmRotations);
   });
-  sample = await until(value => heldFruit(value) && value.view.glow.basket > .86 && value.view.glow.left < .07);
+  sample = await until(value => heldFruit(value) && value.view.glow.basket > .78 && value.view.glow.left < .07);
   const pickX = sample.playerX;
-  assert.ok(pickX > -.58 && pickX < -.47, `Pick stayed outside the former tree zone at ${pickX}`);
+  assert.ok(pickX > -.47 && pickX < -.34,
+    `Pick must start on the new inner tree footprint at ${pickX}`);
   const firstFruit = sample.view.fruit;
+  const firstRoot = sample.view.root;
   const holdingError = assertHeld(sample);
   const contact = assertPickContact(sample, 'left', 'right');
   assert.equal(Boolean(sample.carrying), true);
@@ -265,7 +310,8 @@ async function keyboardRun() {
   const basketX = sample.playerX;
   assert.ok(basketX > -.30 && basketX < -.16, `Deposit stayed outside the former basket zone at ${basketX}`);
   const movingError = assertHeld(sample);
-  assert.ok(distance(firstFruit, sample.view.fruit) > 90);
+  const travel = sample.view.root.x - firstRoot.x;
+  assert.ok(travel > 30 && Math.abs(sample.view.fruit.x - firstFruit.x - travel) < 26);
   assert.equal(sample.score, 0);
   assert.equal(sample.state, 'RETURN_TO_BASKET');
   check('The widened tree and basket zones work outside both former boundaries, and carrying preserves zero score',
@@ -305,7 +351,7 @@ async function keyboardRun() {
     assert.equal(target, score === 4 ? 'right' : 'left');
     if (target === 'right') {
       assert.match(await hud('target').innerText(), /右\s*→/);
-      const rightGoal = await until(value => value.view.glow.right > .86 && value.view.glow.basket < .07);
+      const rightGoal = await until(value => value.view.glow.right > .78 && value.view.glow.basket < .07);
       verifyGlow(rightGoal, 'right');
       await capture('right-tree-highlight');
     }
@@ -378,6 +424,17 @@ async function keyboardRun() {
   await action('start').waitFor();
   assert.equal(await hud('time').count(), 0);
   check('Replay resets the challenge and Home clears the Apple HUD');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await enter();
+  await seedLeft();
+  await dialogAction('keyboard').click();
+  await until(value => value.active && value.view.crownGlow.left > .8);
+  await page.waitForTimeout(450);
+  const staticGlow = await measureCrownPulse(1550, 'left');
+  assert.ok(staticGlow.min > .8 && staticGlow.max - staticGlow.min < .01, JSON.stringify(staticGlow));
+  await capture('apple-reduced-motion');
+  check('Reduced motion keeps the target crown steadily visible without pulsing', staticGlow);
   await context.close();
 }
 
@@ -388,7 +445,8 @@ async function installCameraFixture() {
       const { DEFAULT_GAME_SETTINGS, saveGameSettings } = await import('/src/game/settings/gameSettings.ts');
       saveGameSettings({ ...DEFAULT_GAME_SETTINGS, lowPerformanceMode, backgroundProcessing: true, showPerformanceMetrics: true });
     }
-    window.__appleCameraFixture = { shift: 0, left: false, right: false, hideLeft: true, hideRight: true };
+    window.__appleCameraFixture = { shift: 0, left: false, right: false, raisedWristY: .346,
+      hideLeft: true, hideRight: true };
     window.__appleCameraStats = { requested: 0, models: 0, closed: 0, inferences: 0, streams: [] };
     const stats = window.__appleCameraStats;
     const fixture = window.__appleCameraFixture;
@@ -415,8 +473,8 @@ async function installCameraFixture() {
             for (let index = 25; index <= 32; index++) points[index] = point(.5, 1.15);
             points[11] = point(.58, .28, fixture.hideShoulder ? .1 : .99); points[12] = point(.42, .28);
             points[23] = point(.545, .52); points[24] = point(.455, .52);
-            points[15] = point(fixture.left ? .70 : .6, fixture.left ? .24 : .51, fixture.hideLeft ? .1 : .99);
-            points[16] = point(fixture.right ? .30 : .4, fixture.right ? .24 : .51, fixture.hideRight ? .1 : .99);
+            points[15] = point(fixture.left ? .66 : .6, fixture.left ? fixture.raisedWristY : .51, fixture.hideLeft ? .1 : .99);
+            points[16] = point(fixture.right ? .34 : .4, fixture.right ? fixture.raisedWristY : .51, fixture.hideRight ? .1 : .99);
             return { landmarks: [points] };
           },
         };
@@ -487,8 +545,15 @@ async function cameraRun() {
   assert.equal(Boolean((await snapshot()).carrying), false);
   check('Synthetic webcam verifies mirrored movement and a right-wrist wrong-tree attempt with hidden elbows');
 
-  const relaxedLeft = await cameraMove(.104, x => x < -.48);
-  assert.ok(relaxedLeft.playerX > -.58 && relaxedLeft.playerX < -.47);
+  const relaxedLeft = await cameraMove(.081, x => x < -.38);
+  assert.ok(relaxedLeft.playerX > -.47 && relaxedLeft.playerX < -.34);
+  await fixture({ left: true, hideRight: true, raisedWristY: .366 });
+  await page.waitForTimeout(400);
+  assert.equal((await snapshot()).gestures.left, 'READY');
+  await fixture({ left: false });
+  await page.waitForTimeout(300);
+  assert.equal((await snapshot()).carrying, null);
+  await fixture({ raisedWristY: .346 });
   await fixture({ left: true, hideRight: true });
   const raised = await until(value => value.state === 'PICKING');
   assert.equal(raised.input.trackingMode, 'partial');
@@ -558,8 +623,8 @@ async function cameraRun() {
   assert.equal(afterHome.videoCount, 0);
   await page.waitForTimeout(350);
   assert.equal((await cameraResources()).inferences, afterHome.inferences);
-  check('Synthetic wrist cycles use the widened tree and basket edges; Home releases the camera resources',
-    { pickX: relaxedLeft.playerX, basketX: basketEdge.playerX, ...afterHome });
+  check('A below-shoulder wrist reaches the newly widened tree edge and deposits; smaller movement cannot pick; Home releases all camera resources',
+    { pickX: relaxedLeft.playerX, basketX: basketEdge.playerX, shoulderY: .28, raisedWristY: .346, tooLowY: .366, ...afterHome });
 
   await fixture({ loadDelay: 1200 });
   await enter();

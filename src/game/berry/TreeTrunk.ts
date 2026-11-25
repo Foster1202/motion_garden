@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
-import { BERRY_CONFIG as C, BERRY_FRUIT_ANCHORS, berryKey, type BerrySide, type TreeTrunkHitZone } from './berryConfig';
+import { BERRY_CONFIG as C, BERRY_FRUIT_ANCHORS, berryKey, treeTrunkZone, type BerrySide, type TreeTrunkHitZone } from './berryConfig';
 
 const GLOW_PADDING = 34;
 const OUTLINE_COLOR = '#ffe26b';
 const OUTER_EDGE_COLOR = '#664019';
+const PULSE_PERIOD_MS = 1700;
+const PULSE_MIN_OPACITY = .45;
 
 function createTargetGlow(scene: Phaser.Scene, treeKey: string, glowKey: string) {
   const { width, height } = C.tree;
@@ -17,7 +19,7 @@ function createTargetGlow(scene: Phaser.Scene, treeKey: string, glowKey: string)
   const paintOutline = (radius: number, color: string) => {
     ink.clearRect(0, 0, stencil.width, stencil.height);
     ink.drawImage(source, GLOW_PADDING, GLOW_PADDING, width, height);
-    // Expand the tree silhouette with overlapping opaque copies.
+    // Expand the tree silhouette with overlapping copies of the source alpha.
     for (let index = 0; index < 20; index++) {
       const angle = index * Math.PI / 10;
       ink.drawImage(source, GLOW_PADDING + radius * Math.cos(angle),
@@ -34,18 +36,6 @@ function createTargetGlow(scene: Phaser.Scene, treeKey: string, glowKey: string)
   paintOutline(9, OUTLINE_COLOR);
   context.globalCompositeOperation = 'destination-out';
   context.drawImage(source, GLOW_PADDING, GLOW_PADDING, width, height);
-  context.globalCompositeOperation = 'destination-over';
-  // Place the matching ground cue beneath the roots.
-  context.beginPath();
-  context.ellipse(texture.width / 2, height + GLOW_PADDING + 1, 79, 15, 0, 0, 2 * Math.PI);
-  context.lineWidth = 4;
-  context.strokeStyle = OUTLINE_COLOR;
-  context.stroke();
-  context.lineWidth = 8;
-  context.strokeStyle = OUTER_EDGE_COLOR;
-  context.stroke();
-  context.fillStyle = '#ffe26b42';
-  context.fill();
   context.globalCompositeOperation = 'source-over';
   texture.refresh();
 }
@@ -54,6 +44,9 @@ export class TreeTrunk {
   readonly root: Phaser.GameObjects.Container;
   readonly zone: TreeTrunkHitZone;
   private readonly targetGlow: Phaser.GameObjects.Image;
+  private readonly targetFade = { opacity: 0 };
+  private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  private pulseOpacity = 1;
   private readonly fruit: Phaser.GameObjects.Image[] = [];
   private readonly falling = new Set<Phaser.GameObjects.Image>();
   constructor(private readonly scene: Phaser.Scene, readonly side: BerrySide) {
@@ -66,7 +59,7 @@ export class TreeTrunk {
     this.targetGlow = scene.add.image(0, GLOW_PADDING, glowKey).setOrigin(.5, 1).setName(glowKey).setAlpha(0);
     this.root.add(this.targetGlow);
     this.root.add(scene.add.image(0, 0, treeKey).setOrigin(.5, 1).setDisplaySize(width, height));
-    this.zone = { x: x - C.tree.width * .045, y: C.tree.y - C.tree.height * .55, width: C.tree.width * .09, height: C.tree.height * .52 };
+    this.zone = treeTrunkZone(side);
     for (let i = 0; i < 9; i++) {
       const [u, v] = BERRY_FRUIT_ANCHORS[side][i];
       const size = 33 + (i % 3) * 2;
@@ -76,13 +69,19 @@ export class TreeTrunk {
     }
   }
   setTarget(active: boolean, transitionMs = 0) {
-    this.scene.tweens.killTweensOf(this.targetGlow);
-    const alpha = active ? 1 : 0;
-    if (transitionMs > 0) {
-      this.scene.tweens.add({ targets: this.targetGlow, alpha, duration: transitionMs, ease: 'Sine.easeInOut' });
+    this.scene.tweens.killTweensOf(this.targetFade);
+    const opacity = active ? 1 : 0;
+    if (transitionMs > 0 && !this.reducedMotion.matches) {
+      this.scene.tweens.add({ targets: this.targetFade, opacity, duration: transitionMs, ease: 'Sine.easeInOut' });
     } else {
-      this.targetGlow.setAlpha(alpha);
+      this.targetFade.opacity = opacity;
+      this.targetGlow.setAlpha(opacity * (this.reducedMotion.matches ? 1 : this.pulseOpacity));
     }
+  }
+  updateTargetPulse(elapsedMs: number) {
+    const cycle = (1 + Math.cos(elapsedMs * 2 * Math.PI / PULSE_PERIOD_MS)) / 2;
+    this.pulseOpacity = this.reducedMotion.matches ? 1 : PULSE_MIN_OPACITY + (1 - PULSE_MIN_OPACITY) * cycle;
+    this.targetGlow.setAlpha(this.targetFade.opacity * this.pulseOpacity);
   }
   harvest() {
     this.scene.tweens.add({ targets: this.root, angle: { from: -2, to: 2 }, duration: 110, yoyo: true, repeat: 3,

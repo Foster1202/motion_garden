@@ -35,13 +35,15 @@ class HandGesture {
   }
 
   update(amount: number, timestamp: number): boolean {
-    const isExpected = this.stage === 'READY' ? amount >= C.raiseThreshold : amount <= C.lowerThreshold;
+    const waitingForRaise = this.stage === 'READY';
+    const isExpected = waitingForRaise ? amount >= C.raiseThreshold : amount <= C.lowerThreshold;
     if (!isExpected) {
       this.since = undefined;
       return false;
     }
     this.since ??= timestamp;
-    if (timestamp - this.since < C.gestureDwellMs) return false;
+    const dwellMs = waitingForRaise ? C.raiseDwellMs : C.gestureDwellMs;
+    if (timestamp - this.since < dwellMs) return false;
 
     this.since = undefined;
     switch (this.stage) {

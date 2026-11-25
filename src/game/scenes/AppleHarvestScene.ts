@@ -94,7 +94,7 @@ export class AppleHarvestScene extends Phaser.Scene {
         <h2 id="dialog-title">同阿兔摘蘋果</h2>
         <ol class="apple-how-to">
           <li>跟住箭嘴，移去發光嘅蘋果樹。</li>
-          <li>抬起一隻手至接近肩膊，再放低，摘一個蘋果。</li>
+          <li>輕輕抬起一隻手到胸口附近，再放低，摘一個蘋果。</li>
           <li>返去中間籃子，再抬手同放低，蘋果入籃就加一分。</li>
         </ol>
         <p class="game-intro-note">${this.round.durationMs / 1000} 秒挑戰 · 舒服咁郁動，隨時可以休息。</p>

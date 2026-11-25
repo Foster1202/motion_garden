@@ -402,12 +402,14 @@ async function standardRun() {
   assert.equal(await page.evaluate(() => window.__cameraTargetDraws), 1);
   await page.screenshot({ path: `${output}/camera-wrong-right.png` });
   check('Camera projected contact on the wrong tree retains the target and RNG state and produces one feedback event while held');
-  await fixture({ right: 0, shift: .0985, cropAnkles: true });
-  await wait(s => s.rootX > 498 && s.rootX < 508 && s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
+  await fixture({ right: 0, shift: .0956, cropAnkles: true });
+  await wait(s => s.rootX > 507 && s.rootX < 523 && s.tracking.mode === 'partial' && s.armed.left && s.armed.right);
   assert.equal((await snapshot()).score, 0);
-  await fixture({ left: .048 }); const left = await wait(s => s.score === 3);
+  await fixture({ left: .0325 }); const left = await wait(s => s.score === 3);
   const pawContact = await page.evaluate(() => window.__cameraContacts.find(contact => contact.kind === 'harvest'));
-  assert.ok(pawContact.extension >= .4 && pawContact.extension < .75, JSON.stringify(pawContact));
+  const oldInnerEdge = 440 + 380 * .045;
+  assert.ok(pawContact.extension >= .32 && pawContact.extension < .40, JSON.stringify(pawContact));
+  assert.ok(pawContact.paw.x > oldInnerEdge, JSON.stringify(pawContact));
   assert.ok(pawContact.ankle.x > left.zones.left.x + left.zones.left.width, JSON.stringify(pawContact));
   assert.ok(pawContact.paw.x <= left.zones.left.x + left.zones.left.width, JSON.stringify(pawContact));
   assert.equal(await page.evaluate(async () =>
@@ -428,7 +430,7 @@ async function standardRun() {
   assert.equal((await snapshot()).target, 'right');
   assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), 'right');
   await page.screenshot({ path: `${output}/camera-left-contact.png` });
-  check('A modest thigh kick with cropped ankles scores and drops three berries when the paw touches before the ankle; restoring full tracking cannot double-score');
+  check('A shallow cropped-ankle kick below the old threshold scores at the widened inner edge from actual paw contact; restoring full tracking cannot double-score');
   await fixture({ left: 0 }); await wait(s => s.armed.left);
   await fixture({ shift: -.13, hidden: [27] });
   await wait(s => s.rootX > 1060 && s.tracking.legTracking.left.mode === 'partial'
@@ -438,11 +440,14 @@ async function standardRun() {
   assert.equal(oneKnee.tracking.legTracking.right.mode, 'full');
   assert.equal(oneKnee.armed.left, false);
   assert.equal(oneKnee.armed.right, true);
-  await fixture({ right: .07 }); const right = await wait(s => s.score === 6);
+  await fixture({ right: .033 }); const right = await wait(s => s.score === 6);
   assert.equal(right.counts.left, 1); assert.equal(right.counts.right, 1);
   assert.equal(right.target, 'left');
   assert.ok(right.feet.right.x >= right.zones.right.x && right.feet.right.x <= right.zones.right.x + right.zones.right.width);
-  check('A hidden left ankle and then left knee leave the right leg usable for full-geometry contact scoring');
+  const rightContact = await page.evaluate(() => window.__cameraContacts.find(contact => contact.kind === 'harvest' && contact.side === 'right'));
+  assert.ok(rightContact.extension >= .32 && rightContact.extension < .40, JSON.stringify(rightContact));
+  report.rightContact = rightContact;
+  check('A shallow full-geometry right kick still scores when the opposite leg is occluded');
 
   await fixture({ lost: true });
   const lostPose = await wait(s => !s.tracking.reliable);

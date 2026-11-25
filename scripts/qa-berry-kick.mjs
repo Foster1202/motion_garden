@@ -57,19 +57,45 @@ const moveTo = async side => {
   await page.keyboard.up(key);
   await page.waitForTimeout(220);
 };
+const targetOpacity = () => page.evaluate(async () => {
+  const { round, trees } = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
+  return { clock: round.elapsedMs, left: trees.left.targetGlow.alpha, right: trees.right.targetGlow.alpha };
+});
+const waitForOpacity = async (side, test) => {
+  const deadline = Date.now() + 6000;
+  do {
+    const opacity = await targetOpacity();
+    if (test(opacity[side])) return opacity;
+    await page.waitForTimeout(55);
+  } while (Date.now() < deadline);
+  throw new Error(`The ${side} target did not reach the expected opacity`);
+};
+const measurePulse = async (side, durationMs) => {
+  const first = await targetOpacity();
+  const alphas = [first[side]];
+  const deadline = Date.now() + durationMs + 6000;
+  do {
+    await page.waitForTimeout(75);
+    const value = await targetOpacity();
+    alphas.push(value[side]);
+    assert.ok(value[side === 'left' ? 'right' : 'left'] < .02);
+    if (value.clock - first.clock >= durationMs) {
+      return { min: Math.min(...alphas), max: Math.max(...alphas), samples: alphas.length };
+    }
+  } while (Date.now() < deadline);
+  throw new Error('The Berry pulse game clock did not advance');
+};
 const verifyTarget = async side => {
   assert.equal((await snapshot()).target, side);
   assert.equal(await page.locator('[data-berry-target]').getAttribute('data-side'), side);
   assert.match(await page.locator('[data-berry-target-label]').innerText(), side === 'left' ? /左/ : /右/);
   await page.waitForTimeout(350);
-  const glows = await page.evaluate(async () => {
-    const trees = (await import('/src/main.ts')).game.scene.getScene('BerryKick').trees;
-    return { left: trees.left.targetGlow.alpha, right: trees.right.targetGlow.alpha };
-  });
-  assert.ok(glows[side] > .98, `Target ${side} glow is ${glows[side]}`);
+  const glows = await targetOpacity();
+  assert.ok(glows[side] > .40, `Target ${side} glow is ${glows[side]}`);
   assert.ok(glows[side === 'left' ? 'right' : 'left'] < .02);
 };
 const captureTarget = async (side, filename) => {
+  await waitForOpacity(side, opacity => opacity > .985);
   const png = await page.screenshot({ path: `${output}/${filename}`, scale: 'css' });
   const rendered = await page.evaluate(async encoded => {
     const { game } = await import('/src/main.ts');
@@ -97,17 +123,20 @@ const captureTarget = async (side, filename) => {
       }
       return { gold: Math.round(gold / (scaleX * scaleY)), edge: Math.round(edge / (scaleX * scaleY)) };
     };
-    const treeColors = ({ root: { x, y } }) => ({
-      crown: colorsIn(x - 225, y - 500, 450, 285),
-      ground: colorsIn(x - 90, y - 23, 180, 46),
-    });
+    const treeColors = ({ root: { x, y } }) => {
+      const groundLeft = colorsIn(x - 96, y - 23, 52, 47);
+      const groundRight = colorsIn(x + 44, y - 23, 52, 47);
+      return { crown: colorsIn(x - 225, y - 500, 450, 285), ground: {
+        gold: groundLeft.gold + groundRight.gold, edge: groundLeft.edge + groundRight.edge,
+      } };
+    };
     return { left: treeColors(trees.left), right: treeColors(trees.right) };
   }, png.toString('base64'));
   const active = rendered[side];
   const inactive = rendered[side === 'left' ? 'right' : 'left'];
   assert.ok(active.crown.gold > inactive.crown.gold + 3000, JSON.stringify(rendered));
   assert.ok(active.crown.edge > inactive.crown.edge + 2000, JSON.stringify(rendered));
-  assert.ok(active.ground.gold > inactive.ground.gold + 400, JSON.stringify(rendered));
+  assert.ok(active.ground.gold <= inactive.ground.gold + 70, JSON.stringify(rendered));
   report.targetVisuals.push({ side, filename, viewport: page.viewportSize(), ...rendered });
 };
 const cosmeticState = () => page.evaluate(async () => {
@@ -210,7 +239,12 @@ try {
     window.__berryObserver = observer;
   });
   await verifyTarget('left');
+  report.pulse = await measurePulse('left', 2050);
+  assert.ok(report.pulse.min > .40 && report.pulse.max - report.pulse.min > .42, JSON.stringify(report.pulse));
   await captureTarget('left', 'garden-1920.png');
+  await waitForOpacity('left', opacity => opacity < .50);
+  await page.screenshot({ path: `${output}/garden-1920-pulse-low.png` });
+  check('The active crown breathes across a strong visible opacity range, with the inactive crown hidden');
   await hold('q', 800);
   assert.equal((await snapshot()).score, 0);
   await page.waitForTimeout(450);
@@ -320,7 +354,7 @@ try {
   await page.setViewportSize({ width: 600, height: 800 });
   await page.waitForTimeout(250);
   await captureTarget((await snapshot()).target, 'garden-600.png');
-  check('Rendered screenshots show the gold crown outline, dark outer edge and ground ring only on the active tree at both scales');
+  check('Rendered screenshots show the gold crown and dark edge only on the active tree at both scales, without a yellow ground ring');
   await wait(value => value.remainingMs <= 10000 && value.remainingMs > 9000, 60000);
   await page.locator('.berry-countdown-digit[data-value="10"]').waitFor();
   assert.equal(await page.locator('[data-berry-time]').innerText(), '00:10');
@@ -383,6 +417,20 @@ try {
   assert.equal(await page.locator('[data-action=apple]').isEnabled(), true);
   assert.equal(await page.locator('.game-card[disabled]').count(), 1);
   check('Replay resets score/timer/effects; Home removes Berry UI and keeps other menu games');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  await enter();
+  await dialog().locator('[data-action=keyboard]').click();
+  const reduced = await wait(value => value.active && value.renderMode === '3d');
+  await verifyTarget(reduced.target);
+  report.reducedMotion = await measurePulse(reduced.target, 1900);
+  assert.ok(report.reducedMotion.min > .9 && report.reducedMotion.max - report.reducedMotion.min < .01,
+    JSON.stringify(report.reducedMotion));
+  await captureTarget(reduced.target, 'berry-reduced-motion.png');
+  await page.locator('.berry-hud [data-action=home]').click();
+  await page.locator('[data-action=start]').click();
+  check('Reduced motion keeps the active crown steady with the other crown hidden');
 
   await page.route('**/rabbit_realtime.glb', route => route.abort());
   await page.locator('[data-action=berry]').click();

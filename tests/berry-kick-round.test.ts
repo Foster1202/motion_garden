@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { BerryKickRound, type BerryRoundInput } from '../src/game/berry/BerryKickRound';
-import { BERRY_CONFIG as C, footInTrunk, type BerrySide } from '../src/game/berry/berryConfig';
+import { BERRY_CONFIG as C, footInTrunk, treeTrunkZone, type BerrySide } from '../src/game/berry/berryConfig';
 
 const zones = { left: { x: 420, y: 640, width: 40, height: 100 }, right: { x: 1140, y: 640, width: 40, height: 100 } };
 const sample = (side: BerrySide = 'left', amount = 0): BerryRoundInput => ({
@@ -27,6 +27,26 @@ test('trunk collision includes boundaries and rejects hidden, invalid and outsid
     assert.equal(footInTrunk({ x, y, visible: true }, zone), false);
   }
   assert.equal(footInTrunk({ x: 440, y: 700, visible: false }, zone), false);
+});
+
+test('a lower inner-edge contact requires enough extension and still scores just once', () => {
+  const geometry = { left: treeTrunkZone('left'), right: treeTrunkZone('right') };
+  const round = new BerryKickRound(geometry, 120, () => 0);
+  const contact = (extension: number) => {
+    const input = sample('left', extension);
+    input.feet.left = { x: 464, y: 732, visible: true };
+    return round.update(16, input);
+  };
+  assert.equal(contact(0), undefined);
+  assert.equal(contact(C.extensionThreshold - .01), undefined);
+  assert.deepEqual(contact(C.extensionThreshold), { kind: 'harvest', side: 'left' });
+  assert.equal(contact(C.extensionThreshold), undefined);
+  assert.equal(round.score, 3);
+  for (const side of ['left', 'right'] as const) {
+    const zone = geometry[side];
+    assert.equal(footInTrunk({ x: zone.x + zone.width + .01, y: 732, visible: true }, zone), false);
+    assert.equal(footInTrunk({ x: C.tree[side], y: C.tree.y + .01, visible: true }, zone), false);
+  }
 });
 
 for (const side of ['left', 'right'] as const) {

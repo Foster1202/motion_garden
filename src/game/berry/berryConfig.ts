@@ -2,12 +2,17 @@ export type BerrySide = 'left' | 'right';
 export const BERRY_CONFIG = {
   durationOptions: [60, 90, 120], defaultDurationSeconds: 120, berriesPerHit: 3,
   maxTargetStreak: 3,
-  cooldownMs: 1000, retractThreshold: 0.15, extensionThreshold: 0.4,
+  cooldownMs: 1000, retractThreshold: 0.15, extensionThreshold: 0.32,
   rootTravel: 290, rootSpeed: 250, feetY: 730,
   tree: { left: 440, right: 1160, y: 735, width: 380, height: 470 },
 } as const;
 export interface FootPoint { x: number; y: number; visible: boolean }
 export interface TreeTrunkHitZone { x: number; y: number; width: number; height: number }
+export function treeTrunkZone(side: BerrySide): TreeTrunkHitZone {
+  const width = BERRY_CONFIG.tree.width * .13;
+  const height = BERRY_CONFIG.tree.height * .55;
+  return { x: BERRY_CONFIG.tree[side] - width / 2, y: BERRY_CONFIG.tree.y - height, width, height };
+}
 export function footInTrunk(foot: FootPoint, zone: TreeTrunkHitZone): boolean {
   return foot.visible && Number.isFinite(foot.x) && Number.isFinite(foot.y)
     && foot.x >= zone.x && foot.x <= zone.x + zone.width && foot.y >= zone.y && foot.y <= zone.y + zone.height;

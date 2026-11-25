@@ -240,6 +240,8 @@ export class BerryKickScene extends Phaser.Scene {
     for (const tween of this.tweens.getTweens()) {
       if (tween.update(deltaMs)) { this.tweens.remove(tween); tween.destroy(); }
     }
+    this.trees.left.updateTargetPulse(this.round.elapsedMs);
+    this.trees.right.updateTargetPulse(this.round.elapsedMs);
     this.updateEffects();
     if (hit?.kind === 'harvest') {
       this.audio.playSfx('berry');

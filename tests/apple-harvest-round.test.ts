@@ -8,9 +8,13 @@ const asInput = (x: number, values: Partial<Omit<AppleHarvestRoundInput, 'x'>> =
 });
 const x = (zone: keyof typeof C.zones) => C.zones[zone].center;
 const lost = asInput(0, { lateralReliable: false, left: null, right: null });
+const FRAME_MS = 20;
+const LOW_FRAMES = Math.ceil(C.gestureDwellMs / FRAME_MS) + 1;
+const RAISE_FRAMES = Math.ceil(C.raiseDwellMs / FRAME_MS) + 1;
+const GESTURE_MS = (LOW_FRAMES * 2 + RAISE_FRAMES) * FRAME_MS;
 
 function hold(round: AppleHarvestRound, input: AppleHarvestRoundInput, frames = 6): AppleHarvestEvent[] {
-  return Array.from({ length: frames }, () => round.update(20, input)).filter(event => event !== undefined);
+  return Array.from({ length: frames }, () => round.update(FRAME_MS, input)).filter(event => event !== undefined);
 }
 
 function gesture(round: AppleHarvestRound, zone: keyof typeof C.zones, hand: 'left' | 'right' = 'left') {
@@ -19,25 +23,41 @@ function gesture(round: AppleHarvestRound, zone: keyof typeof C.zones, hand: 'le
 
 function gestureAt(round: AppleHarvestRound, position: number, hand: 'left' | 'right') {
   return [
-    ...hold(round, asInput(position)),
-    ...hold(round, asInput(position, { [hand]: 1 })),
-    ...hold(round, asInput(position)),
+    ...hold(round, asInput(position), LOW_FRAMES),
+    ...hold(round, asInput(position, { [hand]: 1 }), RAISE_FRAMES),
+    ...hold(round, asInput(position), LOW_FRAMES),
   ];
 }
 
-test('both tree and basket edges accept gestures beyond the former zones and still reject the gap', () => {
+test('inner and outer edges of each tree accept gestures, with a clear gap before the basket', () => {
   for (const direction of [-1, 1]) {
-    const round = new AppleHarvestRound(120, () => direction === -1 ? 0 : 1);
-    const hand = direction === -1 ? 'right' : 'left';
-    assert.deepEqual(gestureAt(round, direction * .46, hand), []);
-    assert.equal(gestureAt(round, direction * .50, hand)[0]?.kind, 'picked');
-    assert.deepEqual(gestureAt(round, direction * .31, hand), []);
-    assert.equal(round.score, 0);
-    assert.equal(gestureAt(round, direction * .29, hand)[0]?.kind, 'depositing');
-    assert.equal(round.score, 0);
-    round.update(C.depositMs, lost);
-    assert.equal(round.score, 1);
+    for (const edge of [.35, .95]) {
+      const round = new AppleHarvestRound(120, () => direction === -1 ? 0 : 1);
+      const hand = direction === -1 ? 'right' : 'left';
+      assert.deepEqual(gestureAt(round, direction * .33, hand), []);
+      assert.equal(gestureAt(round, direction * edge, hand)[0]?.kind, 'picked');
+      assert.deepEqual(gestureAt(round, direction * .31, hand), []);
+      assert.equal(round.score, 0);
+      assert.equal(gestureAt(round, direction * .29, hand)[0]?.kind, 'depositing');
+      assert.equal(round.score, 0);
+      round.update(C.depositMs, lost);
+      assert.equal(round.score, 1);
+    }
   }
+});
+
+test('a brief chest-height raise needs two fresh observations and a deliberate release', () => {
+  const round = new AppleHarvestRound(120, () => 0);
+  const atTree = (left: number, timestampMs: number) => asInput(-.40, { left, timestampMs });
+  round.update(FRAME_MS, atTree(.15, 1000));
+  round.update(FRAME_MS, atTree(.15, 1070));
+  round.update(FRAME_MS, atTree(.54, 1120));
+  hold(round, atTree(.54, 1120));
+  assert.equal(round.snapshot().gestures.left, 'READY');
+  round.update(FRAME_MS, atTree(.54, 1170));
+  assert.equal(round.snapshot().gestures.left, 'RAISED');
+  assert.equal(round.update(FRAME_MS, atTree(.12, 1220)), undefined);
+  assert.equal(round.update(FRAME_MS, atTree(.12, 1290))?.kind, 'picked');
 });
 
 test('wrong tree keeps target, correct pick carries exactly one apple, basket arrival is the sole scoring event', () => {
@@ -84,12 +104,12 @@ test('raises outside the zone, single-frame wobbles, deadband, prolonged holds a
   assert.equal(round.snapshot().gestures.left, 'READY');
 
   hold(round, atTree(1), 1);
-  hold(round, atTree(.55), 12);
+  hold(round, atTree(.42), 12);
   assert.deepEqual(hold(round, atTree()), []);
   hold(round, atTree(1), 20);
   assert.equal(round.state, 'PICKING');
   assert.deepEqual(hold(round, atTree(0), 1), []);
-  hold(round, atTree(.55), 10);
+  hold(round, atTree(.42), 10);
   assert.equal(round.state, 'PICKING');
   hold(round, asInput(x('left') + C.zones.left.radius + .01, { left: 1 }));
   assert.deepEqual(hold(round, atTree()), []);
@@ -200,8 +220,7 @@ test('90, 120 and 180 second deadlines stop input and leave any held fruit unsco
 test('a deposit that arrives at the deadline is unscored even after a valid release', () => {
   const round = new AppleHarvestRound(90, () => 0);
   gesture(round, 'left');
-  // Three six-frame holds take 360 ms. The model then needs the complete basket flight.
-  round.update(round.remainingMs - 360 - C.depositMs, lost);
+  round.update(round.remainingMs - GESTURE_MS - C.depositMs, lost);
   assert.equal(gesture(round, 'basket')[0]?.kind, 'depositing');
   assert.equal(round.remainingMs, C.depositMs);
   assert.equal(round.update(C.depositMs, lost), undefined);
@@ -214,7 +233,7 @@ test('a deposit that arrives at the deadline is unscored even after a valid rele
 test('a flight arriving strictly before expiry counts even if one frame crosses both times', () => {
   const round = new AppleHarvestRound(90, () => 0);
   gesture(round, 'left');
-  round.update(round.remainingMs - 360 - C.depositMs - 1, lost);
+  round.update(round.remainingMs - GESTURE_MS - C.depositMs - 1, lost);
   gesture(round, 'basket');
   assert.equal(round.update(C.depositMs + 1, lost)?.kind, 'deposited');
   assert.equal(round.state, 'COMPLETE');

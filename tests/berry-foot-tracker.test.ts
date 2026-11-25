@@ -5,6 +5,7 @@ import { OrthographicCamera, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Rabbit3D } from '../src/game/3d/Rabbit3D';
 import { RabbitFootTracker, projectToLogical } from '../src/game/3d/RabbitFootTracker';
+import { BERRY_CONFIG, footInTrunk, treeTrunkZone } from '../src/game/berry/berryConfig';
 
 async function fixture() {
   const bytes = readFileSync(new URL('../model/dist/rabbit3d/rabbit_realtime.glb', import.meta.url));
@@ -76,30 +77,24 @@ test('projection rejects offscreen, behind-camera and invalid positions', () => 
   assert.equal(projectToLogical(new Vector3(0, 0, 0), cam, viewport).visible, true);
 });
 
-test('actual rendered paw reaches the trunk during a qualifying kick while the ankle is outside', async () => {
+test('a small rendered paw extension reaches the expanded trunk while the ankle stays outside', async () => {
   const rabbit = await fixture();
   const pixels = rabbit.pixelsPerUnit;
   const cam = new OrthographicCamera(-800 / pixels, 800 / pixels, 730 / pixels, -170 / pixels, .1, 50);
   cam.position.z = 12;
   rabbit.pivot.scale.x = -1;
   const tracker = new RabbitFootTracker(rabbit, cam, viewport);
-  const rest = tracker.sample().left.x;
-  tracker.samplePaws();
-  rabbit.rig.setLegExtension('left', 1);
-  rabbit.rig.update(10);
-  const extended = tracker.sample().left.x;
-  rabbit.rig.resetPose(true);
-  const x = rest - 457.1 - (rest - extended) * .5;
   for (const side of ['left', 'right'] as const) {
     const sign = side === 'left' ? -1 : 1;
-    rabbit.pivot.position.x = sign * .97 * x / pixels;
-    const inTrunk = (point: { x: number; y: number; visible: boolean }) => point.visible
-      && Math.abs(point.x - (800 + sign * 360)) <= 17.1 && point.y >= 476.5 && point.y <= 720.9;
-    assert.equal(inTrunk(tracker.samplePaws()[side]), false);
-    rabbit.rig.setLegExtension(side, .4);
+    rabbit.pivot.position.x = sign * 287 / pixels;
+    const zone = treeTrunkZone(side);
+    assert.equal(footInTrunk(tracker.samplePaws()[side], zone), false);
+    rabbit.rig.setLegExtension(side, BERRY_CONFIG.extensionThreshold);
     rabbit.rig.update(10);
-    assert.equal(inTrunk(tracker.sample()[side]), false);
-    assert.equal(inTrunk(tracker.samplePaws()[side]), true);
+    assert.equal(footInTrunk(tracker.sample()[side], zone), false);
+    const paw = tracker.samplePaws()[side];
+    assert.ok(Math.abs(paw.x - BERRY_CONFIG.tree[side]) > 17.1, 'The paw remains outside the previous width');
+    assert.equal(footInTrunk(paw, zone), true);
     rabbit.rig.resetPose(true);
   }
   rabbit.dispose();

@@ -1,3 +1,4 @@
+import { BERRY_CONFIG } from '../berry/berryConfig';
 import { calculateAngle, landmarkConfidence } from '../vision/poseMath';
 import type { PoseFrame } from '../vision/poseTypes';
 import type { TrackingMode } from '../vision/trackingMode';
@@ -25,25 +26,26 @@ export const LEG_EXTENSION_CONFIG = {
   deadzoneLegLengths: 0.07,
   fullStandingOffset: 0.12,
   fullExtensionLegLengths: 0.28,
-  maximumSupportOffset: 0.17,
   maximumLeanDegrees: 25,
   lateralFullScaleLegLengths: 0.45,
   smoothingMs: 70,
-  thighStartDegrees: 8,
+  thighStartDegrees: 7,
   thighRetractDegrees: 4,
-  thighFullDegrees: 17,
-  thighStartOffset: .11,
+  thighFullDegrees: 15,
+  thighStartOffset: .10,
   thighRetractOffset: .065,
-  thighFullOffset: .27,
-  thighStartHorizontal: .09,
+  thighFullOffset: .24,
+  thighStartHorizontal: .08,
   thighRetractHorizontal: .055,
-  thighFullHorizontal: .23,
-  thighHoldMs: 110,
+  thighFullHorizontal: .21,
+  thighHoldMs: 80,
   thighRetractMs: 100,
   partialLateralScale: 1.8,
 } as const;
 
 const C = LEG_EXTENSION_CONFIG;
+const fullExtensionSpan = C.fullExtensionLegLengths - C.deadzoneLegLengths;
+const qualifyingFullOffset = C.deadzoneLegLengths + BERRY_CONFIG.extensionThreshold * fullExtensionSpan;
 const clamp = (value: number, low = 0, high = 1) => Math.max(low, Math.min(high, value));
 const median = (values: number[]) => {
   const sorted = values.sort((a, b) => a - b);
@@ -340,12 +342,11 @@ function isNaturalThigh(thigh: ThighPose) {
 }
 
 function fullMotion(outward: number): KickMotion {
-  const span = C.fullExtensionLegLengths - C.deadzoneLegLengths;
-  const qualifyingOffset = C.deadzoneLegLengths + .4 * span;
+  const { extensionThreshold } = BERRY_CONFIG;
   // A stance accepted for the reference must also be able to rearm the kick.
-  const amount = outward >= qualifyingOffset ? clamp((outward - C.deadzoneLegLengths) / span)
-    : .4 * clamp((outward - C.fullStandingOffset) / (qualifyingOffset - C.fullStandingOffset));
-  return { mode: 'full', amount, extended: outward >= qualifyingOffset, retracted: outward <= C.fullStandingOffset };
+  const amount = outward >= qualifyingFullOffset ? clamp((outward - C.deadzoneLegLengths) / fullExtensionSpan)
+    : extensionThreshold * clamp((outward - C.fullStandingOffset) / (qualifyingFullOffset - C.fullStandingOffset));
+  return { mode: 'full', amount, extended: outward >= qualifyingFullOffset, retracted: outward <= C.fullStandingOffset };
 }
 
 function partialMotion(thigh: ThighPose, reference: ThighPose): KickMotion {
@@ -390,7 +391,7 @@ function measureLegs(lh: Point, rh: Point, lk: Point, rk: Point, la: Point, ra: 
     && Math.abs(la.y - ra.y) / scale <= .28 && Math.min(la.y - lh.y, ra.y - rh.y) / scale >= .55
     && Math.min(leftLength, rightLength) / Math.max(leftLength, rightLength) >= .65
     && leftOut >= -.15 && rightOut >= -.15
-    && (leftOut <= C.maximumSupportOffset || rightOut <= C.maximumSupportOffset)
+    && Math.min(leftOut, rightOut) < qualifyingFullOffset
     && (leftOut <= .12 || (leftKneeOut >= -.05 && leftKneeOut <= leftOut + .12))
     && (rightOut <= .12 || (rightKneeOut >= -.05 && rightKneeOut <= rightOut + .12));
   const standing = valid && Math.max(Math.abs(leftOut), Math.abs(rightOut)) <= C.fullStandingOffset
