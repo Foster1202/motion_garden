@@ -1,5 +1,55 @@
 import Phaser from 'phaser';
 import { BERRY_CONFIG as C, BERRY_FRUIT_ANCHORS, berryKey, type BerrySide, type TreeTrunkHitZone } from './berryConfig';
+
+const GLOW_PADDING = 34;
+const OUTLINE_COLOR = '#ffe26b';
+const OUTER_EDGE_COLOR = '#664019';
+
+function createTargetGlow(scene: Phaser.Scene, treeKey: string, glowKey: string) {
+  const { width, height } = C.tree;
+  const texture = scene.textures.createCanvas(glowKey, width + 2 * GLOW_PADDING, height + 2 * GLOW_PADDING)!;
+  const source = scene.textures.get(treeKey).getSourceImage() as HTMLImageElement;
+  const context = texture.context;
+  const stencil = document.createElement('canvas');
+  stencil.width = texture.width;
+  stencil.height = texture.height;
+  const ink = stencil.getContext('2d')!;
+  const paintOutline = (radius: number, color: string) => {
+    ink.clearRect(0, 0, stencil.width, stencil.height);
+    ink.drawImage(source, GLOW_PADDING, GLOW_PADDING, width, height);
+    // Expand the tree silhouette with overlapping opaque copies.
+    for (let index = 0; index < 20; index++) {
+      const angle = index * Math.PI / 10;
+      ink.drawImage(source, GLOW_PADDING + radius * Math.cos(angle),
+        GLOW_PADDING + radius * Math.sin(angle), width, height);
+    }
+    ink.globalCompositeOperation = 'source-in';
+    ink.fillStyle = color;
+    ink.fillRect(0, 0, stencil.width, stencil.height);
+    ink.globalCompositeOperation = 'source-over';
+    context.drawImage(stencil, 0, 0);
+  };
+
+  paintOutline(15, OUTER_EDGE_COLOR);
+  paintOutline(9, OUTLINE_COLOR);
+  context.globalCompositeOperation = 'destination-out';
+  context.drawImage(source, GLOW_PADDING, GLOW_PADDING, width, height);
+  context.globalCompositeOperation = 'destination-over';
+  // Place the matching ground cue beneath the roots.
+  context.beginPath();
+  context.ellipse(texture.width / 2, height + GLOW_PADDING + 1, 79, 15, 0, 0, 2 * Math.PI);
+  context.lineWidth = 4;
+  context.strokeStyle = OUTLINE_COLOR;
+  context.stroke();
+  context.lineWidth = 8;
+  context.strokeStyle = OUTER_EDGE_COLOR;
+  context.stroke();
+  context.fillStyle = '#ffe26b42';
+  context.fill();
+  context.globalCompositeOperation = 'source-over';
+  texture.refresh();
+}
+
 export class TreeTrunk {
   readonly root: Phaser.GameObjects.Container;
   readonly zone: TreeTrunkHitZone;
@@ -12,26 +62,8 @@ export class TreeTrunk {
     const treeKey = berryKey(`tree_${side}`);
     const glowKey = berryKey(`target-glow-${side}`);
     const { width, height } = C.tree;
-    const padding = 32;
-    if (!scene.textures.exists(glowKey)) {
-      const texture = scene.textures.createCanvas(glowKey, width + 2 * padding, height + 2 * padding)!;
-      const source = scene.textures.get(treeKey).getSourceImage() as HTMLImageElement;
-      const context = texture.context;
-      context.shadowColor = '#ffc347';
-      context.shadowBlur = 22;
-      context.drawImage(source, padding, padding, width, height);
-      context.shadowColor = '#fff09a';
-      context.shadowBlur = 7;
-      context.drawImage(source, padding, padding, width, height);
-      // Retain the glow outside the tree silhouette.
-      context.shadowBlur = 0;
-      context.shadowColor = 'transparent';
-      context.globalCompositeOperation = 'destination-out';
-      context.drawImage(source, padding, padding, width, height);
-      context.globalCompositeOperation = 'source-over';
-      texture.refresh();
-    }
-    this.targetGlow = scene.add.image(0, padding, glowKey).setOrigin(.5, 1).setName(glowKey).setAlpha(0);
+    if (!scene.textures.exists(glowKey)) createTargetGlow(scene, treeKey, glowKey);
+    this.targetGlow = scene.add.image(0, GLOW_PADDING, glowKey).setOrigin(.5, 1).setName(glowKey).setAlpha(0);
     this.root.add(this.targetGlow);
     this.root.add(scene.add.image(0, 0, treeKey).setOrigin(.5, 1).setDisplaySize(width, height));
     this.zone = { x: x - C.tree.width * .045, y: C.tree.y - C.tree.height * .55, width: C.tree.width * .09, height: C.tree.height * .52 };

@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import { AppleHarvestInput, type AppleHarvestSample } from '../apple/AppleHarvestInput';
 import { AppleHarvestRound, type AppleHarvestEvent } from '../apple/AppleHarvestRound';
 import { AppleOrchardView } from '../apple/AppleOrchardView';
-import { APPLE_CONFIG } from '../apple/appleConfig';
+import { isInAppleZone } from '../apple/appleConfig';
 import { getGameSettings } from '../settings/gameSettings';
 import { AudioManager } from '../systems/AudioManager';
 import { tryVoiceCue } from '../systems/voiceCue';
@@ -325,7 +325,7 @@ export class AppleHarvestScene extends Phaser.Scene {
     if (this.round.elapsedMs < this.wrongUntil) return '請去指定嘅蘋果樹！';
     if (this.round.state === 'DEPOSITING') return '放低隻手，將蘋果放入籃子。';
     if (this.round.state === 'PICKING') return '放低隻手，完成採摘。';
-    if (this.round.carrying) return Math.abs(this.playerX - APPLE_CONFIG.zones.basket.center) <= APPLE_CONFIG.zones.basket.radius
+    if (this.round.carrying) return isInAppleZone(this.playerX, 'basket')
       ? '到籃子啦！抬起一隻手，再放低。' : PICKED_HINT;
     return '行到發光嘅樹旁，抬起一隻手，再放低。';
   }

@@ -14,12 +14,31 @@ function hold(round: AppleHarvestRound, input: AppleHarvestRoundInput, frames = 
 }
 
 function gesture(round: AppleHarvestRound, zone: keyof typeof C.zones, hand: 'left' | 'right' = 'left') {
+  return gestureAt(round, x(zone), hand);
+}
+
+function gestureAt(round: AppleHarvestRound, position: number, hand: 'left' | 'right') {
   return [
-    ...hold(round, asInput(x(zone))),
-    ...hold(round, asInput(x(zone), { [hand]: 1 })),
-    ...hold(round, asInput(x(zone))),
+    ...hold(round, asInput(position)),
+    ...hold(round, asInput(position, { [hand]: 1 })),
+    ...hold(round, asInput(position)),
   ];
 }
+
+test('both tree and basket edges accept gestures beyond the former zones and still reject the gap', () => {
+  for (const direction of [-1, 1]) {
+    const round = new AppleHarvestRound(120, () => direction === -1 ? 0 : 1);
+    const hand = direction === -1 ? 'right' : 'left';
+    assert.deepEqual(gestureAt(round, direction * .46, hand), []);
+    assert.equal(gestureAt(round, direction * .50, hand)[0]?.kind, 'picked');
+    assert.deepEqual(gestureAt(round, direction * .31, hand), []);
+    assert.equal(round.score, 0);
+    assert.equal(gestureAt(round, direction * .29, hand)[0]?.kind, 'depositing');
+    assert.equal(round.score, 0);
+    round.update(C.depositMs, lost);
+    assert.equal(round.score, 1);
+  }
+});
 
 test('wrong tree keeps target, correct pick carries exactly one apple, basket arrival is the sole scoring event', () => {
   const draws = [.9, .1];

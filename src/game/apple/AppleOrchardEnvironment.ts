@@ -3,20 +3,25 @@ import {
   MathUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, RingGeometry,
   SphereGeometry, TorusGeometry, TubeGeometry, Vector2, Vector3,
 } from 'three';
-import { APPLE_CONFIG } from './appleConfig';
+import { APPLE_CONFIG, appleZoneBounds, type AppleSide, type AppleZone } from './appleConfig';
 
 export const ORCHARD_PIXELS_PER_UNIT = 125;
 export const ORCHARD_X_TRAVEL = 5.55;
 
-type TreeSide = 'left' | 'right';
 type Placement = readonly [x: number, y: number, z: number, sx: number, sy: number, sz: number];
+
+interface TargetMarker {
+  root: Group;
+  edge: MeshBasicMaterial;
+  gold: MeshBasicMaterial;
+}
 
 export interface AppleTreeArt {
   root: Group;
   reachableApples: Group[];
   highAppleCount: number;
-  glow: MeshBasicMaterial;
-  halo: MeshBasicMaterial;
+  zoneMarker: TargetMarker;
+  crownMarker: TargetMarker;
 }
 
 const sphere = () => new SphereGeometry(1, 21, 14);
@@ -104,6 +109,30 @@ function groundEllipse(root: Object3D, geometry: CircleGeometry | RingGeometry, 
   mesh.scale.set(width, depth, 1);
   root.add(mesh);
   return mesh;
+}
+
+function targetMarker(parent: Group, silhouette = false): TargetMarker {
+  const options = { transparent: true, opacity: 0, depthWrite: false, toneMapped: false,
+    ...(silhouette ? { side: BackSide } : {}) };
+  const root = new Group();
+  root.visible = false;
+  parent.add(root);
+  return {
+    root,
+    edge: new MeshBasicMaterial({ ...options, color: 0x734511 }),
+    gold: new MeshBasicMaterial({ ...options, color: 0xffdf55 }),
+  };
+}
+
+function buildZoneMarker(parent: Group, zone: AppleZone, edge: RingGeometry, stripe: RingGeometry, depth: number) {
+  const marker = targetMarker(parent);
+  const { minX, maxX } = appleZoneBounds(zone);
+  const center = (minX + maxX) / 2 * ORCHARD_X_TRAVEL;
+  const radius = (maxX - minX) / 2 * ORCHARD_X_TRAVEL;
+  marker.root.position.set(center - parent.position.x, 0, -parent.position.z);
+  groundEllipse(marker.root, edge, marker.edge, 0, -.025, 0, radius, depth).renderOrder = 1;
+  groundEllipse(marker.root, stripe, marker.gold, 0, -.022, 0, radius, depth).renderOrder = 2;
+  return marker;
 }
 
 function buildLandscape(root: Group, ball: SphereGeometry, disk: CircleGeometry) {
@@ -196,8 +225,8 @@ function buildLandscape(root: Group, ball: SphereGeometry, disk: CircleGeometry)
   scatter(root, ball, paint(0xf4b755), centers);
 }
 
-function buildTree(parent: Group, side: TreeSide, ball: SphereGeometry, disk: CircleGeometry,
-  rings: RingGeometry, apples: AppleArt): AppleTreeArt {
+function buildTree(parent: Group, side: AppleSide, ball: SphereGeometry, disk: CircleGeometry,
+  edge: RingGeometry, stripe: RingGeometry, apples: AppleArt): AppleTreeArt {
   const sign = side === 'left' ? -1 : 1;
   const x = APPLE_CONFIG.zones[side].center * ORCHARD_X_TRAVEL;
   const art = new Group();
@@ -205,13 +234,11 @@ function buildTree(parent: Group, side: TreeSide, ball: SphereGeometry, disk: Ci
   parent.add(art);
   const shadow = new MeshBasicMaterial({ color: 0x93794a, transparent: true, opacity: .17, depthWrite: false });
   groundEllipse(art, disk, shadow, 0, -.039, -1.14, 1.12, .84);
-  const glow = new MeshBasicMaterial({ color: 0xffc43f, transparent: true, opacity: 0, depthWrite: false });
-  groundEllipse(art, rings, glow, 0, -.025, .024, APPLE_CONFIG.zones[side].radius * ORCHARD_X_TRAVEL, 1.20);
+  const zoneMarker = buildZoneMarker(art, side, edge, stripe, 1.63);
 
   const crown = new Group();
-  const halo = new Group();
-  crown.add(halo);
   art.add(crown);
+  const crownMarker = targetMarker(crown, true);
   const wood = paint(0x9a6541);
   const lip = paint(0xaf7952);
   const knot = paint(0x6e462f);
@@ -243,15 +270,15 @@ function buildTree(parent: Group, side: TreeSide, ball: SphereGeometry, disk: Ci
     [1.43, 2.52, -1.18, .44, .48, .5], [-1.38, 2.41, -1.05, .48, .5, .48],
     [.65, 2.34, -.92, .60, .42, .54], [-.52, 2.33, -.93, .60, .42, .55],
   ];
-  const haloMaterial = new MeshBasicMaterial({
-    color: 0xffd265, side: BackSide, transparent: true, opacity: 0, depthWrite: false,
-  });
   for (const [index, placement] of lobes.entries()) {
     const lobe = ellipsoid(crown, ball, foliage[index % foliage.length], placement);
-    const aura = new Mesh(ball, haloMaterial);
-    aura.position.copy(lobe.position);
-    aura.scale.copy(lobe.scale).addScalar(.048);
-    halo.add(aura);
+    for (const [material, expansion, order] of [[crownMarker.edge, .105, 1], [crownMarker.gold, .078, 2]] as const) {
+      const shell = new Mesh(ball, material);
+      shell.position.copy(lobe.position);
+      shell.scale.copy(lobe.scale).addScalar(expansion);
+      shell.renderOrder = order;
+      crownMarker.root.add(shell);
+    }
   }
   const accents: Placement[] = [];
   for (let i = 0; i < 39; i++) {
@@ -285,7 +312,7 @@ function buildTree(parent: Group, side: TreeSide, ball: SphereGeometry, disk: Ci
 
   const twigMaterial = paint(0xb98251);
   const lowLeaves = paint(0x7ea34a);
-  const lowRow = [-1.59, -1.20, -.82, -.41, .02, .43, .83, 1.22, 1.61];
+  const lowRow = [-1.59, -1.20, -.82, -.41, .02, .43, .83, 1.22, 1.61, -sign * 2.10];
   const reachableApples = lowRow.map((offset, index) => {
     const y = 1.08 + .115 * Math.sin(index * 2.24);
     const z = -.33 + (index % 3) * .066;
@@ -303,18 +330,17 @@ function buildTree(parent: Group, side: TreeSide, ball: SphereGeometry, disk: Ci
     art.add(apple);
     return apple;
   });
-  return { root: art, reachableApples, highAppleCount: high.length, glow, halo: haloMaterial };
+  return { root: art, reachableApples, highAppleCount: high.length, zoneMarker, crownMarker };
 }
 
-function buildBasket(parent: Group, disk: CircleGeometry, rings: RingGeometry) {
+function buildBasket(parent: Group, disk: CircleGeometry, edge: RingGeometry, stripe: RingGeometry) {
   const basket = new Group();
   const z = 1.22;
   basket.position.set(0, 0, z);
   parent.add(basket);
   groundEllipse(basket, disk, new MeshBasicMaterial({ color: 0x997743, transparent: true, opacity: .24, depthWrite: false }),
     0, -.032, .03, .75, .64);
-  const glow = new MeshBasicMaterial({ color: 0xf5b739, transparent: true, opacity: 0, depthWrite: false });
-  groundEllipse(basket, rings, glow, 0, -.021, -.2, APPLE_CONFIG.zones.basket.radius * ORCHARD_X_TRAVEL, 1.10);
+  const zoneMarker = buildZoneMarker(basket, 'basket', edge, stripe, 2.32);
 
   const darkWicker = paint(0xa77243);
   const wicker = paint(0xcf9b5b);
@@ -353,12 +379,12 @@ function buildBasket(parent: Group, disk: CircleGeometry, rings: RingGeometry) {
     [.37, .915, -.305], [.53, .70, -.27], [.58, .43, -.221]];
   tube(basket, darkWicker, .055, handle);
   tube(basket, wicker, .025, handle.map(([x, y, hz]) => [x, y + .032, hz + .034]));
-  return { glow, dropPoint: new Vector3(0, .45, z + .07), root: basket };
+  return { zoneMarker, dropPoint: new Vector3(0, .45, z + .07), root: basket };
 }
 
 export class AppleOrchardEnvironment {
   readonly root = new Group();
-  readonly trees: Record<TreeSide, AppleTreeArt>;
+  readonly trees: Record<AppleSide, AppleTreeArt>;
   readonly basket: ReturnType<typeof buildBasket>;
   readonly rabbitShadow: Mesh;
   readonly stores: Group[] = [];
@@ -366,14 +392,16 @@ export class AppleOrchardEnvironment {
   private readonly maxGlow = { left: 0, right: 0, basket: 0 };
 
   constructor() {
-    const ball = sphere(), disk = new CircleGeometry(1, 64), rings = new RingGeometry(.86, 1, 64);
+    const ball = sphere(), disk = new CircleGeometry(1, 64);
+    const edge = new RingGeometry(.70, 1, 64);
+    const stripe = new RingGeometry(.77, .94, 64);
     const apples = new AppleArt(ball);
     buildLandscape(this.root, ball, disk);
     this.trees = {
-      left: buildTree(this.root, 'left', ball, disk, rings, apples),
-      right: buildTree(this.root, 'right', ball, disk, rings, apples),
+      left: buildTree(this.root, 'left', ball, disk, edge, stripe, apples),
+      right: buildTree(this.root, 'right', ball, disk, edge, stripe, apples),
     };
-    this.basket = buildBasket(this.root, disk, rings);
+    this.basket = buildBasket(this.root, disk, edge, stripe);
     this.rabbitShadow = groundEllipse(this.root, disk,
       new MeshBasicMaterial({ color: 0xa28454, transparent: true, opacity: .26, depthWrite: false }),
       0, -.018, .02, .70, .65);
@@ -392,15 +420,21 @@ export class AppleOrchardEnvironment {
     }
   }
 
-  highlight(target: TreeSide | 'basket' | null, time: number, dt: number, reducedMotion: boolean) {
-    const pulse = reducedMotion ? .82 : .70 + .22 * Math.sin(time * Math.PI * 1.37);
+  highlight(target: AppleZone | null, time: number, dt: number, reducedMotion: boolean) {
+    const pulse = reducedMotion ? .96 : .94 + .05 * Math.sin(time * Math.PI * 1.37);
     for (const name of ['left', 'right', 'basket'] as const) {
       const amount = target === name ? 1 : 0;
       this.maxGlow[name] = dt ? MathUtils.lerp(this.maxGlow[name], amount, 1 - Math.exp(-8 * dt)) : amount;
-      const material = name === 'basket' ? this.basket.glow : this.trees[name].glow;
-      material.opacity = this.maxGlow[name] * pulse;
-      if (name !== 'basket') this.trees[name].halo.opacity = material.opacity * .88;
+      const marker = name === 'basket' ? this.basket.zoneMarker : this.trees[name].zoneMarker;
+      this.setMarkerStrength(marker, this.maxGlow[name], pulse);
+      if (name !== 'basket') this.setMarkerStrength(this.trees[name].crownMarker, this.maxGlow[name], pulse);
     }
+  }
+
+  private setMarkerStrength(marker: TargetMarker, strength: number, pulse: number) {
+    marker.root.visible = strength > .015;
+    marker.edge.opacity = strength * .95;
+    marker.gold.opacity = strength * pulse;
   }
 
   showStored(count: number) {

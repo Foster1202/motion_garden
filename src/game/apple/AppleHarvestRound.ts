@@ -1,9 +1,8 @@
-import { APPLE_CONFIG as C, type AppleSide } from './appleConfig';
+import { APPLE_CONFIG as C, isInAppleZone, type AppleSide, type AppleZone } from './appleConfig';
 
 export type { AppleSide } from './appleConfig';
 
 const HANDS = ['left', 'right'] as const;
-type Zone = keyof typeof C.zones;
 type GestureStage = 'NEUTRAL' | 'READY' | 'RAISED';
 
 export type AppleHarvestState = 'TARGET_TREE' | 'MOVE_TO_TREE' | 'PICKING' | 'CARRYING'
@@ -63,7 +62,7 @@ export class AppleHarvestRound {
   private targetStreak = 1;
   private heldApple?: CarriedApple;
   private depositAt?: number;
-  private activeZone?: Zone;
+  private activeZone?: AppleZone;
   private lastObservation?: number;
   private readonly gestures = { left: new HandGesture(), right: new HandGesture() };
 
@@ -154,13 +153,12 @@ export class AppleHarvestRound {
     };
   }
 
-  private zoneAt(x: number): Zone | undefined {
-    const inside = ({ center, radius }: { center: number; radius: number }) => Math.abs(x - center) <= radius;
-    if (this.heldApple) return inside(C.zones.basket) ? 'basket' : undefined;
-    return HANDS.find(side => inside(C.zones[side]));
+  private zoneAt(x: number): AppleZone | undefined {
+    if (this.heldApple) return isInAppleZone(x, 'basket') ? 'basket' : undefined;
+    return HANDS.find(side => isInAppleZone(x, side));
   }
 
-  private completeGesture(zone: Zone, hand: AppleSide): AppleHarvestEvent | undefined {
+  private completeGesture(zone: AppleZone, hand: AppleSide): AppleHarvestEvent | undefined {
     this.resetGestures();
     if (zone === 'basket') {
       if (!this.heldApple) return;

@@ -5,7 +5,7 @@ import { ThreeOverlay } from '../3d/ThreeOverlay';
 import { RabbitHandTracker, type HandGripSample } from '../3d/interaction/RabbitHandTracker';
 import { GAME_HEIGHT, GAME_WIDTH } from '../layout';
 import { neutralRabbitPose, type RabbitPose } from '../mocap/RabbitPose';
-import { APPLE_CONFIG } from './appleConfig';
+import { APPLE_CONFIG, isInAppleZone } from './appleConfig';
 import { AppleOrchardEnvironment, ORCHARD_PIXELS_PER_UNIT as P, ORCHARD_X_TRAVEL } from './AppleOrchardEnvironment';
 import { getGameSettings } from '../settings/gameSettings';
 import { recordThreeFrame } from '../performance/performanceMetrics';
@@ -131,12 +131,9 @@ export class AppleOrchardView {
 
     const afterPose = () => {
       this.hands = this.tracker?.sample();
-      if (target === 'left' || target === 'right') {
-        const zone = APPLE_CONFIG.zones[target];
-        if (Math.abs(x - zone.center) <= zone.radius) {
-          this.rememberReach('left', pose.leftArmElevation, target);
-          this.rememberReach('right', pose.rightArmElevation, target);
-        }
+      if ((target === 'left' || target === 'right') && isInAppleZone(x, target)) {
+        this.rememberReach('left', pose.leftArmElevation, target);
+        this.rememberReach('right', pose.rightArmElevation, target);
       }
       this.animateFruit(dt);
     };
@@ -282,8 +279,8 @@ export class AppleOrchardView {
       renderedFrames: this.frames, renderSize: overlay.renderSize, x: this.x, target: this.target,
       root: this.project(new Vector3(overlay.rabbit.pivot.position.x, 0, 0)),
       hands: { left: this.project(this.hands.leftGripPosition), right: this.project(this.hands.rightGripPosition) },
-      glow: { left: orchard.trees.left.glow.opacity, right: orchard.trees.right.glow.opacity,
-        basket: orchard.basket.glow.opacity },
+      glow: { left: orchard.trees.left.zoneMarker.gold.opacity, right: orchard.trees.right.zoneMarker.gold.opacity,
+        basket: orchard.basket.zoneMarker.gold.opacity },
       fruit: this.fruit ? { phase: this.fruit.phase, hand: this.fruit.hand,
         ...this.project(orchard.movingApple.position) } : null,
       pickContact: contact && apple && reach ? { tree: contact.tree, hand: contact.hand,

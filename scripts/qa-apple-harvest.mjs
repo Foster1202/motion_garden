@@ -99,13 +99,15 @@ async function settings(duration) {
   await panel.waitFor({ state: 'detached' });
 }
 
-async function moveTo(zone) {
+async function moveTo(zone, nearEdge = false) {
   const { playerX } = await snapshot();
   const toward = zone === 'basket' ? (playerX < 0 ? 'd' : 'a') : zone === 'left' ? 'a' : 'd';
   await page.keyboard.down(toward);
   try {
-    await until(value => zone === 'basket' ? Math.abs(value.playerX) <= .08 :
-      (zone === 'left' ? value.playerX < -.63 : value.playerX > .63));
+    const treeThreshold = nearEdge ? .493 : .63;
+    const basketThreshold = nearEdge ? .288 : .08;
+    await until(value => zone === 'basket' ? Math.abs(value.playerX) <= basketThreshold :
+      (zone === 'left' ? value.playerX < -treeThreshold : value.playerX > treeThreshold));
   } finally {
     await page.keyboard.up(toward);
   }
@@ -144,7 +146,7 @@ function assertPickContact(value, tree, hand) {
 
 function verifyGlow(value, goal) {
   assert.equal(value.view.target, goal);
-  assert.ok(value.view.glow[goal] > .2);
+  assert.ok(value.view.glow[goal] > .86);
   for (const other of ['left', 'right', 'basket']) {
     if (other !== goal) assert.ok(value.view.glow[other] < .07);
   }
@@ -202,7 +204,7 @@ async function keyboardRun() {
   await seedLeft();
   const started = Date.now();
   await dialogAction('keyboard').click();
-  const initial = await until(value => value.active && value.view?.renderedFrames > 2 && value.view.glow.left > .3);
+  const initial = await until(value => value.active && value.view?.renderedFrames > 2 && value.view.glow.left > .86);
   assert.equal(initial.mode, 'keyboard');
   assert.equal(initial.target, 'left');
   assert.match(await hud('target').innerText(), /←\s*左/);
@@ -228,7 +230,7 @@ async function keyboardRun() {
   await page.keyboard.down('q');
   try {
     await page.waitForTimeout(250);
-    await moveTo('left');
+    await moveTo('left', true);
   } finally {
     await page.keyboard.up('q');
   }
@@ -236,16 +238,18 @@ async function keyboardRun() {
   assert.equal(Boolean((await snapshot()).carrying), false);
   check('A pre-raised arm carried into the target zone cannot pick');
 
-  await holdAndRelease('q', async () => {
+  await holdAndRelease('e', async () => {
     const raised = await until(value => value.state === 'PICKING');
     assert.equal(Boolean(raised.carrying), false);
     assert.equal(raised.score, 0);
     assert.deepEqual(raised.view.rig.forearmRotations, initial.view.rig.forearmRotations);
   });
-  sample = await until(value => heldFruit(value) && value.view.glow.basket > .25 && value.view.glow.left < .07);
+  sample = await until(value => heldFruit(value) && value.view.glow.basket > .86 && value.view.glow.left < .07);
+  const pickX = sample.playerX;
+  assert.ok(pickX > -.58 && pickX < -.47, `Pick stayed outside the former tree zone at ${pickX}`);
   const firstFruit = sample.view.fruit;
   const holdingError = assertHeld(sample);
-  const contact = assertPickContact(sample, 'left', 'left');
+  const contact = assertPickContact(sample, 'left', 'right');
   assert.equal(Boolean(sample.carrying), true);
   assert.equal(sample.score, 0);
   assert.match(await hud('hint').innerText(), /成功摘到蘋果！返去籃子啦！/);
@@ -256,14 +260,16 @@ async function keyboardRun() {
   await page.waitForTimeout(240);
   assert.equal((await snapshot()).score, 0);
   assert.equal((await snapshot()).view.fruit.hand, firstFruit.hand);
-  await moveTo('basket');
+  await moveTo('basket', true);
   sample = await snapshot();
+  const basketX = sample.playerX;
+  assert.ok(basketX > -.30 && basketX < -.16, `Deposit stayed outside the former basket zone at ${basketX}`);
   const movingError = assertHeld(sample);
-  assert.ok(distance(firstFruit, sample.view.fruit) > 100);
+  assert.ok(distance(firstFruit, sample.view.fruit) > 90);
   assert.equal(sample.score, 0);
   assert.equal(sample.state, 'RETURN_TO_BASKET');
-  check('Fruit leaves the tree, follows the one-piece-arm palm, and returning to the basket preserves zero score',
-    { contact, firstFruit, returnedFruit: sample.view.fruit, holdingError, movingError });
+  check('The widened tree and basket zones work outside both former boundaries, and carrying preserves zero score',
+    { pickX, basketX, contact, firstFruit, returnedFruit: sample.view.fruit, holdingError, movingError });
 
   await holdAndRelease('q', () => until(value => value.state === 'DEPOSITING'));
   const dropping = await until(value => value.view?.fruit?.phase === 'dropping');
@@ -299,8 +305,9 @@ async function keyboardRun() {
     assert.equal(target, score === 4 ? 'right' : 'left');
     if (target === 'right') {
       assert.match(await hud('target').innerText(), /右\s*→/);
-      const rightGoal = await until(value => value.view.glow.right > .25 && value.view.glow.basket < .07);
+      const rightGoal = await until(value => value.view.glow.right > .86 && value.view.glow.basket < .07);
       verifyGlow(rightGoal, 'right');
+      await capture('right-tree-highlight');
     }
     await moveTo(target);
     await holdAndRelease(handKey(target));
@@ -480,7 +487,8 @@ async function cameraRun() {
   assert.equal(Boolean((await snapshot()).carrying), false);
   check('Synthetic webcam verifies mirrored movement and a right-wrist wrong-tree attempt with hidden elbows');
 
-  const relaxedLeft = await cameraMove(.18, x => x < -.63);
+  const relaxedLeft = await cameraMove(.104, x => x < -.48);
+  assert.ok(relaxedLeft.playerX > -.58 && relaxedLeft.playerX < -.47);
   await fixture({ left: true, hideRight: true });
   const raised = await until(value => value.state === 'PICKING');
   assert.equal(raised.input.trackingMode, 'partial');
@@ -495,7 +503,8 @@ async function cameraRun() {
   assert.equal(sample.score, 0);
   await capture('07-simulated-camera-picked');
 
-  await cameraMove(0, x => Math.abs(x) < .095);
+  const basketEdge = await cameraMove(.052, x => x > -.29);
+  assert.ok(basketEdge.playerX > -.30 && basketEdge.playerX < -.16);
   await fixture({ hideRight: false });
   await until(value => value.input.trackingMode === 'full' && value.gestures.right === 'READY');
   await fixture({ right: true });
@@ -549,7 +558,8 @@ async function cameraRun() {
   assert.equal(afterHome.videoCount, 0);
   await page.waitForTimeout(350);
   assert.equal((await cameraResources()).inferences, afterHome.inferences);
-  check('A fresh wrist cycle deposits exactly once; Home closes the stream, Landmarker, inference and video', afterHome);
+  check('Synthetic wrist cycles use the widened tree and basket edges; Home releases the camera resources',
+    { pickX: relaxedLeft.playerX, basketX: basketEdge.playerX, ...afterHome });
 
   await fixture({ loadDelay: 1200 });
   await enter();

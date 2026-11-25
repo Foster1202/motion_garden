@@ -12,7 +12,7 @@ const report = {
   browserRoute: 'Browser plugin not available; existing Playwright and installed Chrome',
   flow: 'Home settings → random target → wrong tree feedback → accepted target harvests → pause/recovery → countdown → results → replay/home',
   timing: 'The 60-second round uses normal Phaser updates at timeScale 1. A real Round receives a deterministic RNG before input selection; cosmetic overlap fixtures are identified separately.',
-  checks: [], errors: [], warnings: [], diagnostics: [], fps: [],
+  checks: [], errors: [], warnings: [], diagnostics: [], fps: [], targetVisuals: [],
 };
 page.on('pageerror', error => report.errors.push(String(error)));
 page.on('console', message => {
@@ -68,6 +68,47 @@ const verifyTarget = async side => {
   });
   assert.ok(glows[side] > .98, `Target ${side} glow is ${glows[side]}`);
   assert.ok(glows[side === 'left' ? 'right' : 'left'] < .02);
+};
+const captureTarget = async (side, filename) => {
+  const png = await page.screenshot({ path: `${output}/${filename}`, scale: 'css' });
+  const rendered = await page.evaluate(async encoded => {
+    const { game } = await import('/src/main.ts');
+    const { trees } = game.scene.getScene('BerryKick');
+    const rect = game.canvas.getBoundingClientRect();
+    const scaleX = rect.width / 1600;
+    const scaleY = rect.height / 900;
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(encoded), character => character.charCodeAt(0))]));
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(bitmap, 0, 0);
+    bitmap.close();
+    const colorsIn = (x, y, width, height) => {
+      const { data } = context.getImageData(Math.round(rect.x + x * scaleX), Math.round(rect.y + y * scaleY),
+        Math.round(width * scaleX), Math.round(height * scaleY));
+      let gold = 0;
+      let edge = 0;
+      const near = (index, r, g, b) => Math.abs(data[index] - r) <= 6 &&
+        Math.abs(data[index + 1] - g) <= 6 && Math.abs(data[index + 2] - b) <= 6;
+      for (let index = 0; index < data.length; index += 4) {
+        if (near(index, 255, 226, 107)) gold++;
+        if (near(index, 102, 64, 25)) edge++;
+      }
+      return { gold: Math.round(gold / (scaleX * scaleY)), edge: Math.round(edge / (scaleX * scaleY)) };
+    };
+    const treeColors = ({ root: { x, y } }) => ({
+      crown: colorsIn(x - 225, y - 500, 450, 285),
+      ground: colorsIn(x - 90, y - 23, 180, 46),
+    });
+    return { left: treeColors(trees.left), right: treeColors(trees.right) };
+  }, png.toString('base64'));
+  const active = rendered[side];
+  const inactive = rendered[side === 'left' ? 'right' : 'left'];
+  assert.ok(active.crown.gold > inactive.crown.gold + 3000, JSON.stringify(rendered));
+  assert.ok(active.crown.edge > inactive.crown.edge + 2000, JSON.stringify(rendered));
+  assert.ok(active.ground.gold > inactive.ground.gold + 400, JSON.stringify(rendered));
+  report.targetVisuals.push({ side, filename, viewport: page.viewportSize(), ...rendered });
 };
 const cosmeticState = () => page.evaluate(async () => {
   const scene = (await import('/src/main.ts')).game.scene.getScene('BerryKick');
@@ -169,7 +210,7 @@ try {
     window.__berryObserver = observer;
   });
   await verifyTarget('left');
-  await page.screenshot({ path: `${output}/garden-1920.png` });
+  await captureTarget('left', 'garden-1920.png');
   await hold('q', 800);
   assert.equal((await snapshot()).score, 0);
   await page.waitForTimeout(450);
@@ -232,7 +273,7 @@ try {
     await verifyTarget(next);
     if (index === 2 || index === 5) {
       assert.equal(await page.evaluate(() => window.__berryTargetDraws), index === 2 ? 3 : 5);
-      await page.screenshot({ path: `${output}/forced-target-${next}.png` });
+      await captureTarget(next, `forced-target-${next}.png`);
     }
   }
   assert.deepEqual((await snapshot()).counts, { left: 4, right: 4 });
@@ -278,7 +319,8 @@ try {
 
   await page.setViewportSize({ width: 600, height: 800 });
   await page.waitForTimeout(250);
-  await page.screenshot({ path: `${output}/garden-600.png` });
+  await captureTarget((await snapshot()).target, 'garden-600.png');
+  check('Rendered screenshots show the gold crown outline, dark outer edge and ground ring only on the active tree at both scales');
   await wait(value => value.remainingMs <= 10000 && value.remainingMs > 9000, 60000);
   await page.locator('.berry-countdown-digit[data-value="10"]').waitFor();
   assert.equal(await page.locator('[data-berry-time]').innerText(), '00:10');
