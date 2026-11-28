@@ -28,6 +28,7 @@
     "qa:berry": "node scripts/qa-berry-kick.mjs",
     "qa:berry-camera": "node scripts/qa-berry-camera.mjs",
     "qa:apple": "node scripts/qa-apple-harvest.mjs",
+    "qa:rabbit-home": "node scripts/qa-rabbit-home.mjs",
     "qa:desktop-layout": "node scripts/qa-desktop-layout.mjs",
     "qa:low-performance": "node scripts/qa-low-performance.mjs",
     "build:berry-art": "bash model/scripts/build_berry_art.sh"

@@ -415,7 +415,8 @@ try {
   await page.locator('[data-action=start]').click();
   assert.equal(await page.locator('[data-action=carrot]').count(), 1);
   assert.equal(await page.locator('[data-action=apple]').isEnabled(), true);
-  assert.equal(await page.locator('.game-card[disabled]').count(), 1);
+  assert.ok(await page.locator('[data-action=home-game]').isEnabled());
+  assert.equal(await page.locator('.game-card[disabled]').count(), 0);
   check('Replay resets score/timer/effects; Home removes Berry UI and keeps other menu games');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });

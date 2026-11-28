@@ -4,7 +4,7 @@ export type VoiceId = 'ready' | 'bend' | 'grabbed' | 'stand' | 'success' | 'retr
   | 'safety' | 'calibrationStanding' | 'calibrationBend' | 'trackingLost' | 'rest' | 'nextRound';
 export type SfxId = 'grab' | 'success' | 'complete' | 'click' | 'berry';
 export type AudioChannel = 'sfx' | 'voice' | 'bgm';
-export type VoiceProfile = 'carrot' | 'berry' | 'apple';
+export type VoiceProfile = 'carrot' | 'berry' | 'apple' | 'home';
 
 export interface VoicePlaybackOptions {
   interrupt?: boolean;
@@ -19,6 +19,7 @@ const PROFILE_VOICES: Record<VoiceProfile, Partial<Record<VoiceId, string>>> = {
     nextRound: 'next-carrot' },
   berry: { ...COMMON_VOICES, ready: 'berry-ready', success: 'berry-success', complete: 'berry-complete' },
   apple: { ...COMMON_VOICES, calibrationStanding: 'calibration-standing', complete: 'berry-complete' },
+  home: { ...COMMON_VOICES, calibrationStanding: 'calibration-standing', complete: 'carrot-complete' },
 };
 
 const SFX_IDS: readonly SfxId[] = ['click', 'grab', 'success', 'berry', 'complete'];

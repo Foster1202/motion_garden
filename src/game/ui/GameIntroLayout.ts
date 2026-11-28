@@ -1,7 +1,7 @@
 import berryDemo from '../../../assets/berry-kick-demo.mp4?url';
 import carrotDemo from '../../../assets/carrot-pull-demo.mp4?url';
 import { GameIntroVideo } from './GameIntroVideo';
-import { appleIcon, carrotIcon, sproutIcon } from './Overlay';
+import { appleIcon, carrotIcon, homeIcon, sproutIcon } from './Overlay';
 
 type IntroMedia = { icon: string; video?: string };
 
@@ -9,6 +9,7 @@ const introMedia = {
   carrot: { icon: carrotIcon, video: carrotDemo },
   berry: { icon: sproutIcon, video: berryDemo },
   apple: { icon: appleIcon },
+  home: { icon: homeIcon },
 } satisfies Record<string, IntroMedia>;
 
 export class GameIntroLayout {
@@ -19,7 +20,7 @@ export class GameIntroLayout {
   private readonly videoUrl?: string;
   private video?: GameIntroVideo;
 
-  constructor(game: keyof typeof introMedia, content: string) {
+  constructor(game: keyof typeof introMedia, content: string, demo?: HTMLElement) {
     const { icon, video }: IntroMedia = introMedia[game];
     this.videoUrl = video;
     this.element.className = 'game-intro-layout';
@@ -34,6 +35,10 @@ export class GameIntroLayout {
     this.media = this.element.querySelector('.game-intro-media')!;
     this.placeholder = this.element.querySelector('.game-intro-placeholder')!;
     this.caption = this.element.querySelector('.game-intro-caption')!;
+    if (demo) {
+      this.placeholder.hidden = true;
+      this.media.append(demo);
+    }
   }
 
   startVideo(paused = false) {

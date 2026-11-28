@@ -4,6 +4,7 @@ import { BootScene } from './scenes/BootScene';
 import { MenuScene } from './scenes/MenuScene';
 import { CarrotPullScene } from './scenes/CarrotPullScene';
 import { AppleHarvestScene } from './scenes/AppleHarvestScene';
+import { RabbitHomeScene } from './scenes/RabbitHomeScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './layout';
 
 export { GAME_WIDTH, GAME_HEIGHT } from './layout';
@@ -19,5 +20,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   render: { antialias: true, roundPixels: false },
   audio: { noAudio: true },
-  scene: [BootScene, MenuScene, CarrotPullScene, BerryKickScene, AppleHarvestScene],
+  scene: [BootScene, MenuScene, CarrotPullScene, BerryKickScene, AppleHarvestScene, RabbitHomeScene],
 };
